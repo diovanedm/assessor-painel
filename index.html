@@ -1,0 +1,1810 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src https://api.github.com http://localhost:8765 http://127.0.0.1:8765; img-src data:; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Assessor">
+<meta name="theme-color" content="#E8EBEF">
+<title>Assessor</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2317191D'/%3E%3Ccircle cx='16' cy='16' r='9' fill='none' stroke='%233A3E46' stroke-width='3'/%3E%3Cpath d='M16 7a9 9 0 0 1 7.8 13.5' fill='none' stroke='%23ECEEF1' stroke-width='3' stroke-linecap='round'/%3E%3Ccircle cx='23.8' cy='20.5' r='3' fill='%238291FF'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Doto:wght@700;900&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>
+try{var c=JSON.parse(localStorage.getItem('assessor.painel.cfg')||'{}');var t=c.theme||'auto';if(t==='auto')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;}catch(e){document.documentElement.dataset.theme='light';}
+</script>
+<style>
+:root{
+  --bg:#E8EBEF; --panel:#F5F6F8; --raise:#FFFFFF; --ink:#13161B; --ink2:#4B515C; --ink3:#848A95; --line:#D2D7DE; --line2:#DFE3E8;
+  --signal:#2B45FF; --signal-soft:rgba(43,69,255,.14); --on-ink:#F5F6F8;
+  --ok:#12895A; --warn:#B87C00; --alert:#D3363C; --idle:#959BA6;
+  --a-financas:#D19C00; --a-saude:#14874D; --a-ingles:#0A8FCA; --a-trabalho:#E5531C; --a-carreira:#4252C2;
+  --a-emocional:#7380CF; --a-casa-familia:#D0616D; --a-cultura:#8E31AA; --a-eu:#848A95; --a-pessoal:#848A95;
+  --f-ui:"Hanken Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --f-dot:"Doto", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --shadow:0 1px 0 rgba(255,255,255,.7) inset, 0 18px 50px -24px rgba(20,24,40,.28);
+  color-scheme:light;
+}
+:root[data-theme="dark"]{
+  --bg:#17191D; --panel:#1F2226; --raise:#25282D; --ink:#ECEEF1; --ink2:#B2B8C2; --ink3:#7C8390; --line:#31353C; --line2:#2A2D33;
+  --signal:#8291FF; --signal-soft:rgba(130,145,255,.18); --on-ink:#17191D;
+  --ok:#3CC48A; --warn:#E5B03A; --alert:#F0676C; --idle:#6E7581;
+  --a-financas:#EFBF2C; --a-saude:#3DBB78; --a-ingles:#3CB6EA; --a-trabalho:#FF7A45; --a-carreira:#7F8DF2;
+  --a-emocional:#A3AEF0; --a-casa-familia:#F08C96; --a-cultura:#C36EDF; --a-eu:#7C8390; --a-pessoal:#7C8390;
+  --shadow:0 1px 0 rgba(255,255,255,.04) inset, 0 18px 50px -24px rgba(0,0,0,.6);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--ink);font:400 15px/1.5 var(--f-ui);-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums;-webkit-tap-highlight-color:transparent}
+button,input,textarea,select{font:inherit;color:inherit}
+button{background:none;border:0;padding:0;cursor:pointer}
+a{color:inherit;text-decoration-color:var(--line);text-underline-offset:3px}
+a:hover{text-decoration-color:currentColor}
+:focus-visible{outline:2px solid var(--signal);outline-offset:2px;border-radius:6px}
+[hidden]{display:none!important}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ───── barra do topo ───── */
+.top{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:10px;padding:12px clamp(14px,3vw,32px);padding-top:max(12px,env(safe-area-inset-top));background:color-mix(in srgb,var(--bg) 84%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.brand{display:flex;align-items:center;gap:9px;font-weight:650;letter-spacing:-.01em;font-size:16px;margin-right:auto}
+.brand svg{width:26px;height:26px}
+.find{display:flex;align-items:center;gap:10px;height:38px;padding:0 12px 0 12px;border-radius:12px;background:var(--panel);color:var(--ink3);min-width:min(320px,38vw);font-size:14px}
+.find kbd{margin-left:auto;font:500 12px var(--f-ui);color:var(--ink3);border:1px solid var(--line);border-radius:6px;padding:1px 6px}
+.find svg,.ib svg{width:18px;height:18px;flex:none}
+.ib{width:38px;height:38px;display:grid;place-items:center;border-radius:12px;color:var(--ink2)}
+.ib:hover{background:var(--panel);color:var(--ink)}
+.ib[aria-pressed="true"]{color:var(--signal)}
+.live{display:flex;align-items:center;gap:8px;height:38px;padding:0 12px;border-radius:12px;font-size:13px;color:var(--ink2);white-space:nowrap}
+.live b{font-weight:600;color:var(--ink)}
+.live .dot{width:8px;height:8px;border-radius:50%;background:var(--signal);position:relative;flex:none}
+.live .dot::after{content:"";position:absolute;inset:-5px;border-radius:50%;border:1.5px solid var(--signal);opacity:0;animation:ping 2.4s ease-out infinite}
+.live.saving .dot{background:var(--warn)} .live.saving .dot::after{border-color:var(--warn);animation-duration:1s}
+.live.err .dot{background:var(--alert)} .live.err .dot::after{animation:none}
+.live.idle .dot{background:var(--idle)} .live.idle .dot::after{animation:none}
+@keyframes ping{0%{transform:scale(.5);opacity:.9}80%,100%{transform:scale(1.6);opacity:0}}
+
+/* ───── estrutura ───── */
+.wrap{display:grid;grid-template-columns:minmax(330px,392px) minmax(0,1fr);gap:clamp(22px,3vw,44px);padding:6px clamp(14px,3vw,32px) 80px;max-width:1520px;margin:0 auto}
+.instrument{position:sticky;top:70px;align-self:start;background:var(--panel);border-radius:30px;padding:20px 22px 24px;max-height:calc(100vh - 84px);overflow:auto;scrollbar-width:thin;box-shadow:var(--shadow)}
+.content{min-width:0;display:grid;gap:46px;align-content:start;padding-top:6px}
+.cols{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:40px;align-items:start}
+.sec{border-radius:18px}
+.sec>header{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;padding-bottom:10px;border-bottom:1px solid var(--line);margin-bottom:4px}
+h2{font-size:21px;line-height:1.2;font-weight:650;letter-spacing:-.015em;margin:0}
+h3{font-size:14px;font-weight:600;margin:22px 0 6px;color:var(--ink2)}
+.count{font:900 19px/1 var(--f-dot);color:var(--ink3);letter-spacing:.04em}
+.hint{font-size:13px;color:var(--ink3);margin:8px 0 0}
+.muted{color:var(--ink3)}
+.flash{animation:flash 2.2s ease-out}
+@keyframes flash{0%,25%{background:var(--signal-soft);box-shadow:0 0 0 12px var(--signal-soft)}100%{background:transparent;box-shadow:0 0 0 12px transparent}}
+.instrument.flash{animation-name:flashi}
+@keyframes flashi{0%,25%{box-shadow:0 0 0 3px var(--signal),var(--shadow)}100%{box-shadow:0 0 0 3px transparent,var(--shadow)}}
+
+/* ───── instrumento: mostrador do dia ───── */
+.dial{position:relative;width:100%;max-width:322px;margin:4px auto 6px;aspect-ratio:1}
+.dial svg{width:100%;height:100%;display:block;overflow:visible}
+.dial .tk{stroke:var(--ink3);stroke-width:1;opacity:.55}
+.dial .tk.mj{stroke-width:1.6;opacity:.9}
+.dial .hl{fill:var(--ink3);font:600 10px var(--f-ui);text-anchor:middle;dominant-baseline:central}
+.dial .trk{fill:none;stroke:var(--line);stroke-width:3}
+.dial .exp{fill:none;stroke:var(--ink3);stroke-width:3;opacity:.45}
+.dial .elp{fill:none;stroke:var(--ink);stroke-width:3;stroke-linecap:round}
+.dial .ev{fill:none;stroke-width:9;stroke-linecap:round}
+.dial .ev.past{opacity:.28}
+.dial .ev.cur{stroke-width:12}
+.dial .hand{stroke:var(--signal);stroke-width:1.5;opacity:.55}
+.dial .now{fill:var(--signal)}
+.dial .halo{fill:none;stroke:var(--signal);stroke-width:1.5;transform-box:fill-box;transform-origin:center;animation:halo 2.6s ease-out infinite}
+@keyframes halo{0%{transform:scale(.6);opacity:.9}100%{transform:scale(2.4);opacity:0}}
+.dial-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;text-align:center}
+.clock{font:900 clamp(40px,4.2vw,50px)/1 var(--f-dot);letter-spacing:.02em;color:var(--ink)}
+.clock .col{animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:.15}}
+.dial-date{margin-top:8px;font-size:13px;color:var(--ink2)}
+.greet{font-size:23px;font-weight:650;letter-spacing:-.02em;line-height:1.2;margin:14px 0 6px}
+.summary{margin:0;color:var(--ink2);font-size:15px}
+.summary b{color:var(--ink);font-weight:650}
+.summary .late{color:var(--alert)}
+.next{margin:14px 0 0;padding:12px 14px;border-radius:14px;background:var(--raise);font-size:14px;display:flex;gap:10px;align-items:flex-start}
+.next .k{color:var(--ink3);flex:none}
+.next b{font-weight:650}
+
+.tl{list-style:none;margin:8px 0 0;padding:0}
+.tl li{display:grid;grid-template-columns:52px 1fr auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line2);font-size:14px;min-height:42px}
+.tl li:last-child{border-bottom:0}
+.tl .t{color:var(--ink2);font-size:13px;line-height:1.25}
+.tl .t small{display:block;color:var(--ink3);font-size:11.5px}
+.tl .n{display:flex;gap:8px;align-items:center;min-width:0}
+.tl .n span:last-child{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.tl .sw{width:8px;height:8px;border-radius:3px;flex:none;background:var(--c,var(--ink3))}
+.tl li.past .n{color:var(--ink3)}
+.tl li.cur{background:linear-gradient(90deg,var(--signal-soft),transparent 70%);border-radius:10px;border-bottom-color:transparent;padding-left:8px;margin-left:-8px}
+.tl li.nowline{min-height:0;padding:0;border:0;grid-template-columns:52px 1fr;color:var(--signal);font-size:12px;font-weight:600}
+.tl li.nowline::after{content:"";height:1.5px;background:var(--signal);border-radius:2px;align-self:center}
+.hb{display:flex;gap:6px}
+.hb button{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;border:1.5px solid var(--line);color:var(--ink2)}
+.hb button:hover{border-color:var(--ink2);color:var(--ink)}
+.hb button svg{width:14px;height:14px}
+.chip{display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 10px;border-radius:99px;font-size:12px;font-weight:600;white-space:nowrap}
+.chip.ok{background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}
+.chip.no{background:color-mix(in srgb,var(--alert) 13%,transparent);color:var(--alert)}
+.why{display:flex;gap:6px;grid-column:1/-1}
+.why input{flex:1;min-width:0;height:34px;border-radius:10px;border:1px solid var(--line);background:var(--raise);padding:0 10px;font-size:14px}
+.btn{height:34px;padding:0 14px;border-radius:10px;font-size:14px;font-weight:600;background:var(--ink);color:var(--on-ink);white-space:nowrap}
+.btn.ghost{background:transparent;color:var(--ink2);border:1px solid var(--line)}
+.btn:disabled{opacity:.5;cursor:default}
+.week{list-style:none;margin:6px 0 0;padding:0}
+.week li{display:grid;grid-template-columns:76px 48px 1fr;gap:8px;padding:7px 0;font-size:13.5px;border-bottom:1px solid var(--line2)}
+.week li:last-child{border-bottom:0}
+.week .d{color:var(--ink2)} .week .h{color:var(--ink3)}
+.instrument h3{margin-top:24px}
+
+/* ───── tarefas ───── */
+.tabs{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+.tabs button{height:32px;padding:0 11px;border-radius:9px;font-size:13.5px;color:var(--ink2);display:flex;align-items:center;gap:6px}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--on-ink)}
+.tabs button span{font-weight:600;opacity:.75}
+.tasks{list-style:none;margin:0;padding:0}
+.task{display:grid;grid-template-columns:30px 1fr;gap:8px;padding:11px 0;border-bottom:1px solid var(--line2);align-items:start}
+.chk{width:22px;height:22px;margin-top:1px;border-radius:50%;border:1.6px solid var(--ink3);display:grid;place-items:center;transition:background .15s,border-color .15s,transform .15s}
+.chk svg{width:13px;height:13px;opacity:0;color:var(--on-ink);transition:opacity .15s}
+.chk:hover{border-color:var(--ink)}
+.task.done .chk{background:var(--ink);border-color:var(--ink)}
+.task.done .chk svg{opacity:1}
+.task.done .tx>.t{color:var(--ink3);text-decoration:line-through;text-decoration-color:var(--ink3)}
+.task.busy .chk{animation:busy 1s ease-in-out infinite}
+@keyframes busy{50%{transform:scale(.82)}}
+.tx{min-width:0}
+.tx>.t{font-size:15px;line-height:1.4;overflow-wrap:anywhere}
+.tx .meta{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:3px;font-size:12.5px;color:var(--ink3)}
+.tx .meta a{color:var(--ink3);text-decoration:none}
+.tx .meta a:hover{color:var(--ink);text-decoration:underline}
+.due.late{color:var(--alert);font-weight:600}
+.due.today{color:var(--signal);font-weight:600}
+.prio{color:var(--alert);font-weight:600}
+.lock{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line2);font-size:14px;color:var(--ink2);width:100%;text-align:left}
+.lock svg{width:16px;height:16px;flex:none;margin:0 7px 0 3px}
+.group-h{font-size:13px;font-weight:600;color:var(--ink2);margin:18px 0 0;display:flex;gap:8px;align-items:baseline}
+.group-h a{text-decoration:none} .group-h a:hover{text-decoration:underline}
+.add{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.add input[type=text]{flex:1 1 220px;min-width:0;height:40px;border-radius:12px;border:1px solid var(--line);background:var(--raise);padding:0 12px;font-size:15px}
+.add input[type=date],.add select{height:40px;border-radius:12px;border:1px solid var(--line);background:var(--raise);padding:0 10px;font-size:14px;color:var(--ink2)}
+.empty{padding:22px 0;color:var(--ink3);font-size:14px}
+
+/* ───── anotar ───── */
+.cap textarea{width:100%;min-height:104px;resize:vertical;border-radius:16px;border:1px solid var(--line);background:var(--raise);padding:14px 14px;font-size:16px;line-height:1.45;display:block}
+.cap textarea::placeholder{color:var(--ink3)}
+.cap-row{display:flex;align-items:center;gap:10px;margin-top:10px}
+.cap-row .hint{margin:0;margin-right:auto}
+.inbox{list-style:none;margin:16px 0 0;padding:0}
+.inbox li{display:grid;grid-template-columns:1fr auto;gap:8px;padding:10px 0;border-bottom:1px solid var(--line2);font-size:14.5px}
+.inbox li small{display:block;color:var(--ink3);font-size:12px}
+.inbox .x{width:28px;height:28px;border-radius:8px;color:var(--ink3);display:grid;place-items:center}
+.inbox .x:hover{background:var(--panel);color:var(--ink)}
+.inbox .x svg{width:14px;height:14px}
+.inbox li.busy{opacity:.55}
+
+/* ───── ritmo e feed ───── */
+.rh{display:grid;grid-template-columns:minmax(96px,1fr) repeat(7,24px) 40px;gap:6px 4px;align-items:center;margin-top:12px;font-size:13.5px}
+.rh .dh{font-size:11px;color:var(--ink3);text-align:center;line-height:1.15}
+.rh .dh.today{color:var(--ink);font-weight:700}
+.rh .lb{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rh .tot{text-align:right;color:var(--ink2);font-size:12.5px}
+.cell{width:14px;height:14px;border-radius:50%;justify-self:center}
+.cell.ok{background:var(--c)}
+.cell.no{border:2px solid var(--c);opacity:.75;position:relative}
+.cell.no::after{content:"";position:absolute;left:50%;top:-1px;bottom:-1px;width:2px;background:var(--c);transform:translateX(-50%) rotate(45deg)}
+.cell.miss{width:6px;height:6px;background:var(--ink3);opacity:.45}
+.cell.plan{border:1.5px dashed var(--ink3)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;font-size:12px;color:var(--ink3)}
+.legend span{display:flex;align-items:center;gap:6px}
+.legend .cell{--c:var(--ink2)}
+.feed{list-style:none;margin:6px 0 0;padding:0}
+.feed li{display:grid;grid-template-columns:62px 1fr;gap:10px;padding:9px 0;border-bottom:1px solid var(--line2);font-size:14px}
+.feed li:last-child{border-bottom:0}
+.feed time{color:var(--ink3);font-size:12.5px;padding-top:1px}
+.feed b{font-weight:600}
+.feed .via{font-size:11.5px;color:var(--signal);font-weight:600;margin-left:6px;white-space:nowrap}
+.feed li.new{animation:newrow 2.4s ease-out}
+@keyframes newrow{0%{background:var(--signal-soft)}100%{background:transparent}}
+
+/* ───── áreas e casos ───── */
+.areas{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:36px}
+.area,.case{display:block;width:100%;text-align:left;padding:14px 0 15px;border-bottom:1px solid var(--line2);position:relative}
+.area:hover .nm,.case:hover .ct{text-decoration:underline;text-decoration-color:var(--ink3);text-underline-offset:3px}
+.area .hd{display:flex;align-items:center;gap:9px}
+.area .emo{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;font-size:16px;background:color-mix(in srgb,var(--c) 16%,transparent);flex:none}
+.area .nm{font-weight:650;font-size:16px}
+.lamp{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--ink2)}
+.lamp::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--lc,var(--idle));box-shadow:0 0 0 3px color-mix(in srgb,var(--lc,var(--idle)) 22%,transparent)}
+.s-bem{--lc:var(--ok)} .s-atencao{--lc:var(--warn)} .s-alerta{--lc:var(--alert)} .s-parado{--lc:var(--idle)}
+.rs{margin:8px 0 0;font-size:14px;color:var(--ink2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ft{display:flex;gap:12px;flex-wrap:wrap;margin-top:7px;font-size:12.5px;color:var(--ink3)}
+.case .hd{display:flex;align-items:baseline;gap:10px}
+.case .ct{font-weight:650;font-size:16px}
+.case .st{margin-left:auto;font-size:12.5px;color:var(--ink3);white-space:nowrap}
+.cases{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:36px}
+body.discreet .veil{filter:blur(7px);user-select:none;-webkit-user-select:none}
+
+/* ───── gaveta da nota ───── */
+.scrim{position:fixed;inset:0;z-index:40;background:rgba(10,12,16,.32);opacity:0;transition:opacity .2s}
+.scrim.on{opacity:1}
+.drawer{position:fixed;z-index:41;top:0;right:0;bottom:0;width:min(660px,100vw);background:var(--raise);display:flex;flex-direction:column;transform:translateX(102%);transition:transform .24s cubic-bezier(.2,.8,.2,1);box-shadow:-30px 0 60px -30px rgba(0,0,0,.35)}
+.drawer.on{transform:none}
+.dr-h{display:flex;align-items:flex-start;gap:10px;padding:18px 20px 14px;padding-top:max(18px,env(safe-area-inset-top));border-bottom:1px solid var(--line2)}
+.dr-h .tt{flex:1;min-width:0}
+.dr-h h2{font-size:22px;overflow-wrap:anywhere}
+.dr-h .path{font-size:12.5px;color:var(--ink3);margin-top:4px;display:flex;gap:10px;flex-wrap:wrap}
+.dr-b{flex:1;overflow:auto;padding:6px 22px 40px}
+.dr-f{display:flex;gap:8px;align-items:center;padding:12px 20px;padding-bottom:max(12px,env(safe-area-inset-bottom));border-top:1px solid var(--line2)}
+.dr-f .msg{margin-right:auto;font-size:13px;color:var(--alert)}
+.editor{width:100%;height:100%;min-height:60vh;border:0;background:transparent;resize:none;font:13.5px/1.6 ui-monospace,"SF Mono",Menlo,Consolas,monospace;padding:16px 0;color:var(--ink)}
+.editor:focus{outline:none}
+.gate{padding:40px 0;text-align:center;color:var(--ink2)}
+.gate p{margin:0 0 14px}
+.md{font-size:15px;line-height:1.6;overflow-wrap:anywhere}
+.md h1{display:none}
+.md h2{font-size:18px;margin:26px 0 8px}
+.md h3{font-size:15.5px;color:var(--ink);margin:20px 0 6px}
+.md h4{font-size:14.5px;margin:16px 0 4px}
+.md p{margin:8px 0}
+.md ul,.md ol{margin:6px 0;padding-left:22px}
+.md li{margin:3px 0}
+.md li.tk{list-style:none;margin-left:-22px;display:grid;grid-template-columns:28px 1fr;gap:4px;align-items:start}
+.md li.tk .chk{width:19px;height:19px;margin-top:2px}
+.md li.tk.done>span{color:var(--ink3);text-decoration:line-through}
+.md li.tk.done .chk{background:var(--ink);border-color:var(--ink)} .md li.tk.done .chk svg{opacity:1}
+.md code{font:12.5px ui-monospace,"SF Mono",Menlo,monospace;background:var(--panel);padding:1px 5px;border-radius:5px}
+.md pre{background:var(--panel);padding:12px 14px;border-radius:12px;overflow:auto}
+.md pre code{background:none;padding:0}
+.md blockquote{margin:10px 0;padding:4px 14px;border-left:3px solid var(--line);color:var(--ink2)}
+.md details{margin:10px 0;padding:8px 14px;border-radius:12px;background:var(--panel)}
+.md summary{cursor:pointer;font-weight:600}
+.md .tbl{overflow:auto;margin:10px 0;border:1px solid var(--line2);border-radius:12px}
+.md table{border-collapse:collapse;font-size:13px;min-width:100%}
+.md th,.md td{padding:7px 10px;border-bottom:1px solid var(--line2);text-align:left;vertical-align:top}
+.md th{font-weight:600;color:var(--ink2);background:var(--panel)}
+.md tr:last-child td{border-bottom:0}
+.md hr{border:0;border-top:1px solid var(--line);margin:18px 0}
+a.wl{color:var(--signal);text-decoration:none}
+a.wl:hover{text-decoration:underline}
+.wlx{color:var(--ink3)}
+.md td.nw{white-space:nowrap}
+.md td,.md th{overflow-wrap:normal;word-break:normal}
+.fm{display:flex;flex-wrap:wrap;gap:6px 14px;margin:14px 0 4px;font-size:13px;color:var(--ink2)}
+.fm .rsm{flex-basis:100%;color:var(--ink2);font-size:14px;padding:10px 12px;border-radius:12px;background:var(--panel)}
+
+/* ───── busca, ajustes, entrada ───── */
+.overlay{position:fixed;inset:0;z-index:50;background:rgba(10,12,16,.38);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);display:flex;justify-content:center;align-items:flex-start;padding:max(10vh,env(safe-area-inset-top)) 14px 14px}
+.box{width:min(680px,100%);background:var(--raise);border-radius:22px;box-shadow:0 30px 80px -30px rgba(0,0,0,.5);overflow:hidden;max-height:80vh;display:flex;flex-direction:column}
+.sq{display:flex;align-items:center;gap:10px;padding:16px 18px;border-bottom:1px solid var(--line2)}
+.sq svg{width:20px;height:20px;color:var(--ink3);flex:none}
+.sq input{flex:1;min-width:0;border:0;background:transparent;font-size:19px;outline:none}
+.res{list-style:none;margin:0;padding:6px;overflow:auto}
+.res li button{display:block;width:100%;text-align:left;padding:10px 12px;border-radius:12px}
+.res li button[aria-selected="true"],.res li button:hover{background:var(--panel)}
+.res .rt{font-weight:600;font-size:15px}
+.res .rp{font-size:12px;color:var(--ink3);margin-left:8px;font-weight:400}
+.res .sn{font-size:13.5px;color:var(--ink2);margin-top:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.res mark{background:var(--signal-soft);color:inherit;border-radius:3px;padding:0 1px}
+.form{padding:22px 22px 24px;overflow:auto}
+.form h2{margin-bottom:6px}
+.form label{display:block;font-size:13px;font-weight:600;color:var(--ink2);margin:16px 0 6px}
+.form input,.form select{width:100%;height:42px;border-radius:12px;border:1px solid var(--line);background:var(--bg);padding:0 12px;font-size:15px}
+.form .row{display:flex;gap:10px;margin-top:22px;flex-wrap:wrap}
+.form .err{color:var(--alert);font-size:14px;margin-top:12px}
+.form ol{margin:10px 0 0;padding-left:20px;color:var(--ink2);font-size:14px}
+.form ol li{margin:4px 0}
+.setup{min-height:100vh;display:grid;place-items:center;padding:24px}
+.setup .box{max-height:none}
+.setup .mark{display:flex;justify-content:center;padding:28px 0 0}
+.setup .mark svg{width:64px;height:64px}
+
+/* ───── avisos ───── */
+.toasts{position:fixed;z-index:60;left:50%;bottom:max(18px,env(safe-area-inset-bottom));transform:translateX(-50%);display:flex;flex-direction:column;gap:8px;width:min(560px,calc(100vw - 24px));pointer-events:none}
+.toast{pointer-events:auto;display:flex;gap:12px;align-items:center;background:var(--ink);color:var(--on-ink);padding:12px 14px 12px 16px;border-radius:16px;font-size:14px;box-shadow:0 18px 40px -16px rgba(0,0,0,.45);animation:tin .25s ease-out}
+.toast.err{background:var(--alert);color:#fff}
+.toast .tm{flex:1;min-width:0}
+.toast .tm small{display:block;opacity:.8;font-size:13px}
+.toast button{font-weight:650;opacity:.85;padding:4px 6px;border-radius:8px}
+.toast button:hover{opacity:1}
+@keyframes tin{from{transform:translateY(10px);opacity:0}}
+.fab{display:none}
+
+/* ───── telas menores ───── */
+@media (max-width:1180px){
+  .wrap{grid-template-columns:1fr}
+  .instrument{position:static;max-height:none;display:grid;grid-template-columns:minmax(240px,300px) 1fr;column-gap:28px}
+  .instrument .dial{grid-row:span 3}
+}
+@media (max-width:900px){
+  .cols{grid-template-columns:1fr;gap:46px}
+  .areas,.cases{grid-template-columns:1fr}
+}
+@media (max-width:720px){
+  body{font-size:15.5px}
+  .find{min-width:0;width:38px;padding:0;justify-content:center;background:transparent;color:var(--ink2)}
+  .find span,.find kbd{display:none}
+  .live{padding:0 6px}
+  .live .ago{display:none}
+  .instrument{display:block;border-radius:26px;padding:16px 16px 20px}
+  .dial{max-width:280px}
+  .drawer{top:auto;height:94vh;width:100%;border-radius:24px 24px 0 0;transform:translateY(102%)}
+  .drawer.on{transform:none}
+  .tabs{margin-left:0;width:100%}
+  .fab{display:grid;place-items:center;position:fixed;z-index:25;right:18px;bottom:max(18px,env(safe-area-inset-bottom));width:56px;height:56px;border-radius:18px;background:var(--ink);color:var(--on-ink);box-shadow:0 14px 30px -10px rgba(0,0,0,.45)}
+  .fab svg{width:24px;height:24px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body class="discreet">
+
+<div id="setup" class="setup" hidden></div>
+
+<div id="app" hidden>
+  <header class="top">
+    <div class="brand"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="11" fill="none" stroke="var(--line)" stroke-width="3"/><path d="M16 5a11 11 0 0 1 9.5 16.5" fill="none" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/><circle cx="25.5" cy="21.5" r="3.4" fill="var(--signal)"/></svg>assessor</div>
+    <button class="find" id="openFind" aria-label="Buscar nas notas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span>Buscar nas notas</span><kbd>⌘K</kbd></button>
+    <div class="live idle" id="live" role="status" aria-live="polite"><span class="dot"></span><span id="liveTxt">conectando</span></div>
+    <button class="ib" id="eye" aria-pressed="false" aria-label="Mostrar assuntos sensíveis" title="Mostrar ou esconder saúde, emocional e valores"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path id="eyeSlash" d="M4 4l16 16"/></svg></button>
+    <button class="ib" id="openCfg" aria-label="Ajustes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></button>
+  </header>
+
+  <div class="wrap">
+    <aside class="instrument sec" id="secDay" aria-label="Seu dia">
+      <div class="dial"><svg id="dial" viewBox="0 0 360 360" role="img" aria-label="Mostrador do dia"></svg>
+        <div class="dial-center"><div class="clock" id="clock">--<span class="col">:</span>--</div><div class="dial-date" id="dialDate"></div></div>
+      </div>
+      <div>
+        <p class="greet" id="greet"></p>
+        <p class="summary" id="summary"></p>
+        <div class="next" id="next" hidden></div>
+      </div>
+      <div>
+        <h3>Hoje</h3>
+        <ol class="tl" id="today"></ol>
+        <h3>Próximos 7 dias</h3>
+        <ul class="week" id="week"></ul>
+      </div>
+    </aside>
+
+    <main class="content">
+      <div class="cols">
+        <section class="sec" id="secTasks" aria-labelledby="hTasks">
+          <header><h2 id="hTasks">Tarefas</h2><div class="tabs" role="tablist" id="tabs"></div></header>
+          <div id="tasks"></div>
+          <form class="add" id="addTask" autocomplete="off"></form>
+        </section>
+        <section class="sec cap" id="secCap" aria-labelledby="hCap">
+          <header><h2 id="hCap">Anotar</h2><span class="count" id="inboxCount"></span></header>
+          <form id="capForm" autocomplete="off">
+            <label class="sr" for="capTxt">Anotação</label>
+            <textarea id="capTxt" placeholder="O que está na cabeça agora?" enterkeyhint="send"></textarea>
+            <div class="cap-row"><p class="hint">Vai pro inbox. O assessor arruma no check-in.</p><button class="btn" id="capBtn" type="submit">Anotar</button></div>
+          </form>
+          <ul class="inbox" id="inbox"></ul>
+        </section>
+      </div>
+
+      <div class="cols">
+        <section class="sec" id="secRhythm" aria-labelledby="hRh">
+          <header><h2 id="hRh">Ritmo da semana</h2></header>
+          <div id="rhythm"></div>
+        </section>
+        <section class="sec" id="secFeed" aria-labelledby="hFeed">
+          <header><h2 id="hFeed">Ao vivo</h2><span class="hint" style="margin:0">o que mudou no GitHub</span></header>
+          <ol class="feed" id="feed"></ol>
+        </section>
+      </div>
+
+      <section class="sec" id="secAreas" aria-labelledby="hAreas">
+        <header><h2 id="hAreas">Áreas</h2></header>
+        <div class="areas" id="areas"></div>
+      </section>
+
+      <section class="sec" id="secCases" aria-labelledby="hCases">
+        <header><h2 id="hCases">Casos abertos</h2><span class="count" id="casesCount"></span></header>
+        <div class="cases" id="cases"></div>
+      </section>
+    </main>
+  </div>
+
+  <button class="fab" id="fab" aria-label="Anotar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+</div>
+
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" aria-modal="true" role="dialog" aria-labelledby="drTitle" hidden>
+  <div class="dr-h"><div class="tt"><h2 id="drTitle"></h2><div class="path" id="drPath"></div></div>
+    <button class="ib" id="drEdit" aria-label="Editar nota"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/></svg></button>
+    <button class="ib" id="drClose" aria-label="Fechar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+  </div>
+  <div class="dr-b" id="drBody"></div>
+  <div class="dr-f" id="drFoot" hidden><span class="msg" id="drMsg"></span><button class="btn ghost" id="drCancel" type="button">Cancelar</button><button class="btn" id="drSave" type="button">Salvar no GitHub</button></div>
+</aside>
+
+<div class="overlay" id="find" hidden>
+  <div class="box" role="dialog" aria-label="Buscar nas notas">
+    <div class="sq"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="findIn" placeholder="OS da Samsung, protocolo, nome…" autocomplete="off" spellcheck="false"></div>
+    <ul class="res" id="findRes" role="listbox"></ul>
+  </div>
+</div>
+
+<div class="overlay" id="cfg" hidden></div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script>
+(() => {
+'use strict';
+
+/* ─────────────── utilidades ─────────────── */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const h = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const norm = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+const pad = n => String(n).padStart(2, '0');
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const pymd = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+const hm = d => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+const toMin = s => { const [a, b] = s.split(':').map(Number); return a * 60 + b; };
+const now = () => new Date();
+const DOW = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+const DOWL = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
+const MON = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+const dm = s => { const d = pymd(s); return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}`; };
+const dayLabel = s => { const d = pymd(s); return `${DOW[d.getDay()]} ${pad(d.getDate())}/${pad(d.getMonth() + 1)}`; };
+const short = (s, n = 70) => { s = String(s).replace(/\s+/g, ' ').trim(); return s.length > n ? s.slice(0, n - 1).replace(/[\s,;:.—-]+\S*$/, '') + '…' : s; };
+const ICON = {
+  check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>',
+  x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+  lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg>',
+};
+
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch { } },
+  raw(k) { try { return localStorage.getItem(k); } catch { return null; } },
+  put(k, v) { try { localStorage.setItem(k, v); return true; } catch { return false; } },
+  del(k) { try { localStorage.removeItem(k); } catch { } },
+  keys() { try { return Object.keys(localStorage); } catch { return []; } },
+};
+const K = 'assessor.painel.';
+const cfg = Object.assign({ token: '', repo: 'diovanedm/meu-assessor-dados', branch: '', interval: 15, theme: 'auto', discreet: true }, LS.get(K + 'cfg', {}));
+const saveCfg = () => LS.set(K + 'cfg', cfg);
+const devHost = ['localhost', '127.0.0.1'].includes(location.hostname);
+const API = (devHost && new URLSearchParams(location.search).get('api')) || 'https://api.github.com';
+
+/* ─────────────── o que o painel sabe do repo ─────────────── */
+const AREAS = {
+  financas: { nome: 'Finanças', emoji: '💰' }, saude: { nome: 'Saúde', emoji: '💪' }, ingles: { nome: 'Inglês', emoji: '🗣️' },
+  trabalho: { nome: 'Trabalho', emoji: '💼' }, carreira: { nome: 'Carreira', emoji: '🚀' }, emocional: { nome: 'Emocional', emoji: '💭' },
+  'casa-familia': { nome: 'Casa e família', emoji: '🏡' }, cultura: { nome: 'Cultura', emoji: '📚' },
+};
+const AREA_ORDER = ['financas', 'saude', 'ingles', 'trabalho', 'carreira', 'emocional', 'casa-familia', 'cultura'];
+const SENS = new Set(['emocional', 'saude']);          // texto escondido no modo discreto
+const VEIL = new Set(['emocional', 'saude', 'financas']); // resumo embaçado no modo discreto
+const EXPEDIENTE = { 1: [8, 18], 2: [8, 18], 3: [8, 18], 4: [8, 18], 5: [8, 12] };
+const COMPRAS = 'areas/casa-familia/compras.md';
+const STATUS = { bem: 'bem', atencao: 'atenção', alerta: 'alerta', parado: 'parado' };
+const ROTULOS = {
+  financas: '💰 Finanças', agenda: '📅 Agenda', diario: '📓 Diário', emocional: '💭 Emocional', saude: '💪 Saúde', ingles: '🗣️ Inglês',
+  trabalho: '💼 Trabalho', carreira: '🚀 Carreira', 'casa-familia': '🏡 Casa e família', casa: '🏡 Casa', familia: '🏡 Família', cultura: '📚 Cultura',
+  documentos: '📄 Documentos', eu: '🙋 Você', compras: '🛒 Compras', pessoas: '👥 Pessoas', inbox: '📥 Inbox', tarefas: '✅ Tarefas',
+  caso: '📂 Caso', obsidian: '✏️ Você no Obsidian', vault: '✏️ Você no Obsidian',
+};
+const TECNICOS = new Set(['indice', 'repo', 'inicio', 'plugin', 'merge', 'ferramentas']);
+const TASK_RE = /^(\s*)- \[([ xX])\] (.*)$/;
+
+function areaKey(s) {
+  const n = norm(s).trim();
+  if (!n) return '';
+  if (AREAS[n]) return n;
+  if (n.startsWith('casa') || n.startsWith('famil')) return 'casa-familia';
+  for (const k in AREAS) if (norm(AREAS[k].nome) === n) return k;
+  return n;
+}
+const areaColor = a => AREAS[a] ? `var(--a-${a})` : 'var(--a-eu)';
+const incluir = p => p.endsWith('.md') && !/^(arquivo|_modelos|\.obsidian|\.trash|memoria)\//.test(p) && !['inicio.md', 'CLAUDE.md', 'README.md'].includes(p);
+
+/* ─────────────── estado ─────────────── */
+const S = {
+  head: null, etag: null, files: {}, commits: [], ours: new Set(),
+  tasks: [], compras: { secs: [], hoje: [] }, agenda: { series: [], events: [] }, habits: [], inbox: [], stems: {}, name: '',
+  opt: new Map(), optHabit: new Map(), optInbox: [], busyInbox: new Set(),
+  syncing: false, lastSync: 0, lastTry: 0, pending: 0, err: null, rateReset: 0,
+  wrote: {}, resync: false, tab: 'hoje', open: null, edit: null, reveal: new Set(), askWhy: null, compraOrigem: {}, minute: -1, day: '',
+};
+let queue = Promise.resolve();
+
+/* ─────────────── leitura das notas ─────────────── */
+function parseFile(path, sha, text) {
+  const fm = text.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/);
+  const meta = {};
+  let body = text;
+  if (fm) {
+    body = text.slice(fm[0].length);
+    for (const l of fm[1].split(/\r?\n/)) {
+      const m = l.match(/^([\w-]+):\s*(.*)$/);
+      if (!m) continue;
+      let v = m[2].trim();
+      if (v.startsWith('[') && v.endsWith(']')) v = v.slice(1, -1).split(',').map(x => x.trim().replace(/^["']|["']$/g, '')).filter(Boolean);
+      else v = v.replace(/^["']|["']$/g, '');
+      meta[m[1]] = v;
+    }
+  }
+  const stem = path.split('/').pop().replace(/\.md$/, '');
+  const tm = body.match(/^#\s+(.+)$/m);
+  const title = tm ? tm[1].trim() : stem;
+  let area = areaKey(meta.area || '');
+  const ma = path.match(/^areas\/([^/]+)\//);
+  if (ma && (!area || !AREAS[area])) area = ma[1];
+  if (!area) area = 'eu';
+  const sens = SENS.has(area) || path === 'eu/como-funciono.md';
+  const tasks = [];
+  const lines = text.split('\n');
+  let h2 = '', h3 = '', fence = false;
+  for (const l of lines) {
+    if (/^\s*```/.test(l)) { fence = !fence; continue; }
+    if (fence) continue;
+    let m;
+    if ((m = l.match(/^(#{2,3})\s+(.*)$/))) { if (m[1] === '##') { h2 = m[2].trim(); h3 = ''; } else h3 = m[2].trim(); continue; }
+    if ((m = l.match(TASK_RE))) tasks.push(mkTask(l, m, h2, h3));
+  }
+  return { path, sha, text, meta, body, stem, title, area, sens, tasks, _n: null };
+}
+function mkTask(raw, m, h2, h3) {
+  const r = m[3];
+  return {
+    raw, checked: m[2] !== ' ', h2, h3,
+    due: (r.match(/📅\s*(\d{4}-\d{2}-\d{2})/) || [])[1] || null,
+    done: (r.match(/✅\s*(\d{4}-\d{2}-\d{2})/) || [])[1] || null,
+    id: (r.match(/🆔\s*(\S+)/) || [])[1] || null,
+    prio: /⏫/.test(r) ? 'alta' : /🔽/.test(r) ? 'baixa' : null,
+    text: cleanTask(r),
+  };
+}
+const cleanTask = t => t.replace(/\s*📅\s*\d{4}-\d{2}-\d{2}/g, '').replace(/\s*✅\s*\d{4}-\d{2}-\d{2}/g, '').replace(/\s*🆔\s*\S+/g, '')
+  .replace(/\s*[⏫🔼🔽]️?/gu, '').replace(/\s*·\s*(pedido feito\s*)?\d{4}-\d{2}-\d{2}.*$/, '').trim();
+const taskCore = l => cleanTask(l.replace(TASK_RE, '$3'));
+
+function cells(l) { return l.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.trim()); }
+const isSep = l => /^\|\s*:?-{3,}/.test(l.trim());
+
+function parseAgenda(text) {
+  const series = [], events = [];
+  let sec = '';
+  const today = now();
+  for (const l of (text || '').split('\n')) {
+    const m = l.match(/^##\s+(.+)$/);
+    if (m) { sec = norm(m[1]); continue; }
+    if (!l.trim().startsWith('|') || isSep(l)) continue;
+    const c = cells(l);
+    if (sec.startsWith('series fixas') && c.length >= 3 && norm(c[0]) !== 'dia') {
+      const s = parseSerie(c, today);
+      if (s) series.push(s);
+    } else if (sec.startsWith('compromissos') && /^\d{4}-\d{2}-\d{2}/.test(c[0])) {
+      const tm = parseHora(c[1]);
+      events.push({ date: c[0].slice(0, 10), ...tm, name: c[2] || '', area: areaKey(c[3] || ''), areaTxt: c[3] || '', obs: c[4] || '' });
+    }
+  }
+  return { series, events };
+}
+function parseHora(s) {
+  const r = (s || '').match(/(\d{1,2}:\d{2})\s*[–-]\s*(\d{1,2}:\d{2})/);
+  if (r) return { start: pad5(r[1]), end: pad5(r[2]), allDay: false };
+  const one = (s || '').match(/(\d{1,2}:\d{2})/);
+  if (one) return { start: pad5(one[1]), end: pad5(minToHm(toMin(one[1]) + 30)), allDay: false };
+  return { start: null, end: null, allDay: true };
+}
+const pad5 = s => s.length === 4 ? '0' + s : s;
+const minToHm = m => `${pad(Math.floor(Math.min(m, 1439) / 60))}:${pad(Math.min(m, 1439) % 60)}`;
+function parseSerie(c, today) {
+  const spec = norm(c[0]);
+  const days = {};
+  const md = spec.match(/^dia (\d+)/);
+  if (md) days.mday = +md[1];
+  else {
+    const idx = { dom: 0, seg: 1, ter: 2, qua: 3, qui: 4, sex: 5, sab: 6 };
+    const set = new Set();
+    for (const part of spec.split(/\s+e\s+|,\s*/)) {
+      const r = part.split(/\s*[–-]\s*/).map(x => x.trim().slice(0, 3));
+      if (r.length === 2 && r[0] in idx && r[1] in idx) { let i = idx[r[0]]; for (let g = 0; g < 7; g++) { set.add(i); if (i === idx[r[1]]) break; i = (i + 1) % 7; } }
+      else if (r[0] in idx) set.add(idx[r[0]]);
+    }
+    if (!set.size) return null;
+    days.dows = set;
+  }
+  const tm = parseHora(c[1]);
+  let ev = c[2] || '';
+  let from = null;
+  const fm = ev.match(/,?\s*a partir de (\d{1,2})\/(\d{1,2})/i);
+  if (fm) {
+    let y = today.getFullYear();
+    let d = new Date(y, +fm[2] - 1, +fm[1]);
+    if (d < addDays(today, -180)) d = new Date(y + 1, +fm[2] - 1, +fm[1]);
+    from = ymd(d);
+    ev = ev.replace(fm[0], '').trim();
+  }
+  let area = '', name = ev;
+  const pm = ev.match(/^(.+?)\s+·\s+(.+)$/);
+  if (pm && areaKey(pm[1]) && AREAS[areaKey(pm[1])]) { area = areaKey(pm[1]); name = pm[2]; }
+  const until = ((c[3] || '').match(/^\d{4}-\d{2}-\d{2}/) || [])[0] || null;
+  return { days, ...tm, name, area, from, until, kind: 'serie' };
+}
+function seriesOn(dateStr) {
+  const d = pymd(dateStr);
+  return S.agenda.series.filter(s => {
+    if (s.from && dateStr < s.from) return false;
+    if (s.until && dateStr > s.until) return false;
+    return s.days.mday ? d.getDate() === s.days.mday : s.days.dows.has(d.getDay());
+  });
+}
+function parseHabits(text) {
+  const out = [];
+  for (const l of (text || '').split('\n')) {
+    if (!l.startsWith('|') || isSep(l)) continue;
+    const c = cells(l);
+    const dm = (c[0] || '').match(/^\d{4}-\d{2}-\d{2}/);
+    if (!dm) continue;
+    out.push({ raw: l, date: dm[0], oque: c[1] || '', area: areaKey(c[2] || ''), ok: (c[3] || '').includes('✅') ? true : (c[3] || '').includes('❌') ? false : null, motivo: c[4] || '' });
+  }
+  return out;
+}
+function parseInbox(f) {
+  if (!f) return [];
+  return f.body.split('\n').filter(l => /^- (?!\[)/.test(l)).map(raw => {
+    const m = raw.match(/^- (\d{4}-\d{2}-\d{2})(?:\s+(\d{1,2}:\d{2}))?\s*(?:—|-|:)?\s*(.*)$/);
+    return m ? { raw, date: m[1], time: m[2] || '', text: m[3] } : { raw, date: '', time: '', text: raw.slice(2) };
+  });
+}
+
+function reindex() {
+  S.stems = {};
+  for (const p in S.files) S.stems[S.files[p].stem.toLowerCase()] = p;
+  const groups = new Map();
+  for (const p in S.files) {
+    if (p === COMPRAS) continue;
+    const f = S.files[p];
+    for (const t of f.tasks) {
+      const key = t.id ? 'id:' + t.id : p + '\n' + t.raw;
+      let g = groups.get(key);
+      if (!g) { g = { key, text: t.text, due: t.due, done: t.done, prio: t.prio, checked: true, sens: false, area: f.area, members: [] }; groups.set(key, g); }
+      g.members.push({ path: p, raw: t.raw });
+      g.checked = g.checked && t.checked;
+      g.sens = g.sens || f.sens;
+      if (!g.due && t.due) g.due = t.due;
+      if (t.done && (!g.done || t.done > g.done)) g.done = t.done;
+    }
+  }
+  S.tasks = [...groups.values()];
+  const cf = S.files[COMPRAS];
+  const secs = [], hoje = [], today = ymd(now());
+  if (cf) {
+    for (const t of cf.tasks) {
+      if (norm(t.h2).startsWith('comprar') && !t.checked) {
+        let s = secs.find(x => x.name === t.h3);
+        if (!s) secs.push(s = { name: t.h3 || 'Outro', items: [] });
+        s.items.push(t);
+      } else if (t.checked && t.done === today) hoje.push(t);
+    }
+  }
+  S.compras = { secs, hoje, heads: cf ? [...cf.text.matchAll(/^###\s+(.+)$/gm)].map(m => m[1].trim()) : [] };
+  S.agenda = parseAgenda(S.files['agenda.md']?.text);
+  S.habits = parseHabits(S.files['eu/habitos.md']?.text);
+  S.inbox = parseInbox(S.files['inbox.md']);
+  S.name = S.files['eu/perfil.md']?.title || '';
+}
+
+/* ─────────────── GitHub ─────────────── */
+function erro(code, msg) { const e = new Error(msg || code); e.code = code; return e; }
+async function gh(path, { method = 'GET', body, etag } = {}) {
+  const headers = { Accept: 'application/vnd.github+json', Authorization: 'Bearer ' + cfg.token };
+  if (etag) headers['If-None-Match'] = etag;
+  if (body) headers['Content-Type'] = 'application/json';
+  let r;
+  try { r = await fetch(API + path, { method, headers, body: body ? JSON.stringify(body) : undefined, cache: 'no-store' }); }
+  catch { throw erro('offline'); }
+  if (r.status === 304) return { status: 304, ok: false };
+  let json = null;
+  try { json = await r.json(); } catch { }
+  if (r.status === 401) throw erro('token');
+  if ((r.status === 403 || r.status === 429) && r.headers.get('x-ratelimit-remaining') === '0') {
+    S.rateReset = (+r.headers.get('x-ratelimit-reset') || 0) * 1000;
+    throw erro('rate');
+  }
+  return { status: r.status, ok: r.ok, json, etag: r.headers.get('etag') };
+}
+const repoPath = p => p.split('/').map(encodeURIComponent).join('/');
+function b64dec(s) { const bin = atob(String(s).replace(/\s/g, '')); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return new TextDecoder().decode(u); }
+function b64enc(str) { const u = new TextEncoder().encode(str); let bin = ''; for (let i = 0; i < u.length; i += 0x8000) bin += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(bin); }
+async function getBlob(sha) {
+  const c = LS.raw(K + 'b.' + sha);
+  if (c != null) return c;
+  const r = await gh(`/repos/${cfg.repo}/git/blobs/${sha}`);
+  if (!r.ok) throw erro('http', 'blob ' + r.status);
+  const t = b64dec(r.json.content);
+  LS.put(K + 'b.' + sha, t);
+  return t;
+}
+async function pool(items, n, fn) {
+  let i = 0;
+  await Promise.all(Array.from({ length: Math.min(n, items.length) }, async () => { while (i < items.length) { const it = items[i++]; await fn(it); } }));
+}
+function saveSnap() {
+  const files = {};
+  for (const p in S.files) files[p] = S.files[p].sha;
+  LS.set(K + 'snap', { repo: cfg.repo, head: S.head, files, commits: S.commits.slice(0, 20) });
+}
+function loadSnap() {
+  const s = LS.get(K + 'snap', null);
+  if (!s || s.repo !== cfg.repo) return false;
+  for (const p in s.files) { const t = LS.raw(K + 'b.' + s.files[p]); if (t != null) S.files[p] = parseFile(p, s.files[p], t); }
+  S.head = s.head; S.commits = s.commits || [];
+  return Object.keys(S.files).length > 0;
+}
+function gcBlobs() {
+  const keep = new Set(Object.values(S.files).map(f => K + 'b.' + f.sha));
+  for (const k of LS.keys()) if (k.startsWith(K + 'b.') && !keep.has(k)) LS.del(k);
+}
+
+async function sync(force = false) {
+  if (S.syncing || !cfg.token) return;
+  S.syncing = true; S.lastTry = Date.now(); setLive();
+  const t0 = Date.now();
+  const done = () => { S.err = null; S.lastSync = Date.now(); };
+  try {
+    if (!cfg.branch) {
+      const r = await gh(`/repos/${cfg.repo}`);
+      if (r.status === 404) throw erro('notfound');
+      if (!r.ok) throw erro('http', 'repo ' + r.status);
+      cfg.branch = r.json.default_branch || 'main'; saveCfg();
+    }
+    const ref = await gh(`/repos/${cfg.repo}/git/ref/heads/${encodeURIComponent(cfg.branch)}`, { etag: force ? null : S.etag });
+    if (ref.status === 304) { done(); return; }
+    if (ref.status === 404) throw erro('notfound');
+    if (!ref.ok) throw erro('http', 'ref ' + ref.status);
+    S.etag = ref.etag;
+    const sha = ref.json.object.sha;
+    if (sha === S.head && !force && Object.keys(S.files).length) { done(); return; }
+    const tr = await gh(`/repos/${cfg.repo}/git/trees/${sha}?recursive=1`);
+    if (!tr.ok) throw erro('http', 'tree ' + tr.status);
+    const next = {};
+    for (const e of tr.json.tree) if (e.type === 'blob' && incluir(e.path)) next[e.path] = e.sha;
+    const fresh = p => (S.wrote[p] || 0) >= t0;
+    const changed = Object.keys(next).filter(p => (!S.files[p] || S.files[p].sha !== next[p]) && !fresh(p));
+    const removed = Object.keys(S.files).filter(p => !(p in next) && !fresh(p));
+    await pool(changed, 6, async p => { S.files[p] = parseFile(p, next[p], await getBlob(next[p])); });
+    for (const p of removed) delete S.files[p];
+    const prev = S.head;
+    S.head = sha;
+    const cm = await gh(`/repos/${cfg.repo}/commits?sha=${encodeURIComponent(cfg.branch)}&per_page=20`);
+    if (cm.ok && Array.isArray(cm.json)) S.commits = cm.json.map(c => ({ sha: c.sha, msg: c.commit.message, date: c.commit.author?.date || c.commit.committer?.date }));
+    reindex(); saveSnap();
+    if (changed.length || removed.length) gcBlobs();
+    done();
+    render();
+    if (prev && prev !== sha) announce(prev, [...changed, ...removed]);
+  } catch (e) {
+    S.err = e.code || 'http';
+    if (e.code === 'token') { showSetup('O GitHub recusou o token. Gere outro e cole aqui.'); }
+    else if (e.code === 'notfound') { showSetup('Não achei o repositório com esse token. Confira o nome e se o token tem acesso a ele.'); }
+  } finally {
+    S.syncing = false; setLive();
+    if (S.resync) { S.resync = false; setTimeout(() => sync(), 300); }
+  }
+}
+
+/* ─────────────── gravação ─────────────── */
+function prefixo(p) {
+  if (p === 'inbox.md') return 'inbox';
+  if (p === 'tarefas.md') return 'tarefas';
+  if (p === 'agenda.md') return 'agenda';
+  if (p === COMPRAS) return 'compras';
+  if (p.startsWith('casos/')) return p.slice(6).replace(/\.md$/, '');
+  const a = p.match(/^areas\/([^/]+)\//); if (a) return a[1];
+  for (const d of ['pessoas', 'diario', 'documentos', 'eu']) if (p.startsWith(d + '/')) return d;
+  return 'notas';
+}
+function commitMsg(path, txt) {
+  const f = S.files[path];
+  if (f && f.sens) return `${f.area === 'eu' ? 'eu' : f.area}: registro atualizado`;
+  return `${prefixo(path)}: ${txt}`;
+}
+function carimbar(text) {
+  if (!/^---\r?\n/.test(text)) return text;
+  const end = text.indexOf('\n---', 4);
+  if (end < 0) return text;
+  const fm = text.slice(0, end);
+  if (!/^atualizado:/m.test(fm)) return text;
+  return fm.replace(/^atualizado:.*$/m, 'atualizado: ' + ymd(now())) + text.slice(end);
+}
+function write(path, transform, message, { onOk, onErr } = {}) {
+  S.pending++; setLive();
+  const job = queue.then(() => doWrite(path, transform, message))
+    .then(r => { onOk && onOk(r); }, e => { onErr ? onErr(e) : toastErr(e); })
+    .finally(() => { S.pending--; setLive(); render(); });
+  queue = job.catch(() => { });
+  return job;
+}
+async function doWrite(path, transform, message) {
+  const f = S.files[path];
+  let base = f ? f.text : null, sha = f ? f.sha : undefined;
+  for (let i = 0; i < 3; i++) {
+    let out = transform(base);
+    if (out == null) throw erro('sumiu');
+    out = carimbar(out);
+    const body = { message: message + '\n\nvia painel', content: b64enc(out), branch: cfg.branch };
+    if (sha) body.sha = sha;
+    const r = await gh(`/repos/${cfg.repo}/contents/${repoPath(path)}`, { method: 'PUT', body });
+    if (r.ok) {
+      const nsha = r.json.content.sha;
+      LS.put(K + 'b.' + nsha, out);
+      S.files[path] = parseFile(path, nsha, out);
+      S.ours.add(r.json.commit.sha);
+      S.wrote[path] = Date.now();
+      if (S.syncing) S.resync = true;
+      reindex(); saveSnap();
+      setTimeout(() => sync(), 600);
+      return r.json;
+    }
+    if (r.status === 409 || r.status === 422) {
+      const g = await gh(`/repos/${cfg.repo}/contents/${repoPath(path)}?ref=${encodeURIComponent(cfg.branch)}`);
+      if (g.status === 404) { base = null; sha = undefined; continue; }
+      if (!g.ok) throw erro('http', 'contents ' + g.status);
+      base = b64dec(g.json.content); sha = g.json.sha;
+      continue;
+    }
+    if (r.status === 403 || r.status === 404) throw erro('perm');
+    throw erro('http', 'put ' + r.status);
+  }
+  throw erro('conflito');
+}
+const MSGS = {
+  offline: 'Sem conexão. Nada foi gravado; tente de novo quando a internet voltar.',
+  perm: 'O token não tem permissão de escrita. Gere um com "Contents: Read and write".',
+  sumiu: 'A linha mudou no GitHub antes de eu gravar. Recarreguei; confira e tente de novo.',
+  conflito: 'O arquivo mudou várias vezes seguidas no GitHub. Tente de novo em instantes.',
+  rate: 'Limite de chamadas do GitHub atingido. Tente de novo em alguns minutos.',
+  token: 'O GitHub recusou o token.',
+  mudou: 'A nota mudou no GitHub enquanto você editava.',
+};
+function toastErr(e, pre) { toast((pre ? pre + '. ' : '') + (MSGS[e.code] || 'O GitHub respondeu com erro (' + (e.message || 'desconhecido') + ').'), { err: true }); sync(true); }
+
+function setLine(path, raw, fn) {
+  return base => {
+    if (base == null) return null;
+    const lines = base.split('\n');
+    let i = lines.indexOf(raw);
+    if (i < 0 && TASK_RE.test(raw)) { const core = taskCore(raw); i = lines.findIndex(l => TASK_RE.test(l) && taskCore(l) === core); }
+    if (i < 0) return null;
+    const r = fn(lines, i);
+    return r === null ? null : lines.join('\n');
+  };
+}
+const checkLine = (l, d) => l.replace(/^(\s*- )\[ \]/, '$1[x]').replace(/\s*✅\s*\d{4}-\d{2}-\d{2}/, '').replace(/\s+$/, '') + ' ✅ ' + d;
+const uncheckLine = l => l.replace(/^(\s*- )\[[xX]\]/, '$1[ ]').replace(/\s*✅\s*\d{4}-\d{2}-\d{2}/, '');
+function insertInSection(lines, hIdx, item) {
+  const lvl = lines[hIdx].match(/^#+/)[0].length;
+  let end = hIdx + 1;
+  while (end < lines.length && !(/^#{1,6}\s/.test(lines[end]) && lines[end].match(/^#+/)[0].length <= lvl)) end++;
+  let last = end - 1;
+  while (last > hIdx && lines[last].trim() === '') last--;
+  if (last === hIdx) {
+    const at = lines[hIdx + 1] === '' ? hIdx + 2 : hIdx + 1;
+    const ins = lines[hIdx + 1] === '' ? [item] : ['', item];
+    if (at < lines.length && lines[at].trim() !== '') ins.push('');
+    lines.splice(at, 0, ...ins);
+  } else if (/^\s*- /.test(lines[last])) lines.splice(last + 1, 0, item);
+  else lines.splice(last + 1, 0, '', item);
+}
+
+function toggleTask(key, check) {
+  const g = S.tasks.find(t => t.key === key);
+  if (!g) return;
+  S.opt.set(key, check); render();
+  const d = ymd(now());
+  let left = g.members.length, failed = false;
+  for (const m of g.members) {
+    write(m.path, setLine(m.path, m.raw, (ls, i) => { ls[i] = check ? checkLine(ls[i], d) : uncheckLine(ls[i]); }),
+      commitMsg(m.path, `${check ? 'feito' : 'reaberta'} — ${short(g.text, 60)}`),
+      {
+        onOk() { if (--left === 0) { S.opt.delete(key); if (!failed) toast(check ? 'Tarefa marcada como feita no GitHub.' : 'Tarefa reaberta no GitHub.', { undo: () => toggleTask(groupKeyAfter(g, !check), !check) }); } },
+        onErr(e) { failed = true; if (--left === 0) S.opt.delete(key); toastErr(e, 'Não marquei a tarefa'); },
+      });
+  }
+}
+function groupKeyAfter(g, checked) {
+  if (g.key.startsWith('id:')) return g.key;
+  const m = g.members[0];
+  const raw = checked ? uncheckLine(m.raw) : m.raw;
+  const f = S.files[m.path];
+  const t = f && f.tasks.find(t => taskCore(t.raw) === taskCore(raw));
+  return t ? m.path + '\n' + t.raw : g.key;
+}
+function toggleCompra(raw, check, h3) {
+  const d = ymd(now());
+  const key = 'c:' + raw;
+  S.opt.set(key, check); render();
+  const txt = cleanTask(raw.replace(TASK_RE, '$3'));
+  const tf = check
+    ? setLine(COMPRAS, raw, ls => {
+      const i = ls.indexOf(raw); ls.splice(i, 1);
+      S.compraOrigem[txt] = h3;
+      const item = `- [x] ${txt} ✅ ${d}`;
+      const j = ls.findIndex(l => /^##\s+Comprados/.test(l));
+      if (j < 0) { ls.push('', '## Comprados', '', item); return; }
+      let k = j + 1; while (k < ls.length && ls[k].trim() === '') k++;
+      if (k >= ls.length || /^#/.test(ls[k])) { ls.splice(j + 1, 0, '', item); } else ls.splice(k, 0, item);
+    })
+    : setLine(COMPRAS, raw, ls => {
+      const i = ls.indexOf(raw); ls.splice(i, 1);
+      const sec = S.compraOrigem[txt] || 'Outro';
+      let hIdx = ls.findIndex(l => l.trim() === '### ' + sec);
+      if (hIdx < 0) hIdx = ls.findIndex(l => /^###\s+/.test(l));
+      const item = `- [ ] ${txt} · ${d}`;
+      if (hIdx < 0) ls.push(item); else insertInSection(ls, hIdx, item);
+    });
+  write(COMPRAS, tf, `compras: ${check ? 'comprado' : 'volta pra lista'} — ${short(txt, 50)}`, {
+    onOk() { S.opt.delete(key); },
+    onErr(e) { S.opt.delete(key); toastErr(e, 'Não atualizei a lista'); },
+  });
+}
+function addCompra(txt, sec) {
+  const d = ymd(now());
+  write(COMPRAS, base => {
+    if (base == null) return null;
+    const ls = base.split('\n');
+    let hIdx = ls.findIndex(l => l.trim() === '### ' + sec);
+    const item = `- [ ] ${txt} · ${d}`;
+    if (hIdx < 0) { const c = ls.findIndex(l => /^##\s+Comprar/.test(l)); if (c < 0) return null; insertInSection(ls, c, item); }
+    else insertInSection(ls, hIdx, item);
+    return ls.join('\n');
+  }, `compras: ${short(txt, 60)}`, { onOk() { toast('Entrou na lista de compras.'); } });
+}
+function addTask(txt, due) {
+  const line = `- [ ] ${txt}${due ? ' 📅 ' + due : ''}`;
+  write('tarefas.md', base => {
+    if (base == null) return `# Tarefas\n\n## Soltas (sem caso nem área)\n\n${line}\n`;
+    const ls = base.split('\n');
+    const hIdx = ls.findIndex(l => /^##\s+Soltas/.test(l));
+    if (hIdx < 0) { ls.push('', '## Soltas (sem caso nem área)', '', line); } else insertInSection(ls, hIdx, line);
+    return ls.join('\n');
+  }, `tarefas: nova — ${short(txt, 60)}`, { onOk() { toast('Tarefa nova salva em tarefas.md.'); } });
+}
+function addInbox(txt) {
+  const n = now();
+  const item = `- ${ymd(n)} ${hm(n)} — ${txt}`;
+  S.optInbox.unshift(item); render();
+  write('inbox.md', base => {
+    if (base == null) return `# Inbox\n\n${item}\n`;
+    const t = base.replace(/\s+$/, '');
+    const last = t.split('\n').pop();
+    return t + (/^- /.test(last) ? '\n' : '\n\n') + item + '\n';
+  }, `inbox: ${short(txt, 60)}`, {
+    onOk() { S.optInbox = S.optInbox.filter(x => x !== item); toast('Anotado no inbox.'); },
+    onErr(e) { S.optInbox = S.optInbox.filter(x => x !== item); $('#capTxt').value = $('#capTxt').value || txt; toastErr(e, 'Não anotei'); },
+  });
+}
+function delInbox(raw) {
+  S.busyInbox.add(raw); render();
+  write('inbox.md', setLine('inbox.md', raw, (ls, i) => {
+    ls.splice(i, 1);
+    if (ls[i] === '' && ls[i - 1] === '') ls.splice(i, 1);
+  }), 'inbox: item resolvido', {
+    onOk() { S.busyInbox.delete(raw); },
+    onErr(e) { S.busyInbox.delete(raw); toastErr(e, 'Não tirei do inbox'); },
+  });
+}
+const habitKey = b => `${ymd(now())}|${b.area}|${b.start}|${b.name}`;
+const kw = s => norm(s).replace(/^[^a-z0-9]+/, '').split(/[\s,·(—-]+/)[0];
+function habitRecord(b, date) {
+  const k = kw(b.name);
+  return S.habits.find(r => r.date === date && r.area === b.area && norm(r.oque).includes(k));
+}
+function markHabit(b, ok, motivo) {
+  const d = ymd(now());
+  const row = `| ${d} | ${b.name} (${b.start.replace(':', 'h')}) | ${b.area} | ${ok ? '✅' : '❌'} | ${(motivo || '').replace(/\|/g, '/').trim() || '—'} |`;
+  const key = habitKey(b);
+  S.optHabit.set(key, { ok }); S.askWhy = null; render();
+  const sens = SENS.has(b.area);
+  write('eu/habitos.md', base => {
+    if (base == null) return null;
+    const ls = base.split('\n');
+    const hd = ls.findIndex(l => /^\|\s*data\s*\|/i.test(l));
+    if (hd < 0) return null;
+    let k = hd + 2; while (k < ls.length && ls[k].startsWith('|')) k++;
+    ls.splice(k, 0, row);
+    return ls.join('\n');
+  }, sens ? `${b.area}: registro atualizado` : `${b.area}: ${b.name} ${ok ? 'feito' : 'não feito'}`, {
+    onOk() { S.optHabit.delete(key); },
+    onErr(e) { S.optHabit.delete(key); toastErr(e, 'Não registrei'); },
+  });
+}
+function undoHabit(rec, b) {
+  const key = habitKey(b);
+  S.optHabit.set(key, { ok: null }); render();
+  write('eu/habitos.md', setLine('eu/habitos.md', rec.raw, (ls, i) => { ls.splice(i, 1); }),
+    SENS.has(b.area) ? `${b.area}: registro atualizado` : `${b.area}: desfaz registro de ${b.name}`, {
+    onOk() { S.optHabit.delete(key); },
+    onErr(e) { S.optHabit.delete(key); toastErr(e, 'Não desfiz'); },
+  });
+}
+
+/* ─────────────── markdown → HTML ─────────────── */
+function wl(stem, alias) {
+  const p = S.stems[String(stem).trim().toLowerCase()];
+  const label = alias || (p ? S.files[p].title : stem);
+  return p ? `<a href="#" class="wl" data-open="${h(p)}">${label}</a>` : `<span class="wlx">${label}</span>`;
+}
+function inline(t) {
+  let s = h(t);
+  const codes = [];
+  s = s.replace(/`([^`]+)`/g, (_, c) => { codes.push(c); return `\u0000${codes.length - 1}\u0000`; });
+  s = s.replace(/\[\[([^\]|#]+)(#[^\]|]*)?(?:\|([^\]]+))?\]\]/g, (_, st, _h, al) => wl(st, al));
+  s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (_, tx, u) => `<a href="${u}" target="_blank" rel="noopener noreferrer">${tx}</a>`);
+  s = s.replace(/(^|[\s(])(https?:\/\/[^\s<)]+)/g, (_, pre, u) => `${pre}<a href="${u}" target="_blank" rel="noopener noreferrer">${u.replace(/^https?:\/\/(www\.)?/, '').slice(0, 42)}${u.length > 52 ? '…' : ''}</a>`);
+  s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/(^|[^*\w])\*([^*\s][^*]*?)\*(?!\w)/g, '$1<em>$2</em>');
+  return s.replace(/\u0000(\d+)\u0000/g, (_, i) => `<code>${codes[i]}</code>`);
+}
+const plain = t => String(t || '').replace(/\[\[([^\]|#]+)(?:#[^\]|]*)?(?:\|([^\]]+))?\]\]/g, (_, st, al) => al || (S.stems[st.toLowerCase()] ? S.files[S.stems[st.toLowerCase()]].title : st)).replace(/\*\*/g, '').replace(/`/g, '');
+
+let mdTasks = [];
+function md(src, path) {
+  const L = src.split('\n');
+  let out = '', i = 0, para = [];
+  const flush = () => { if (para.length) { out += `<p>${inline(para.join(' '))}</p>`; para = []; } };
+  while (i < L.length) {
+    const l = L[i];
+    if (/^\s*```/.test(l)) {
+      flush(); const buf = []; i++;
+      while (i < L.length && !/^\s*```/.test(L[i])) buf.push(L[i++]);
+      i++; out += `<pre><code>${h(buf.join('\n'))}</code></pre>`; continue;
+    }
+    let m;
+    if ((m = l.match(/^(#{1,6})\s+(.*)$/))) { flush(); const n = Math.min(m[1].length, 4); out += `<h${n}>${inline(m[2])}</h${n}>`; i++; continue; }
+    if (/^\s*(-{3,}|\*{3,})\s*$/.test(l)) { flush(); out += '<hr>'; i++; continue; }
+    if (l.trim().startsWith('|') && L[i + 1] && isSep(L[i + 1])) {
+      flush();
+      const head = cells(l); i += 2; const rows = [];
+      while (i < L.length && L[i].trim().startsWith('|')) rows.push(cells(L[i++]));
+      out += `<div class="tbl"><table><thead><tr>${head.map(c => `<th>${inline(c)}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr>${r.map(c => `<td${c.length <= 24 && !/\s\S+\s\S+\s/.test(c) ? ' class="nw"' : ''}>${inline(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+      continue;
+    }
+    if (/^>/.test(l)) {
+      flush(); const buf = [];
+      while (i < L.length && /^>/.test(L[i])) buf.push(L[i++].replace(/^>\s?/, ''));
+      const co = buf[0] && buf[0].match(/^\[!(\w+)\]([-+]?)\s*(.*)$/);
+      if (co) { const inner = md(buf.slice(1).join('\n'), path); out += co[2] === '-' ? `<details><summary>${inline(co[3] || co[1])}</summary>${inner}</details>` : `<details open><summary>${inline(co[3] || co[1])}</summary>${inner}</details>`; }
+      else out += `<blockquote>${md(buf.join('\n'), path)}</blockquote>`;
+      continue;
+    }
+    if (/^\s*([-*+]|\d+\.)\s+/.test(l)) {
+      flush();
+      const items = [];
+      while (i < L.length && (/^\s*([-*+]|\d+\.)\s+/.test(L[i]) || (/^\s{2,}\S/.test(L[i]) && items.length))) {
+        const x = L[i];
+        if (/^\s*([-*+]|\d+\.)\s+/.test(x)) items.push({ ind: x.match(/^\s*/)[0].length, raw: x, ol: /^\s*\d+\./.test(x) });
+        else items[items.length - 1].cont = (items[items.length - 1].cont || '') + ' ' + x.trim();
+        i++;
+      }
+      out += renderList(items, path);
+      continue;
+    }
+    if (!l.trim()) { flush(); i++; continue; }
+    para.push(l.trim()); i++;
+  }
+  flush();
+  return out;
+}
+function renderList(items, path) {
+  let html = '', stack = [];
+  const open = (ol, ind) => { stack.push({ ol, ind }); html += ol ? '<ol>' : '<ul>'; };
+  const close = () => { const s = stack.pop(); html += s.ol ? '</ol>' : '</ul>'; };
+  for (const it of items) {
+    while (stack.length && it.ind < stack[stack.length - 1].ind) close();
+    if (!stack.length || it.ind > stack[stack.length - 1].ind) open(it.ol, it.ind);
+    const tm = it.raw.match(TASK_RE);
+    if (tm) {
+      const done = tm[2] !== ' ';
+      const idx = mdTasks.push({ path, raw: it.raw }) - 1;
+      const tid = (tm[3].match(/🆔\s*(\S+)/) || [])[1];
+      const key = tid ? 'id:' + tid : path + '\n' + it.raw;
+      const st = S.opt.has(key) ? S.opt.get(key) : done;
+      const shown = tm[3].replace(/\s*🆔\s*\S+/g, '');
+      html += `<li class="tk${st ? ' done' : ''}"><button class="chk" role="checkbox" aria-checked="${st}" data-mdt="${idx}" aria-label="${st ? 'Reabrir' : 'Marcar como feita'}">${ICON.check}</button><span>${inline(shown + (it.cont || ''))}</span></li>`;
+    } else {
+      html += `<li>${inline(it.raw.replace(/^\s*([-*+]|\d+\.)\s+/, '') + (it.cont || ''))}</li>`;
+    }
+  }
+  while (stack.length) close();
+  return html;
+}
+
+/* ─────────────── desenho ─────────────── */
+function render() {
+  if ($('#app').hidden) return;
+  document.body.classList.toggle('discreet', !!cfg.discreet);
+  $('#eye').setAttribute('aria-pressed', String(!cfg.discreet));
+  $('#eyeSlash').style.display = cfg.discreet ? '' : 'none';
+  renderDay(); renderTasks(); renderInbox(); renderRhythm(); renderFeed(); renderAreas(); renderCases();
+  if (S.open && !S.edit) renderDrawer();
+}
+
+function todayItems() {
+  const d = ymd(now());
+  const items = [];
+  for (const s of seriesOn(d)) items.push({ ...s, kind: 'serie' });
+  for (const e of S.agenda.events) if (e.date === d) items.push({ ...e, kind: 'evento' });
+  return items.sort((a, b) => (a.allDay ? -1 : 0) - (b.allDay ? -1 : 0) || (a.start || '').localeCompare(b.start || ''));
+}
+function itemName(it) {
+  if (it.kind === 'serie') return it.name;
+  if (cfg.discreet && (SENS.has(it.area) || /🧠/.test(it.name))) return `Compromisso de ${AREAS[it.area]?.nome?.toLowerCase() || 'saúde'}`;
+  return it.name;
+}
+function relMin(m) {
+  if (m < 1) return 'agora';
+  if (m < 60) return `daqui a ${Math.round(m)} min`;
+  const hh = Math.floor(m / 60), mm = Math.round(m % 60);
+  return mm >= 10 && hh < 3 ? `daqui a ${hh} h ${mm}` : `daqui a ${Math.round(m / 60)} h`;
+}
+function renderDay() {
+  const n = now(), d = ymd(n), nm = n.getHours() * 60 + n.getMinutes();
+  S.minute = nm; S.day = d;
+  $('#dialDate').textContent = `${DOWL[n.getDay()]}, ${n.getDate()} ${MON[n.getMonth()]}`;
+  const hr = n.getHours();
+  const sauda = hr < 5 ? 'Boa noite' : hr < 12 ? 'Bom dia' : hr < 18 ? 'Boa tarde' : 'Boa noite';
+  $('#greet').textContent = S.name ? `${sauda}, ${S.name}.` : `${sauda}.`;
+  const items = todayItems();
+  const timed = items.filter(i => !i.allDay);
+  $('#dial').innerHTML = dialSvg(timed, nm, n.getDay());
+
+  const open = S.tasks.filter(t => !isChecked(t));
+  const late = open.filter(t => t.due && t.due < d).length;
+  const tod = open.filter(t => t.due === d).length;
+  const parts = [];
+  if (late) parts.push(`<b class="late">${late} ${late > 1 ? 'atrasadas' : 'atrasada'}</b>`);
+  if (tod) parts.push(`<b>${tod} pra hoje</b>`);
+  $('#summary').innerHTML = !Object.keys(S.files).length ? 'Carregando suas notas…' : parts.length ? `Tarefas: ${parts.join(' e ')}.` : 'Nenhuma tarefa vencendo hoje.';
+
+  const cur = timed.find(i => toMin(i.start) <= nm && nm < toMin(i.end));
+  const nxt = timed.find(i => toMin(i.start) > nm);
+  const nx = $('#next');
+  if (cur || nxt) {
+    nx.hidden = false;
+    nx.innerHTML = [
+      cur ? `<div><span class="k">Agora</span> <b>${emo(cur)} ${h(itemName(cur))}</b> até ${cur.end}</div>` : '',
+      nxt ? `<div><span class="k">Depois</span> <b>${emo(nxt)} ${h(itemName(nxt))}</b> às ${nxt.start}, ${relMin(toMin(nxt.start) - nm)}</div>` : '',
+    ].join('');
+    nx.style.flexDirection = 'column'; nx.style.gap = '4px';
+  } else nx.hidden = true;
+
+  let html = '', placed = false;
+  for (const it of items) {
+    const st = it.allDay ? null : toMin(it.start), en = it.allDay ? null : toMin(it.end);
+    if (!it.allDay && !placed && st > nm) { html += `<li class="nowline"><span>${hm(n)}</span></li>`; placed = true; }
+    const cls = it.allDay ? '' : en <= nm ? 'past' : st <= nm ? 'cur' : '';
+    let act = '';
+    if (it.kind === 'serie' && it.area && !it.allDay && st <= nm) {
+      const key = habitKey(it), o = S.optHabit.get(key), rec = habitRecord(it, d);
+      const state = o ? o.ok : rec ? rec.ok : undefined;
+      if (state === true || state === false) act = `<button class="chip ${state ? 'ok' : 'no'}" data-undo="${h(key)}" title="Desfazer">${state ? 'feito' : 'não feito'}</button>`;
+      else if (S.askWhy === key) act = '';
+      else act = `<div class="hb"><button data-hab="${h(key)}" data-ok="1" aria-label="Fiz: ${h(it.name)}">${ICON.check}</button><button data-hab="${h(key)}" data-ok="0" aria-label="Não fiz: ${h(it.name)}">${ICON.x}</button></div>`;
+    }
+    html += `<li class="${cls}" style="--c:${areaColor(it.area)}"><span class="t">${it.allDay ? 'dia todo' : it.start}${it.allDay ? '' : `<small>${it.end}</small>`}</span><span class="n"><span class="sw"></span><span>${emo(it)} ${h(itemName(it))}</span></span>${act}`;
+    if (S.askWhy === habitKey(it) && it.kind === 'serie') html += `<form class="why" data-why="${h(habitKey(it))}"><input placeholder="Por quê? (opcional)" aria-label="Motivo"><button class="btn" type="submit">Registrar</button><button class="btn ghost" type="button" data-cancel>Cancelar</button></form>`;
+    html += '</li>';
+  }
+  if (!placed && items.some(i => !i.allDay)) html += `<li class="nowline"><span>${hm(n)}</span></li>`;
+  $('#today').innerHTML = html || `<li><span></span><span class="muted">Nada marcado pra hoje.</span></li>`;
+  S._todayIdx = Object.fromEntries(items.filter(i => i.kind === 'serie').map(i => [habitKey(i), i]));
+  if (S.askWhy) { const inp = $(`form[data-why] input`); if (inp && document.activeElement?.tagName !== 'INPUT') inp.focus(); }
+
+  const wk = [];
+  for (let k = 1; k <= 7; k++) {
+    const dd = ymd(addDays(n, k));
+    for (const e of S.agenda.events.filter(e => e.date === dd).sort((a, b) => (a.start || '').localeCompare(b.start || ''))) wk.push(e);
+  }
+  $('#week').innerHTML = wk.length ? wk.map(e => `<li><span class="d">${dayLabel(e.date)}</span><span class="h">${e.allDay ? 'dia' : e.start}</span><span>${emo(e)} ${h(itemName(e))}</span></li>`).join('') : '<li><span class="muted" style="grid-column:1/-1">Nada marcado nos próximos dias.</span></li>';
+}
+const emo = it => AREAS[it.area]?.emoji || '•';
+
+function dialSvg(items, nm, dow) {
+  const C = 180, Rt = 160, Rb = 147, lanes = [131, 118, 105];
+  const ang = m => (m / 1440) * Math.PI * 2 - Math.PI / 2;
+  const pt = (r, m) => [C + r * Math.cos(ang(m)), C + r * Math.sin(ang(m))];
+  const arc = (r, a, b) => {
+    b = Math.min(b, a + 1439.5);
+    const [x1, y1] = pt(r, a), [x2, y2] = pt(r, b);
+    return `M${x1.toFixed(2)} ${y1.toFixed(2)}A${r} ${r} 0 ${b - a > 720 ? 1 : 0} 1 ${x2.toFixed(2)} ${y2.toFixed(2)}`;
+  };
+  let s = '';
+  for (let hh = 0; hh < 24; hh++) {
+    const mj = hh % 6 === 0, [x1, y1] = pt(mj ? Rt - 6 : Rt - 2.5, hh * 60), [x2, y2] = pt(Rt + 3, hh * 60);
+    s += `<line class="tk${mj ? ' mj' : ''}" x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"/>`;
+    if (mj) { const [lx, ly] = pt(Rt + 14, hh * 60); s += `<text class="hl" x="${lx.toFixed(1)}" y="${ly.toFixed(1)}">${hh}h</text>`; }
+  }
+  s += `<circle class="trk" cx="${C}" cy="${C}" r="${Rb}"/>`;
+  const ex = EXPEDIENTE[dow];
+  if (ex) s += `<path class="exp" d="${arc(Rb + 6, ex[0] * 60, ex[1] * 60)}"><title>Expediente</title></path>`;
+  s += `<path class="elp" d="${arc(Rb, 0, Math.max(nm, 2))}"/>`;
+  const laneEnd = [-1, -1, -1];
+  for (const it of items) {
+    const a = toMin(it.start), b = Math.max(toMin(it.end), a + 6);
+    let ln = laneEnd.findIndex(e => e <= a);
+    if (ln < 0) ln = laneEnd.indexOf(Math.min(...laneEnd));
+    laneEnd[ln] = b;
+    const cls = b <= nm ? 'past' : a <= nm ? 'cur' : '';
+    s += `<path class="ev ${cls}" stroke="${areaColor(it.area)}" d="${arc(lanes[ln], a + 2, b - 2)}"><title>${h(`${it.start}–${it.end} ${itemName(it)}`)}</title></path>`;
+  }
+  const [ix, iy] = pt(lanes[2] - 12, nm), [ox, oy] = pt(Rt + 3, nm), [nx, ny] = pt(Rb, nm);
+  s += `<line class="hand" x1="${ix.toFixed(1)}" y1="${iy.toFixed(1)}" x2="${ox.toFixed(1)}" y2="${oy.toFixed(1)}"/>`;
+  s += `<circle class="halo" cx="${nx.toFixed(1)}" cy="${ny.toFixed(1)}" r="6"/><circle class="now" cx="${nx.toFixed(1)}" cy="${ny.toFixed(1)}" r="5.5"/>`;
+  return s;
+}
+
+const isChecked = g => S.opt.has(g.key) ? S.opt.get(g.key) : g.checked;
+const byDue = (a, b) => (a.due || '9').localeCompare(b.due || '9') || (b.prio === 'alta') - (a.prio === 'alta');
+function buckets() {
+  const d = ymd(now());
+  const open = S.tasks.filter(g => !isChecked(g));
+  return {
+    hoje: [...open.filter(g => g.due && g.due <= d).sort(byDue), ...S.tasks.filter(g => isChecked(g) && (g.done === d || S.opt.get(g.key) === true))],
+    proximas: open.filter(g => g.due && g.due > d).sort(byDue),
+    semdata: open.filter(g => !g.due),
+  };
+}
+function dueTxt(due) {
+  const d = ymd(now());
+  if (due < d) return `<span class="due late">atrasada desde ${dm(due)}</span>`;
+  if (due === d) return `<span class="due today">hoje</span>`;
+  if (due === ymd(addDays(now(), 1))) return `<span class="due">amanhã</span>`;
+  return `<span class="due">${dayLabel(due)}</span>`;
+}
+function srcLink(path) {
+  const f = S.files[path]; if (!f) return '';
+  return `<a href="#" data-open="${h(path)}">${h(short(plain(f.title), 40))}</a>`;
+}
+function taskLi(g) {
+  const ch = isChecked(g);
+  const busy = S.opt.has(g.key);
+  const meta = [];
+  if (g.due && !ch) meta.push(dueTxt(g.due));
+  if (g.prio === 'alta' && !ch) meta.push('<span class="prio">prioridade alta</span>');
+  const seen = new Set();
+  for (const m of g.members) if (!seen.has(m.path) && m.path !== 'tarefas.md') { seen.add(m.path); meta.push(srcLink(m.path)); }
+  return `<li class="task${ch ? ' done' : ''}${busy ? ' busy' : ''}"><button class="chk" role="checkbox" aria-checked="${ch}" data-task="${h(g.key)}" aria-label="${ch ? 'Reabrir' : 'Marcar como feita'}: ${h(plain(g.text))}">${ICON.check}</button><div class="tx"><div class="t">${inline(g.text)}</div>${meta.length ? `<div class="meta">${meta.join('')}</div>` : ''}</div></li>`;
+}
+function lockRows(list) {
+  const by = {};
+  for (const g of list) (by[g.area] = by[g.area] || []).push(g);
+  return Object.entries(by).map(([a, gs]) => {
+    const path = `areas/${a}/${a}.md`;
+    return `<li><button class="lock" data-open="${h(S.files[path] ? path : gs[0].members[0].path)}">${ICON.lock}<span>${gs.length} ${gs.length > 1 ? 'tarefas' : 'tarefa'} de ${h(AREAS[a]?.nome || a)}${gs.some(g => g.due && g.due < ymd(now())) ? ', com atraso' : ''}</span></button></li>`;
+  }).join('');
+}
+function listHtml(list) {
+  if (!cfg.discreet) return list.map(taskLi).join('');
+  return list.filter(g => !g.sens).map(taskLi).join('') + lockRows(list.filter(g => g.sens && !isChecked(g)));
+}
+function renderTasks() {
+  const B = buckets();
+  const cmp = S.compras.secs.reduce((n, s) => n + s.items.filter(t => !S.opt.get('c:' + t.raw)).length, 0);
+  const counts = { hoje: B.hoje.filter(g => !isChecked(g)).length, proximas: B.proximas.length, semdata: B.semdata.length, compras: cmp };
+  const tabs = [['hoje', 'Hoje'], ['proximas', 'Próximas'], ['semdata', 'Sem data'], ['compras', 'Compras']];
+  $('#tabs').innerHTML = tabs.map(([k, l]) => `<button role="tab" aria-selected="${S.tab === k}" data-tab="${k}">${l}<span>${counts[k]}</span></button>`).join('');
+  let html = '';
+  if (S.tab === 'hoje') {
+    html = B.hoje.length ? `<ul class="tasks">${listHtml(B.hoje)}</ul>` : `<p class="empty">Nada vencendo hoje. Dá uma olhada em Próximas ou Sem data.</p>`;
+  } else if (S.tab === 'proximas') {
+    const lim = ymd(addDays(now(), 7));
+    const a = B.proximas.filter(g => g.due <= lim), b = B.proximas.filter(g => g.due > lim);
+    html = (a.length ? `<p class="group-h">Nos próximos 7 dias</p><ul class="tasks">${listHtml(a)}</ul>` : '') + (b.length ? `<p class="group-h">Mais pra frente</p><ul class="tasks">${listHtml(b)}</ul>` : '');
+    if (!html) html = '<p class="empty">Nenhuma tarefa com data marcada pra frente.</p>';
+  } else if (S.tab === 'semdata') {
+    const by = new Map();
+    for (const g of B.semdata) { const p = g.members[0].path; if (!by.has(p)) by.set(p, []); by.get(p).push(g); }
+    const groups = [...by.entries()].sort((x, y) => (S.files[y[0]]?.meta.atualizado || '').localeCompare(S.files[x[0]]?.meta.atualizado || ''));
+    const lockedAll = [];
+    for (const [p, gs] of groups) {
+      if (cfg.discreet && S.files[p]?.sens) { lockedAll.push(...gs); continue; }
+      html += `<p class="group-h">${p === 'tarefas.md' ? 'Soltas' : srcLink(p)}</p><ul class="tasks">${gs.map(taskLi).join('')}</ul>`;
+    }
+    if (lockedAll.length) html += `<ul class="tasks">${lockRows(lockedAll)}</ul>`;
+    if (!html) html = '<p class="empty">Nenhuma tarefa sem data.</p>';
+  } else {
+    for (const s of S.compras.secs) {
+      html += `<p class="group-h">${h(s.name)}</p><ul class="tasks">${s.items.map(t => {
+        const k = 'c:' + t.raw, ch = S.opt.get(k) === true;
+        return `<li class="task${ch ? ' done busy' : ''}"><button class="chk" role="checkbox" aria-checked="${ch}" data-compra="${h(t.raw)}" data-sec="${h(s.name)}" aria-label="Comprado: ${h(t.text)}">${ICON.check}</button><div class="tx"><div class="t">${inline(t.text)}</div></div></li>`;
+      }).join('')}</ul>`;
+    }
+    if (S.compras.hoje.length) html += `<p class="group-h">Comprado hoje</p><ul class="tasks">${S.compras.hoje.map(t => {
+      const k = 'c:' + t.raw, ch = S.opt.get(k) !== false;
+      return `<li class="task${ch ? ' done' : ''}${S.opt.has(k) ? ' busy' : ''}"><button class="chk" role="checkbox" aria-checked="${ch}" data-compra-undo="${h(t.raw)}" aria-label="Voltar pra lista: ${h(t.text)}">${ICON.check}</button><div class="tx"><div class="t">${inline(t.text)}</div></div></li>`;
+    }).join('')}</ul>`;
+    if (!html) html = '<p class="empty">A lista de compras está vazia.</p>';
+  }
+  $('#tasks').innerHTML = html;
+  const form = $('#addTask');
+  if (form.dataset.mode !== (S.tab === 'compras' ? 'c' : 't')) {
+    form.dataset.mode = S.tab === 'compras' ? 'c' : 't';
+    form.innerHTML = S.tab === 'compras'
+      ? `<input type="text" id="addTxt" placeholder="Adicionar à lista de compras" aria-label="Item de compra"><select id="addSec" aria-label="Seção">${(S.compras.heads.length ? S.compras.heads : ['Outro']).map(x => `<option>${h(x)}</option>`).join('')}</select><button class="btn" type="submit" style="height:40px">Adicionar</button>`
+      : `<input type="text" id="addTxt" placeholder="Nova tarefa" aria-label="Nova tarefa"><input type="date" id="addDue" aria-label="Prazo (opcional)"><button class="btn" type="submit" style="height:40px">Adicionar</button>`;
+  } else if (S.tab === 'compras') {
+    const sel = $('#addSec'), v = sel.value;
+    sel.innerHTML = (S.compras.heads.length ? S.compras.heads : ['Outro']).map(x => `<option>${h(x)}</option>`).join('');
+    if (v) sel.value = v;
+  }
+}
+
+function renderInbox() {
+  const items = [...S.optInbox.map(raw => ({ ...parseInbox({ body: raw })[0], pending: true })), ...[...S.inbox].reverse()];
+  $('#inboxCount').textContent = items.length || '';
+  $('#inbox').innerHTML = !items.length ? '<li><span class="muted">Inbox vazio. O que você anotar aqui fica esperando o assessor.</span></li>' : items.map(it => `<li class="${it.pending || S.busyInbox.has(it.raw) ? 'busy' : ''}"><div>${inline(it.text)}<small>${it.date ? dayLabel(it.date) : ''}${it.time ? ' às ' + it.time : ''}${it.pending ? ', salvando' : ''}</small></div>${it.pending ? '' : `<button class="x" data-inbox="${h(it.raw)}" aria-label="Tirar do inbox" title="Resolvido, tirar do inbox">${ICON.x}</button>`}</li>`).join('');
+}
+
+function renderRhythm() {
+  const n = now(), days = [];
+  for (let k = 6; k >= 0; k--) days.push(ymd(addDays(n, -k)));
+  const rows = ['saude', 'ingles', 'carreira', 'emocional', 'cultura', 'financas', 'trabalho'];
+  const recs = S.habits.filter(r => r.date >= days[0]);
+  let html = `<div class="rh"><span></span>${days.map(d => { const x = pymd(d); return `<span class="dh${d === days[6] ? ' today' : ''}">${DOW[x.getDay()].slice(0, 3)}<br>${x.getDate()}</span>`; }).join('')}<span class="dh">feitos</span>`;
+  let any = false;
+  for (const a of rows) {
+    let okN = 0, planN = 0, cellsH = '', has = false;
+    for (const d of days) {
+      const plan = seriesOn(d).filter(s => s.area === a);
+      const rs = recs.filter(r => r.area === a && r.date === d);
+      if (a === 'trabalho' && !rs.length) { cellsH += '<span></span>'; continue; }
+      planN += plan.length; has = has || plan.length > 0 || rs.length > 0;
+      const ok = rs.filter(r => r.ok === true).length, no = rs.filter(r => r.ok === false).length;
+      okN += ok;
+      const tip = `${AREAS[a].nome}, ${dayLabel(d)}: ${ok} feito(s), ${no} não feito(s), ${plan.length} planejado(s)`;
+      let c;
+      if (ok) c = 'ok'; else if (no) c = 'no'; else if (plan.length) c = d === days[6] ? 'plan' : 'miss'; else c = '';
+      cellsH += c ? `<span class="cell ${c}" title="${h(tip)}"></span>` : '<span></span>';
+    }
+    if (!has) continue;
+    any = true;
+    html += `<span class="lb">${AREAS[a].emoji} ${AREAS[a].nome}</span>${cellsH}<span class="tot">${okN}/${Math.max(planN, okN)}</span>`;
+  }
+  html += '</div>';
+  html += `<div class="legend"><span><span class="cell ok"></span>feito</span><span><span class="cell no"></span>não feito</span><span><span class="cell miss"></span>planejado, sem registro</span><span><span class="cell plan"></span>hoje, falta marcar</span></div>`;
+  $('#rhythm').innerHTML = any ? html : '<p class="empty">Sem blocos ou registros nesta semana.</p>';
+}
+
+function feedItem(c) {
+  const lines = c.msg.split('\n');
+  let subj = lines[0].replace(/\s*\[(agenda|planilha|drive|tarefas?|ticktick)\]/g, '').trim();
+  const via = /via painel/.test(c.msg);
+  let pre = '', txt = subj;
+  if (/^vault backup/i.test(subj)) { pre = 'obsidian'; txt = 'notas editadas'; }
+  else if (subj.includes(': ') && subj.split(': ')[0].length <= 45) [pre, txt] = [subj.split(': ')[0], subj.split(': ').slice(1).join(': ')];
+  const p = norm(pre).trim(), key = p.split(/[\s/,;]+/)[0] || '';
+  if (TECNICOS.has(key)) return null;
+  let label;
+  const caseP = S.stems[p] && S.stems[p].startsWith('casos/') ? S.stems[p] : null;
+  if (caseP) label = '📂 ' + short(S.files[caseP].title, 40);
+  else if (ROTULOS[p]) label = ROTULOS[p];
+  else if (ROTULOS[key]) label = ROTULOS[key];
+  else label = pre ? '📝 ' + pre[0].toUpperCase() + pre.slice(1) : '📝 Notas';
+  if (SENS.has(key)) txt = 'registro atualizado';
+  return { label, txt: txt ? txt[0].toUpperCase() + txt.slice(1) : '', via, date: c.date ? new Date(c.date) : null, sha: c.sha };
+}
+function whenTxt(d) {
+  if (!d) return '';
+  const n = now(), t = ymd(d);
+  if (t === ymd(n)) { const m = (n - d) / 60000; return m < 1 ? 'agora' : m < 60 ? `${Math.floor(m)} min` : hm(d); }
+  if (t === ymd(addDays(n, -1))) return 'ontem ' + hm(d);
+  return dayLabel(t);
+}
+let feedSeen = null;
+function renderFeed() {
+  const items = S.commits.map(feedItem).filter(Boolean).slice(0, 12);
+  const fresh = feedSeen && S.lastSync ? new Set(items.filter(i => !feedSeen.has(i.sha)).map(i => i.sha)) : new Set();
+  if (S.lastSync) feedSeen = new Set(items.map(i => i.sha));
+  $('#feed').innerHTML = items.length ? items.map(i => `<li class="${fresh.has(i.sha) ? 'new' : ''}"><time>${h(whenTxt(i.date))}</time><span><b>${h(i.label)}</b> ${h(i.txt)}${i.via ? '<span class="via">pelo painel</span>' : ''}</span></li>`).join('') : '<li><span></span><span class="muted">Ainda sem mudanças.</span></li>';
+}
+function relDay(s) {
+  if (!s || !/^\d{4}-\d{2}-\d{2}/.test(s)) return '';
+  const diff = Math.round((pymd(ymd(now())) - pymd(s.slice(0, 10))) / 864e5);
+  return diff <= 0 ? 'mexida hoje' : diff === 1 ? 'mexida ontem' : diff < 15 ? `mexida há ${diff} dias` : `mexida em ${dm(s.slice(0, 10))}`;
+}
+function openCount(prefix) {
+  return S.tasks.filter(g => !isChecked(g) && g.members.some(m => m.path.startsWith(prefix))).length;
+}
+function renderAreas() {
+  $('#areas').innerHTML = AREA_ORDER.map(a => {
+    const p = `areas/${a}/${a}.md`, f = S.files[p];
+    if (!f) return '';
+    const st = norm(f.meta.status || '');
+    const nOpen = openCount(`areas/${a}/`);
+    return `<button class="area" data-open="${h(p)}" style="--c:${areaColor(a)}"><div class="hd"><span class="emo">${AREAS[a].emoji}</span><span class="nm">${h(AREAS[a].nome)}</span>${STATUS[st] ? `<span class="lamp s-${st}">${STATUS[st]}</span>` : ''}</div><p class="rs${VEIL.has(a) ? ' veil' : ''}">${h(plain(f.meta.resumo || ''))}</p><div class="ft">${nOpen ? `<span>${nOpen} ${nOpen > 1 ? 'tarefas abertas' : 'tarefa aberta'}</span>` : ''}<span>${relDay(f.meta.atualizado)}</span></div></button>`;
+  }).join('');
+}
+function renderCases() {
+  const cs = Object.values(S.files).filter(f => f.path.startsWith('casos/') && !/^(fechado|resolvido|concluido|encerrado)/.test(norm(f.meta.status || '')))
+    .sort((a, b) => (b.meta.atualizado || '').localeCompare(a.meta.atualizado || ''));
+  $('#casesCount').textContent = cs.length || '';
+  $('#cases').innerHTML = cs.map(f => {
+    const open = S.tasks.filter(g => !isChecked(g) && g.members.some(m => m.path === f.path));
+    const nextDue = open.filter(g => g.due).sort(byDue)[0];
+    return `<button class="case" data-open="${h(f.path)}"><div class="hd"><span class="ct">${h(plain(f.title))}</span><span class="st">${h(f.meta.status || '')}</span></div><p class="rs">${h(plain(f.meta.resumo || ''))}</p><div class="ft">${nextDue ? `<span>${dueTxt(nextDue.due)}: ${h(short(plain(nextDue.text), 46))}</span>` : ''}${open.length ? `<span>${open.length} ${open.length > 1 ? 'tarefas' : 'tarefa'}</span>` : ''}<span>${relDay(f.meta.atualizado)}</span></div></button>`;
+  }).join('') || '<p class="empty">Nenhum caso aberto.</p>';
+}
+
+/* ─────────────── gaveta ─────────────── */
+function openNote(path) {
+  if (!S.files[path]) return;
+  S.open = path; S.edit = null;
+  const dr = $('#drawer'), sc = $('#scrim');
+  dr.hidden = false; sc.hidden = false;
+  renderDrawer();
+  requestAnimationFrame(() => { dr.classList.add('on'); sc.classList.add('on'); $('#drClose').focus(); });
+}
+function closeNote() {
+  if (S.edit && S.edit.dirty && !S.edit.confirmClose) { $('#drMsg').textContent = 'Você tem alterações não salvas. Feche de novo para descartar.'; S.edit.confirmClose = true; return; }
+  S.open = null; S.edit = null;
+  const dr = $('#drawer'), sc = $('#scrim');
+  dr.classList.remove('on'); sc.classList.remove('on');
+  setTimeout(() => { if (!S.open) { dr.hidden = true; sc.hidden = true; } }, 260);
+}
+function renderDrawer() {
+  const f = S.files[S.open];
+  if (!f) { closeNote(); return; }
+  $('#drTitle').textContent = plain(f.title);
+  const gh = `https://github.com/${cfg.repo}/blob/${encodeURIComponent(cfg.branch || 'main')}/${repoPath(f.path)}`;
+  $('#drPath').innerHTML = `<span>${h(f.path)}</span>${f.meta.atualizado ? `<span>${relDay(f.meta.atualizado)}</span>` : ''}<a href="${h(gh)}" target="_blank" rel="noopener noreferrer">abrir no GitHub</a>`;
+  const body = $('#drBody'), foot = $('#drFoot');
+  if (S.edit) {
+    foot.hidden = false; $('#drEdit').hidden = true;
+    if (!body.querySelector('textarea')) { body.innerHTML = `<label class="sr" for="ed">Texto da nota</label><textarea class="editor" id="ed" spellcheck="true"></textarea>`; $('#ed').value = S.edit.text; $('#ed').focus(); }
+    return;
+  }
+  foot.hidden = true; $('#drEdit').hidden = false;
+  if (f.sens && cfg.discreet && !S.reveal.has(f.path)) {
+    body.innerHTML = `<div class="gate">${ICON.lock.replace('<svg', '<svg style="width:28px;height:28px;color:var(--ink3)"')}<p>Esta nota é de ${h(AREAS[f.area]?.nome || 'um assunto reservado')}.</p><button class="btn" data-reveal="${h(f.path)}">Mostrar a nota</button></div>`;
+    $('#drEdit').hidden = true;
+    return;
+  }
+  mdTasks = [];
+  const meta = [];
+  if (f.meta.status) meta.push(`<span>Status: <b>${h(f.meta.status)}</b></span>`);
+  if (Array.isArray(f.meta.pessoas) && f.meta.pessoas.length) meta.push(`<span>Pessoas: ${f.meta.pessoas.map(p => wl(p)).join(', ')}</span>`);
+  if (f.meta.resumo) meta.push(`<span class="rsm">${inline(f.meta.resumo)}</span>`);
+  const scroll = body.scrollTop;
+  body.innerHTML = `<div class="fm">${meta.join('')}</div><div class="md">${md(f.body, f.path)}</div>`;
+  body.scrollTop = scroll;
+}
+function startEdit() {
+  const f = S.files[S.open];
+  if (!f) return;
+  S.edit = { path: f.path, base: f.text, text: f.text, dirty: false };
+  $('#drMsg').textContent = '';
+  $('#drBody').innerHTML = '';
+  renderDrawer();
+}
+function saveEdit(force = false) {
+  const e = S.edit;
+  if (!e) return;
+  e.text = $('#ed').value;
+  if (e.text === e.base && !force) { S.edit = null; renderDrawer(); return; }
+  const txt = e.text, base = e.base, path = e.path;
+  $('#drSave').disabled = true; $('#drMsg').textContent = '';
+  let merged = false;
+  write(path, cur => {
+    if (cur == null || cur === base || force) return txt;
+    const m = merge3(base, txt, cur);
+    if (m == null) throw erro('mudou');
+    merged = true;
+    return m;
+  }, commitMsg(path, 'editado no painel'), {
+    onOk() { $('#drSave').disabled = false; if (S.edit && S.edit.path === path) { S.edit = null; $('#drBody').innerHTML = ''; renderDrawer(); } toast(merged ? 'Nota salva no GitHub, junto com o que tinha mudado lá enquanto você editava.' : 'Nota salva no GitHub.'); },
+    onErr(err) {
+      $('#drSave').disabled = false;
+      if (err.code === 'mudou') {
+        $('#drMsg').innerHTML = `${MSGS.mudou} Vocês mexeram no mesmo trecho. <button class="btn ghost" id="drReload" type="button" style="height:28px;margin-left:6px">Ver a versão nova</button><button class="btn ghost" id="drForce" type="button" style="height:28px;margin-left:6px">Salvar a minha por cima</button>`;
+        $('#drForce').onclick = () => saveEdit(true);
+        $('#drReload').onclick = () => { const mine = $('#ed').value; S.edit = null; $('#drBody').innerHTML = ''; startEdit(); $('#drMsg').textContent = 'Versão nova carregada. Sua versão foi copiada; cole se precisar.'; try { navigator.clipboard.writeText(mine); } catch { } };
+      } else $('#drMsg').textContent = MSGS[err.code] || 'Não salvei: o GitHub respondeu com erro.';
+    },
+  });
+}
+
+function diffHunks(a, b) {
+  const n = a.length, m = b.length;
+  let p = 0; while (p < n && p < m && a[p] === b[p]) p++;
+  let q = 0; while (q < n - p && q < m - p && a[n - 1 - q] === b[m - 1 - q]) q++;
+  const A = a.slice(p, n - q), B = b.slice(p, m - q), N = A.length, M = B.length;
+  if (!N && !M) return [];
+  if (N * M > 2e6) return [{ s: p, e: n - q, lines: B }];
+  const dp = Array.from({ length: N + 1 }, () => new Uint32Array(M + 1));
+  for (let i = N - 1; i >= 0; i--) for (let j = M - 1; j >= 0; j--) dp[i][j] = A[i] === B[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+  const out = []; let i = 0, j = 0, cur = null;
+  while (i < N || j < M) {
+    if (i < N && j < M && A[i] === B[j]) { if (cur) { out.push(cur); cur = null; } i++; j++; }
+    else if (j < M && (i >= N || dp[i][j + 1] >= dp[i + 1][j])) { if (!cur) cur = { s: p + i, e: p + i, lines: [] }; cur.lines.push(B[j++]); }
+    else { if (!cur) cur = { s: p + i, e: p + i, lines: [] }; i++; cur.e = p + i; }
+  }
+  if (cur) out.push(cur);
+  return out;
+}
+function merge3(base, mine, theirs) {
+  const B = base.split('\n');
+  const h1 = diffHunks(B, mine.split('\n')), h2 = diffHunks(B, theirs.split('\n'));
+  for (const x of h1) for (const y of h2) if (x.s <= y.e && y.s <= x.e) return null;
+  for (const hk of [...h1, ...h2].sort((x, y) => y.s - x.s)) B.splice(hk.s, hk.e - hk.s, ...hk.lines);
+  return B.join('\n');
+}
+
+/* ─────────────── busca ─────────────── */
+let findSel = 0, findList = [];
+function openFind() { $('#find').hidden = false; $('#findIn').value = ''; doFind(); $('#findIn').focus(); }
+function closeFind() { $('#find').hidden = true; }
+function doFind() {
+  const q = norm($('#findIn').value).trim();
+  const terms = q.split(/\s+/).filter(Boolean);
+  let res;
+  if (!terms.length) {
+    res = Object.values(S.files).filter(f => f.meta.atualizado).sort((a, b) => b.meta.atualizado.localeCompare(a.meta.atualizado)).slice(0, 8).map(f => ({ f, sn: plain(f.meta.resumo || '') }));
+  } else {
+    res = [];
+    for (const f of Object.values(S.files)) {
+      const nt = norm(f.title), nm = norm([f.meta.resumo, ...(Array.isArray(f.meta.tags) ? f.meta.tags : [f.meta.tags || ''])].join(' '));
+      f._n = f._n || f.body.split('\n').map(l => [l, norm(l)]);
+      if (!terms.every(t => nt.includes(t) || nm.includes(t) || f._n.some(x => x[1].includes(t)))) continue;
+      let sc = 0, best = null, bestN = 0;
+      for (const t of terms) { if (nt.includes(t)) sc += 10; if (nm.includes(t)) sc += 4; }
+      for (const [l, nl] of f._n) { const c = terms.filter(t => nl.includes(t)).length; if (c) { sc += c; if (c > bestN && l.trim() && !/^#/.test(l)) { bestN = c; best = l; } } }
+      res.push({ f, sc, sn: plain(best || f.meta.resumo || '') });
+    }
+    res.sort((a, b) => b.sc - a.sc);
+    res = res.slice(0, 20);
+  }
+  findList = res; findSel = 0;
+  const mark = s => { let x = h(s.replace(/^\s*[-*|>]+\s*/, '').replace(/\s*\|\s*/g, '   ')); for (const t of terms) { if (t.length < 2) continue; const n = norm(x); let out = '', i = 0, k; while ((k = n.indexOf(t, i)) >= 0) { out += x.slice(i, k) + '<mark>' + x.slice(k, k + t.length) + '</mark>'; i = k + t.length; } x = out + x.slice(i); } return x; };
+  $('#findRes').innerHTML = res.length ? res.map((r, i) => `<li><button role="option" aria-selected="${i === 0}" data-find="${i}"><span class="rt">${h(plain(r.f.title))}</span><span class="rp">${h(r.f.path)}</span><div class="sn">${r.f.sens && cfg.discreet ? 'Conteúdo reservado' : mark(short(r.sn, 220))}</div></button></li>`).join('') : `<li class="empty" style="padding:14px 12px">Nada encontrado com "${h($('#findIn').value)}".</li>`;
+}
+function moveFind(d) {
+  if (!findList.length) return;
+  findSel = (findSel + d + findList.length) % findList.length;
+  $$('#findRes button').forEach((b, i) => b.setAttribute('aria-selected', String(i === findSel)));
+  $$('#findRes button')[findSel]?.scrollIntoView({ block: 'nearest' });
+}
+
+/* ─────────────── ajustes e entrada ─────────────── */
+const MARK = '<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="11" fill="none" stroke="var(--line)" stroke-width="3"/><path d="M16 5a11 11 0 0 1 9.5 16.5" fill="none" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/><circle cx="25.5" cy="21.5" r="3.4" fill="var(--signal)"/></svg>';
+function showSetup(msg) {
+  $('#app').hidden = true; closeNote(); $('#cfg').hidden = true;
+  const s = $('#setup');
+  s.hidden = false;
+  s.innerHTML = `<div class="box"><div class="mark">${MARK}</div><form class="form" id="setupForm" autocomplete="off">
+    <h2>Ligar o painel ao GitHub</h2>
+    <p class="hint" style="font-size:14px">O painel lê e grava direto no repositório do assessor. Para isso ele precisa de um token seu, que fica guardado só neste aparelho.</p>
+    <ol>
+      <li>Abra <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener noreferrer">github.com/settings/personal-access-tokens/new</a>.</li>
+      <li>Em <b>Repository access</b>, escolha <b>Only select repositories</b> e marque o repositório do assessor.</li>
+      <li>Em <b>Permissions → Repository permissions</b>, mude <b>Contents</b> para <b>Read and write</b>.</li>
+      <li>Clique em <b>Generate token</b>, copie e cole aqui embaixo.</li>
+    </ol>
+    <label for="sRepo">Repositório</label><input id="sRepo" value="${h(cfg.repo)}" spellcheck="false" autocapitalize="off">
+    <label for="sTok">Token</label><input id="sTok" type="password" placeholder="github_pat_…" spellcheck="false" autocapitalize="off">
+    ${msg ? `<p class="err">${h(msg)}</p>` : ''}<p class="err" id="sErr"></p>
+    <div class="row"><button class="btn" type="submit" style="height:42px;padding:0 18px">Conectar</button></div>
+  </form></div>`;
+  $('#setupForm').onsubmit = async ev => {
+    ev.preventDefault();
+    const repo = $('#sRepo').value.trim().replace(/^https?:\/\/github\.com\//, '').replace(/\.git$|\/$/g, '');
+    const tok = $('#sTok').value.trim();
+    if (!/^[\w.-]+\/[\w.-]+$/.test(repo)) { $('#sErr').textContent = 'Escreva o repositório como usuario/nome.'; return; }
+    if (!tok) { $('#sErr').textContent = 'Cole o token.'; return; }
+    const prevTok = cfg.token, prevRepo = cfg.repo;
+    cfg.token = tok; cfg.repo = repo; cfg.branch = '';
+    $('#sErr').textContent = 'Conferindo…';
+    try {
+      const r = await gh(`/repos/${repo}`);
+      if (r.status === 404) throw erro('notfound');
+      if (!r.ok) throw erro('http', String(r.status));
+      if (r.json.permissions && r.json.permissions.push === false) { $('#sErr').textContent = 'Conectado, mas o token só lê. Para gravar, gere um com "Contents: Read and write".'; }
+      cfg.branch = r.json.default_branch || 'main';
+      if (prevRepo !== repo) { S.files = {}; S.head = null; S.commits = []; }
+      saveCfg(); start();
+    } catch (e) {
+      cfg.token = prevTok; cfg.repo = prevRepo;
+      $('#sErr').textContent = e.code === 'token' ? 'O GitHub recusou esse token. Confira se copiou inteiro.' : e.code === 'notfound' ? 'Esse token não enxerga o repositório. Confira o nome e o acesso do token.' : e.code === 'offline' ? 'Sem conexão com o GitHub agora.' : 'O GitHub respondeu com erro (' + e.message + ').';
+    }
+  };
+  setTimeout(() => $('#sTok')?.focus(), 50);
+}
+function showCfg() {
+  const o = $('#cfg');
+  o.hidden = false;
+  o.innerHTML = `<div class="box" role="dialog" aria-label="Ajustes"><form class="form" id="cfgForm">
+    <h2>Ajustes</h2>
+    <label for="cRepo">Repositório</label><input id="cRepo" value="${h(cfg.repo)}" disabled>
+    <label for="cInt">Procurar mudanças no GitHub a cada</label><select id="cInt">${[10, 15, 30, 60].map(s => `<option value="${s}"${cfg.interval === s ? ' selected' : ''}>${s} segundos</option>`).join('')}</select>
+    <label for="cTheme">Aparência</label><select id="cTheme"><option value="auto"${cfg.theme === 'auto' ? ' selected' : ''}>Igual ao aparelho</option><option value="light"${cfg.theme === 'light' ? ' selected' : ''}>Clara</option><option value="dark"${cfg.theme === 'dark' ? ' selected' : ''}>Escura</option></select>
+    <p class="hint">Token terminado em ${h(cfg.token.slice(-4))}. Ele fica só neste navegador.</p>
+    <div class="row"><button class="btn" type="submit">Salvar</button><button class="btn ghost" type="button" id="cClose">Fechar</button><button class="btn ghost" type="button" id="cOut" style="margin-left:auto;color:var(--alert)">Desconectar deste aparelho</button></div>
+  </form></div>`;
+  $('#cfgForm').onsubmit = ev => { ev.preventDefault(); cfg.interval = +$('#cInt').value; cfg.theme = $('#cTheme').value; saveCfg(); applyTheme(); o.hidden = true; };
+  $('#cClose').onclick = () => { o.hidden = true; };
+  $('#cOut').onclick = () => {
+    cfg.token = ''; cfg.branch = ''; saveCfg();
+    for (const k of LS.keys()) if (k.startsWith(K + 'b.') || k === K + 'snap') LS.del(k);
+    S.files = {}; S.head = null; S.commits = []; S.etag = null;
+    o.hidden = true; showSetup();
+  };
+  o.onclick = ev => { if (ev.target === o) o.hidden = true; };
+  $('#cInt').focus();
+}
+function applyTheme() {
+  const t = cfg.theme === 'auto' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : cfg.theme;
+  document.documentElement.dataset.theme = t;
+  $('meta[name="theme-color"]').content = t === 'dark' ? '#17191D' : '#E8EBEF';
+}
+
+/* ─────────────── avisos e indicador ─────────────── */
+function toast(msg, { err = false, undo, open, html = false } = {}) {
+  const el = document.createElement('div');
+  el.className = 'toast' + (err ? ' err' : '');
+  el.innerHTML = `<span class="tm">${html ? msg : h(msg)}</span>${open ? '<button data-t="open">Ver</button>' : ''}${undo ? '<button data-t="undo">Desfazer</button>' : ''}`;
+  const kill = () => { el.style.opacity = '0'; el.style.transition = 'opacity .2s'; setTimeout(() => el.remove(), 200); };
+  el.addEventListener('click', ev => { const t = ev.target.dataset.t; if (t === 'undo') { undo(); kill(); } if (t === 'open') { openNote(open); kill(); } });
+  $('#toasts').appendChild(el);
+  while ($('#toasts').children.length > 3) $('#toasts').firstChild.remove();
+  setTimeout(kill, err ? 7000 : undo ? 6000 : 4200);
+}
+function announce(prev, changed) {
+  const ext = [];
+  for (const c of S.commits) { if (c.sha === prev) break; if (!S.ours.has(c.sha)) ext.push(c); }
+  if (!ext.length) return;
+  const it = ext.map(feedItem).filter(Boolean);
+  const first = changed.find(p => S.files[p] && !S.files[p].sens && p !== 'inicio.md');
+  if (it.length) toast(`<b>${h(it[0].label)}</b><small>${h(it[0].txt)}${it.length > 1 ? ` (e mais ${it.length - 1})` : ''}</small>`, { html: true, open: first });
+  const secs = new Set(['#secFeed']);
+  for (const p of changed) {
+    if (p.startsWith('casos/')) secs.add('#secCases');
+    if (p.startsWith('areas/')) secs.add('#secAreas');
+    if (p === 'agenda.md') secs.add('#secDay');
+    if (p === 'inbox.md') secs.add('#secCap');
+    if (p === 'eu/habitos.md') secs.add('#secRhythm');
+    if (S.files[p]?.tasks.length) secs.add('#secTasks');
+  }
+  for (const s of secs) { const el = $(s); if (!el) continue; el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
+}
+function setLive() {
+  const el = $('#live'), tx = $('#liveTxt');
+  if (!el) return;
+  let cls = '', t = '';
+  if (S.pending) { cls = 'saving'; t = 'salvando…'; }
+  else if (S.err === 'offline') { cls = 'err'; t = 'sem conexão'; }
+  else if (S.err === 'rate') { cls = 'err'; t = `limite do GitHub até ${hm(new Date(S.rateReset || Date.now() + 6e5))}`; }
+  else if (S.err) { cls = 'err'; t = 'erro ao ler o GitHub'; }
+  else if (!S.lastSync) { cls = 'idle'; t = 'conectando'; }
+  else { const s = Math.round((Date.now() - S.lastSync) / 1000); t = `<b>ao vivo</b><span class="ago">${s < 5 ? '' : ` · há ${s < 60 ? s + ' s' : Math.round(s / 60) + ' min'}`}</span>`; }
+  el.className = 'live ' + cls;
+  tx.innerHTML = t;
+  el.title = S.head ? `Último commit lido: ${S.head.slice(0, 7)}` : '';
+}
+
+/* ─────────────── eventos ─────────────── */
+function bind() {
+  document.addEventListener('click', ev => {
+    const t = ev.target.closest('[data-open],[data-task],[data-compra],[data-compra-undo],[data-tab],[data-inbox],[data-hab],[data-undo],[data-cancel],[data-mdt],[data-reveal],[data-find]');
+    if (!t) return;
+    const d = t.dataset;
+    if (d.open !== undefined) { ev.preventDefault(); closeFind(); openNote(d.open); return; }
+    if (d.task) { const g = S.tasks.find(x => x.key === d.task); if (g && !S.opt.has(g.key)) toggleTask(g.key, !isChecked(g)); return; }
+    if (d.compra) { if (!S.opt.has('c:' + d.compra)) toggleCompra(d.compra, true, d.sec); return; }
+    if (d.compraUndo) { if (!S.opt.has('c:' + d.compraUndo)) toggleCompra(d.compraUndo, false); return; }
+    if (d.tab) { S.tab = d.tab; renderTasks(); $(`[data-tab="${d.tab}"]`).focus(); return; }
+    if (d.inbox) { delInbox(d.inbox); return; }
+    if (d.hab) { const b = S._todayIdx[d.hab]; if (!b) return; if (d.ok === '1') markHabit(b, true); else { S.askWhy = d.hab; renderDay(); } return; }
+    if (d.cancel !== undefined) { S.askWhy = null; renderDay(); return; }
+    if (d.undo) { const b = S._todayIdx[d.undo]; const rec = b && habitRecord(b, ymd(now())); if (rec) undoHabit(rec, b); return; }
+    if (d.mdt) {
+      const m = mdTasks[+d.mdt]; if (!m) return;
+      const tm = m.raw.match(TASK_RE), tid = (tm[3].match(/🆔\s*(\S+)/) || [])[1];
+      const key = tid ? 'id:' + tid : m.path + '\n' + m.raw;
+      const g = S.tasks.find(x => x.key === key);
+      if (g && !S.opt.has(key)) toggleTask(key, !isChecked(g));
+      else if (!g && m.path === COMPRAS && !S.opt.has('c:' + m.raw)) toggleCompra(m.raw, tm[2] === ' ', '');
+      return;
+    }
+    if (d.reveal) { S.reveal.add(d.reveal); renderDrawer(); return; }
+    if (d.find) { const r = findList[+d.find]; if (r) { closeFind(); openNote(r.f.path); } return; }
+  });
+  document.addEventListener('submit', ev => {
+    const f = ev.target;
+    if (f.matches('form[data-why]')) { ev.preventDefault(); const b = S._todayIdx[f.dataset.why]; if (b) markHabit(b, false, f.querySelector('input').value); }
+  });
+  $('#addTask').addEventListener('submit', ev => {
+    ev.preventDefault();
+    const txt = $('#addTxt').value.trim(); if (!txt) return;
+    if (S.tab === 'compras') addCompra(txt, $('#addSec').value);
+    else { addTask(txt, $('#addDue').value || ''); $('#addDue').value = ''; }
+    $('#addTxt').value = '';
+  });
+  $('#capForm').addEventListener('submit', ev => { ev.preventDefault(); const v = $('#capTxt').value.trim(); if (!v) return; addInbox(v.replace(/\s*\n+\s*/g, ' / ')); $('#capTxt').value = ''; });
+  $('#capTxt').addEventListener('keydown', ev => { if (ev.key === 'Enter' && !ev.shiftKey && !ev.isComposing) { ev.preventDefault(); $('#capForm').requestSubmit(); } });
+  $('#fab').onclick = () => { $('#secCap').scrollIntoView({ behavior: 'smooth', block: 'start' }); setTimeout(() => $('#capTxt').focus(), 350); };
+  $('#eye').onclick = () => { cfg.discreet = !cfg.discreet; saveCfg(); S.reveal.clear(); render(); };
+  $('#openCfg').onclick = showCfg;
+  $('#openFind').onclick = openFind;
+  $('#find').addEventListener('click', ev => { if (ev.target.id === 'find') closeFind(); });
+  $('#findIn').addEventListener('input', doFind);
+  $('#findIn').addEventListener('keydown', ev => {
+    if (ev.key === 'ArrowDown') { ev.preventDefault(); moveFind(1); }
+    else if (ev.key === 'ArrowUp') { ev.preventDefault(); moveFind(-1); }
+    else if (ev.key === 'Enter') { const r = findList[findSel]; if (r) { closeFind(); openNote(r.f.path); } }
+  });
+  $('#drClose').onclick = closeNote;
+  $('#scrim').onclick = closeNote;
+  $('#drEdit').onclick = startEdit;
+  $('#drCancel').onclick = () => { S.edit = null; $('#drBody').innerHTML = ''; renderDrawer(); };
+  $('#drSave').onclick = () => saveEdit(false);
+  $('#drBody').addEventListener('input', ev => { if (ev.target.id === 'ed' && S.edit) { S.edit.text = ev.target.value; S.edit.dirty = true; S.edit.confirmClose = false; $('#drMsg').textContent = ''; } });
+  $('#drBody').addEventListener('keydown', ev => { if (ev.target.id === 'ed' && (ev.metaKey || ev.ctrlKey) && ev.key === 's') { ev.preventDefault(); saveEdit(false); } });
+  document.addEventListener('keydown', ev => {
+    const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName);
+    if ((ev.metaKey || ev.ctrlKey) && ev.key.toLowerCase() === 'k') { ev.preventDefault(); $('#find').hidden ? openFind() : closeFind(); return; }
+    if (ev.key === '/' && !typing && $('#find').hidden && !$('#app').hidden) { ev.preventDefault(); openFind(); return; }
+    if (ev.key === 'Escape') {
+      if (!$('#find').hidden) closeFind();
+      else if (!$('#cfg').hidden) $('#cfg').hidden = true;
+      else if (S.askWhy) { S.askWhy = null; renderDay(); }
+      else if (S.open) closeNote();
+    }
+  });
+  matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => cfg.theme === 'auto' && applyTheme());
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && Date.now() - S.lastTry > 4000) sync(); });
+  addEventListener('online', () => sync());
+}
+
+function tick() {
+  const n = now();
+  const ck = $('#clock'), ckt = `${pad(n.getHours())}:${pad(n.getMinutes())}`;
+  if (ck && ck.dataset.t !== ckt) { ck.dataset.t = ckt; ck.innerHTML = `${pad(n.getHours())}<span class="col">:</span>${pad(n.getMinutes())}`; }
+  if ($('#app').hidden) return;
+  const m = n.getHours() * 60 + n.getMinutes();
+  if (ymd(n) !== S.day) render();
+  else if (m !== S.minute && !document.activeElement?.closest?.('form[data-why]')) { renderDay(); renderFeed(); }
+  setLive();
+  if (!cfg.token || S.syncing || document.visibilityState !== 'visible') return;
+  let wait = cfg.interval * 1000;
+  if (S.err === 'offline' || S.err === 'http') wait = Math.max(wait, 30000);
+  if (S.err === 'rate') wait = Math.max(30000, (S.rateReset || 0) - Date.now());
+  if (Date.now() - S.lastTry >= wait) sync();
+}
+
+function start() {
+  $('#setup').hidden = true;
+  $('#app').hidden = false;
+  if (loadSnap()) reindex();
+  render();
+  sync(true);
+}
+
+applyTheme();
+bind();
+setInterval(tick, 1000);
+tick();
+if (cfg.token) start(); else showSetup();
+})();
+</script>
+</body>
+</html>
