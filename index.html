@@ -569,45 +569,97 @@ button.row{cursor:pointer}
 .setup-fin li{margin:4px 0}
 
 /* ───── Alimentação ───── */
-.ali{max-width:900px;margin:0 auto}
-.who{display:inline-flex;gap:4px;padding:4px;border-radius:14px;background:var(--panel);margin:0 0 16px}
-.who button{height:34px;padding:0 14px;border-radius:10px;font-size:14px;color:var(--ink2);font-weight:500;display:inline-flex;align-items:center;gap:7px}
-.who button i{width:8px;height:8px;border-radius:50%;background:var(--pc)}
-.who button[aria-pressed="true"]{background:var(--raise);color:var(--ink);font-weight:650;box-shadow:0 1px 3px rgba(0,0,0,.08)}
-.p-d{--pc:var(--signal)} .p-m{--pc:var(--a-casa-familia)} .p-a{--pc:var(--a-saude)}
-.meal{display:grid;grid-template-columns:62px 1fr;gap:12px;padding:16px 0;border-top:1px solid var(--line)}
-.meal:first-of-type{border-top:0}
-.meal .mt{font:900 17px/1.2 var(--f-dot);color:var(--ink2);padding-top:3px}
-.meal.agora .mt{color:var(--signal)}
-.meal h3{margin:0;font-size:17px;color:var(--ink);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.meal .mm{font-size:12.5px;color:var(--ink3);margin-top:2px}
-.meal ul{list-style:none;margin:8px 0 0;padding:0}
-.meal li{padding:7px 0;border-top:1px solid var(--line2);font-size:14.5px}
-.meal li:first-child{border-top:0}
-.meal .fd{display:flex;gap:10px;align-items:baseline}
-.meal .fd b{font-weight:600;flex:1;min-width:0}
-.meal .fd span{color:var(--ink2);font-size:13.5px;text-align:right}
-.meal details{margin-top:4px}
-.meal summary{font-size:12.5px;color:var(--signal);font-weight:600;cursor:pointer;list-style:none}
-.meal summary::-webkit-details-marker{display:none}
-.meal .alts{margin:6px 0 2px;padding-left:12px;border-left:2px solid var(--line)}
-.meal .alts div{display:flex;gap:10px;font-size:13.5px;padding:3px 0;color:var(--ink2)}
-.meal .alts div b{font-weight:500;color:var(--ink);flex:1}
-.meal .tr{font-size:11px;font-weight:700;color:var(--a-saude);margin-left:6px}
-.duo{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;margin-top:4px;font-size:13.5px}
-.duo .q{font-weight:650;font-size:12px}
-.duo .q.d{color:var(--signal)} .duo .q.m{color:var(--a-casa-familia)}
-.duo span{color:var(--ink2)}
-.meal .ou{font-size:12.5px;color:var(--ink3);margin-top:4px}
-.extra{margin-top:24px}
-.extra .md{font-size:14.5px}
-.grp{margin-top:18px}
-.grp h3{color:var(--ink);font-size:15.5px;margin:0}
-.grp .ref{font-size:12.5px;color:var(--ink3);margin:2px 0 6px}
-.grp ul{list-style:none;margin:0;padding:0;columns:2;column-gap:28px}
-.grp li{break-inside:avoid;display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px solid var(--line2);font-size:13.5px}
-.grp li span{color:var(--ink3);text-align:right}
+.ali{max-width:680px;margin:0 auto}
+.q-d{--pc:var(--signal)} .q-m{--pc:var(--a-casa-familia)} .q-a{--pc:var(--a-saude)}
+.quem{display:flex;gap:4px;padding:4px;border-radius:14px;background:var(--panel);margin:0 0 14px;width:max-content;max-width:100%}
+.quem button{height:34px;padding:0 14px;border-radius:10px;font-size:14px;color:var(--ink2);font-weight:500;display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+.quem button i,.duo-h i,.dot{width:8px;height:8px;border-radius:50%;background:var(--pc);flex:none;display:inline-block}
+.quem button[aria-pressed="true"]{background:var(--raise);color:var(--ink);font-weight:650;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.rstrip{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 -4px 12px;padding:2px 4px;scroll-snap-type:x proximity}
+.rstrip::-webkit-scrollbar{display:none}
+.rstrip button{flex:none;scroll-snap-align:center;min-width:64px;padding:8px 10px 7px;border-radius:14px;border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;gap:1px;color:var(--ink2)}
+.rstrip b{font:900 15px/1.1 var(--f-dot);color:var(--ink)}
+.rstrip span{font-size:12px}
+.rstrip .past{opacity:.5}
+.rstrip .nx{border-color:var(--signal)} .rstrip .nx b{color:var(--signal)}
+.rstrip [aria-selected="true"]{background:var(--ink);border-color:var(--ink);color:var(--on-ink);opacity:1}
+.rstrip [aria-selected="true"] b{color:var(--on-ink)}
+.rcard{background:var(--raise);border-radius:22px;padding:18px 18px 10px;box-shadow:var(--shadow)}
+.rcard header{display:flex;gap:14px;align-items:flex-start;margin-bottom:10px}
+.rcard .rt{font:900 22px/1.1 var(--f-dot);color:var(--ink2);padding-top:2px}
+.rcard.agora .rt{color:var(--signal)}
+.rcard h2{font-size:20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.rmeta{margin:3px 0 0;font-size:12.5px;color:var(--ink3)}
+.ritems,.duo-l{list-style:none;margin:0;padding:0}
+.ritems li{border-top:1px solid var(--line2)}
+.fl{display:grid;grid-template-columns:1fr auto;align-items:center;gap:1px 12px;padding:10px 0;list-style:none;cursor:default}
+summary.fl{cursor:pointer}
+summary.fl::-webkit-details-marker{display:none}
+.fl .fn{grid-column:1;min-width:0;font-weight:600;font-size:15px}
+.fl .fq{grid-column:1;color:var(--ink2);font-size:13.5px}
+.fl .fx{grid-column:2;grid-row:1/3;width:28px;text-align:center;font-size:11.5px;font-weight:700;color:var(--ink3);border-radius:99px;line-height:20px}
+summary.fl .fx{background:var(--panel)}
+details[open]>summary.fl .fx{background:var(--ink);color:var(--on-ink)}
+.alts{margin:0 0 12px;padding:4px 0 4px 12px;border-left:2px solid var(--line)}
+.alt,.alt-lista{display:flex;justify-content:space-between;gap:12px;padding:5px 0;font-size:14px;color:var(--ink2);width:100%;text-align:left}
+.alt span:first-child{color:var(--ink)}
+.alt span:last-child,.alt-lista span:last-child{text-align:right;flex:none;max-width:50%}
+.alt-lista{color:var(--signal);font-weight:550}
+.alt-lista b{font-weight:650}
+.duo-h{display:none}
+.duo-l li{display:grid;grid-template-columns:1fr 1fr;gap:2px 14px;padding:11px 0;border-top:1px solid var(--line2)}
+.duo-l .fn{grid-column:1/-1;font-weight:600;font-size:15px}
+.duo-l .qd,.duo-l .qm{font-size:13.5px;color:var(--ink2);display:flex;gap:7px;align-items:baseline}
+.duo-l .qd::before,.duo-l .qm::before{content:"";width:7px;height:7px;border-radius:50%;flex:none;transform:translateY(-1px);background:var(--pc)}
+.duo-l .qd{--pc:var(--signal)} .duo-l .qm{--pc:var(--a-casa-familia)}
+.duo-l em{font-style:normal;font-size:11px;font-weight:700;color:var(--a-saude)}
+.duo-l .nada{color:var(--ink3)}
+.duo-l .ob{grid-column:1/-1;font-size:12.5px;color:var(--ink3);margin-top:2px}
+.swaps{border-top:1px solid var(--line);margin-top:4px;padding-top:10px}
+.sw-h{margin:0 0 2px;font-size:12px;font-weight:650;letter-spacing:.04em;text-transform:uppercase;color:var(--ink3)}
+.swap>summary{display:flex;align-items:center;gap:9px;padding:9px 0;cursor:pointer;list-style:none;font-size:14.5px;font-weight:600}
+.swap>summary::-webkit-details-marker{display:none}
+.swap>summary span{flex:1;min-width:0}
+.swap>summary small{font-size:12px;color:var(--ink3);font-weight:500}
+.swap>summary::after{content:"›";color:var(--ink3);font-weight:400;transition:transform .15s}
+.swap[open]>summary::after{transform:rotate(90deg)}
+.swap .md{font-size:14px;color:var(--ink2);padding:0 0 10px 17px}
+.swap .md p{margin:0 0 6px}
+.swap .md ul{margin:0;padding-left:18px}
+.rnav{display:flex;justify-content:space-between;gap:10px;margin:12px 2px 0}
+.rnav button{font-size:13.5px;color:var(--ink2);font-weight:550;padding:6px 0}
+.rnav button:hover{color:var(--ink)}
+.rfoot{margin-top:18px}
+.rfoot-d{margin-top:6px;border-top:1px solid var(--line);padding-top:2px}
+.rfoot-d .md{padding-left:0}
+.tq{margin:0 0 6px}
+.tg{border-top:1px solid var(--line)}
+.tg:last-of-type{border-bottom:1px solid var(--line)}
+.tg>summary{display:flex;align-items:center;gap:10px;padding:13px 2px;cursor:pointer;list-style:none}
+.tg>summary::-webkit-details-marker{display:none}
+.tg .tgn{flex:1;font-weight:600;font-size:15px}
+.tg .tgc{font-size:12px;color:var(--ink3);font-weight:600}
+.tg>summary::after{content:"›";color:var(--ink3);transition:transform .15s}
+.tg[open]>summary::after{transform:rotate(90deg)}
+.tg .tgr{margin:-6px 2px 6px;font-size:12.5px;color:var(--ink3)}
+.tg ul{list-style:none;margin:0 0 12px;padding:0 2px;columns:2;column-gap:28px}
+.tg li{break-inside:avoid;display:flex;justify-content:space-between;gap:10px;padding:5px 0;font-size:13.5px;border-bottom:1px solid var(--line2)}
+.tg li span:last-child{color:var(--ink3);text-align:right}
+.tg{scroll-margin-top:84px}
+.tg.flash>summary{color:var(--signal)}
+@media (min-width:600px){
+  .duo-h{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:14px;font-size:12px;font-weight:650;color:var(--ink3);padding-bottom:6px}
+  .duo-h span{display:flex;align-items:center;gap:6px}
+  .duo-l li{grid-template-columns:1.3fr 1fr 1fr;gap:2px 14px;align-items:baseline}
+  .duo-l .fn{grid-column:auto}
+  .duo-l .qd::before,.duo-l .qm::before{display:none}
+  .fl{grid-template-columns:1fr auto auto}
+  .fl .fq{grid-column:2;grid-row:1;text-align:right}
+  .fl .fx{grid-column:3;grid-row:1}
+}
+@media (max-width:640px){ .tg ul{columns:1} .rcard{padding:16px 16px 8px;border-radius:20px} }
 .days{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:0 0 6px}
+
 .days span{font-size:13px;color:var(--ink2);margin-right:4px}
 .days button{height:32px;min-width:44px;padding:0 10px;border-radius:10px;border:1px solid var(--line);font:900 14px var(--f-dot);color:var(--ink2)}
 .days button[aria-pressed="true"]{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
@@ -629,9 +681,7 @@ button.row{cursor:pointer}
   .wn{font-size:30px}
   .nx{grid-template-columns:104px 1fr;gap:14px}
   .ring{width:104px}
-  .grp ul{columns:1}
   .sal .v{font-size:15px}
-  .meal{grid-template-columns:52px 1fr;gap:10px}
 }
 
 /* ───── avisos ───── */
@@ -975,7 +1025,7 @@ const S = {
   page: 'inicio', tab: 'hoje', reg: 'nota', open: null, reveal: new Set(), minute: -1, day: '',
   notaArea: 'geral', regFicha: 'estou', fichas: [], plano: null, comprados: [], sel: null, wk: 0, _idx: {},
   fin: null, finSha: null, _fm: null, finMes: null, finTab: 'resumo', finOpen: {}, finDia: null, finCat: null, fcart: null, fvenc: null,
-  aliTab: 'plano', pessoa: LS.get(K + 'pessoa', 'diovane'), dias: LS.get(K + 'dias', 7), trocaQ: '',
+  aliTab: 'plano', pessoa: LS.get(K + 'pessoa2', 'ambos'), aliRef: null, trocaP: LS.get(K + 'trocap', 'diovane'), trocaOpen: null, dias: LS.get(K + 'dias', 7), trocaQ: '',
 };
 let queue = Promise.resolve();
 
@@ -1594,6 +1644,7 @@ function route() {
   if (p === 'financas' && FIN_TABS.some(t => t[0] === sub)) S.finTab = sub;
   if (p === 'registrar' && ['nota', 'emocional', 'compra'].includes(sub)) S.reg = sub;
   const changed = p !== S.page;
+  if (changed && p === 'alimentacao') S.aliRef = null;
   S.page = p;
   closeSheet();
   for (const el of $$('.page')) el.hidden = el.dataset.page !== p;
@@ -2989,54 +3040,97 @@ function listaCompras() {
   return { itens, dias };
 }
 const TIPO_EMOJI = { 'carnes e ovos': '🥩', 'laticinios': '🧀', 'legumes e verduras': '🥦', 'frutas': '🍎', 'arroz, paes e cereais': '🍚', 'feijao': '🫘', 'castanhas e sementes': '🥜', 'bebidas': '☕', 'oleos': '🫒', 'suplementos e outros': '💊' };
+const REF_CURTO = { 'ao acordar': 'Acordar', 'cafe da manha': 'Café', 'lanche da manha': 'Lanche', 'almoco': 'Almoço', 'depois do almoco': 'Fruta', 'lanche da tarde': 'Lanche', 'jantar': 'Jantar', 'depois do jantar': 'Fruta' };
+const nb = t => String(t || '').replace(/(\d)\s+(g|ml|kg|L|latas?)\b/g, '$1\u00a0$2');
+const refCurto = n => REF_CURTO[norm(n)] || n.split(' ')[0];
+const QUEM = { diovane: ['Diovane', 'd'], michele: ['Michele', 'm'], ambos: ['Os dois', 'a'] };
 function renderAlimentacao() {
   const el = $('#ali');
   if (!el) return;
-  $('#aliTabs').innerHTML = [['plano', '🍽️ Plano do dia'], ['compras', '🛒 Compras'], ['trocas', '🔁 Trocas']].map(([k, l]) => `<button role="tab" type="button" data-alitab="${k}" aria-selected="${S.aliTab === k}">${l}</button>`).join('');
+  $('#aliTabs').innerHTML = [['plano', 'Refeições'], ['trocas', 'Trocas'], ['compras', 'Compras']].map(([k, l]) => `<button role="tab" type="button" data-alitab="${k}" aria-selected="${S.aliTab === k}">${l}</button>`).join('');
   const P = S.plano || {};
   const keep = $$('input[data-keep]', el).map(i => [i.dataset.keep, i.value, document.activeElement === i]);
-  let html = '';
-  if (S.aliTab === 'compras') html = aliCompras();
-  else {
-    const pessoas = S.aliTab === 'trocas' ? [['diovane', 'Diovane', 'p-d'], ['michele', 'Michele', 'p-m']] : [['diovane', 'Diovane', 'p-d'], ['michele', 'Michele', 'p-m'], ['ambos', 'Ambos', 'p-a']];
-    if (S.aliTab === 'trocas' && S.pessoa === 'ambos') S.pessoa = 'diovane';
-    html = `<div class="who" role="group" aria-label="De quem é o plano">${pessoas.map(([k, l, c]) => `<button type="button" class="${c}" data-pessoa="${k}" aria-pressed="${S.pessoa === k}"><i></i>${l}</button>`).join('')}</div>`;
-    html += S.aliTab === 'trocas' ? aliTrocas(P) : aliPlano(P);
-  }
-  el.innerHTML = html;
+  el.innerHTML = S.aliTab === 'compras' ? aliCompras() : S.aliTab === 'trocas' ? aliTrocas(P) : aliPlano(P);
   for (const [k, v, foc] of keep) { const i = el.querySelector(`input[data-keep="${k}"]`); if (i) { i.value = v; if (foc) i.focus(); } }
+  const sel = el.querySelector('.rstrip [aria-selected="true"]');
+  if (sel) { const st = sel.parentElement; st.scrollLeft = sel.offsetLeft - (st.clientWidth - sel.offsetWidth) / 2; }
 }
-function mealCard(m, next, corpo) {
-  return `<section class="meal${next ? ' agora' : ''}"><div class="mt">${m.t}</div><div><h3>${h(m.nome)}${next ? '<span class="pill">próxima</span>' : ''}</h3>${m.meta ? `<div class="mm">${h(m.meta)}</div>` : ''}${corpo}</div></section>`;
+function quemSeg(atual, opcoes, attr) {
+  return `<div class="quem" role="group" aria-label="De quem é o plano">${opcoes.map(k => `<button type="button" class="q-${QUEM[k][1]}" ${attr}="${k}" aria-pressed="${atual === k}"><i></i>${QUEM[k][0]}</button>`).join('')}</div>`;
 }
 function nextIdx(meals) { const n = now(), nm = n.getHours() * 60 + n.getMinutes(); return meals.findIndex(m => toMin(m.t) >= nm - 10); }
-function aliPlano(P) {
-  if (S.pessoa === 'ambos') {
-    const C = P.casal;
-    if (!C || !C.juntos.length) return '<p class="empty">As refeições juntos ainda não estão nas notas.</p>';
-    const ni = nextIdx(C.juntos);
-    return `<p class="hint" style="margin:0 0 6px">O que os dois comem em cada refeição, cada um na porção do seu plano. <b>troca</b> é uma substituição que a nutricionista já liberou.</p>` + C.juntos.map((m, i) => mealCard(m, i === ni, `<ul>${m.itens.map(it => `<li><div class="fd"><b>${h(it.n)}</b></div><div class="duo"><span class="q d">Diovane</span><span>${h(it.d.t)}${it.d.troca ? '<span class="tr">troca</span>' : ''}</span><span class="q m">Michele</span><span>${h(it.m.t)}${it.m.troca ? '<span class="tr">troca</span>' : ''}</span></div>${it.obs ? `<div class="ou">${h(it.obs)}</div>` : ''}</li>`).join('')}${m.soD.map(([n, q]) => `<li><div class="fd"><b>${h(n)}</b><span>${h(q)}</span></div><div class="duo"><span class="q d">só Diovane</span><span></span></div></li>`).join('')}${m.soM.map(([n, q]) => `<li><div class="fd"><b>${h(n)}</b><span>${h(q)}</span></div><div class="duo"><span class="q m">só Michele</span><span></span></div></li>`).join('')}</ul>`)).join('') + '<p class="hint" style="margin-top:18px">Cozinhe uma vez só e sirva os pratos separados, cada um com a sua quantidade.</p>';
+const mealDo = (meals, nome) => meals.find(x => norm(x.nome) === norm(nome));
+/* a refeição inteira trocada: as do plano do Diovane e as opções de jantar da Michele */
+function trocasDaRefeicao(P, m, quem) {
+  const out = [], nm = norm(m.nome);
+  if (quem !== 'michele' && P.dv) for (const s of P.dv.subs) if (nm === s.ref || nm.startsWith(s.ref + ' ') && !/^depois/.test(nm)) out.push({ q: 'd', nome: s.nome, html: `<p>${h(s.txt)}</p>` });
+  if (quem !== 'diovane' && P.mi) for (const ex of P.mi.extras) {
+    const tit = norm(ex.titulo);
+    if (!/^jantar/.test(tit) || nm !== 'jantar') continue;
+    const nome = ex.titulo.replace(/^Jantar\s*·\s*/i, '').trim() || ex.titulo;
+    out.push({ q: 'm', nome: nome.charAt(0).toUpperCase() + nome.slice(1), html: md(ex.linhas.join('\n'), PLANO_M) });
   }
-  const pl = S.pessoa === 'michele' ? P.mi : P.dv;
-  if (!pl || !pl.meals.length) return `<p class="empty">O plano ${S.pessoa === 'michele' ? 'da Michele' : 'do Diovane'} ainda não está nas notas.</p>`;
-  const ni = nextIdx(pl.meals);
-  let html = pl.intro ? `<p class="hint" style="margin:0 0 6px">${inline(pl.intro)}</p>` : '';
-  html += pl.meals.map((m, i) => {
-    const subs = pl.subs.filter(s => norm(m.nome).startsWith(s.ref) || s.ref.startsWith(norm(m.nome)));
-    return mealCard(m, i === ni, `<ul>${m.itens.map(it => `<li><div class="fd"><b>${h(it.n)}</b><span>${h(it.q)}</span></div>${it.alts.length ? `<details><summary>Outras opções (${it.alts.length})</summary><div class="alts">${it.alts.map(a => `<div><b>${h(a.n)}</b><span>${h(a.q)}</span></div>`).join('')}${pl.grupoDe[it.n] ? `<div><button type="button" class="more" style="margin:2px 0 0" data-trocagrupo="${h(pl.grupoDe[it.n])}">Ver todas as trocas de ${h(pl.grupoDe[it.n].toLowerCase())}</button></div>` : ''}</div></details>` : ''}</li>`).join('')}</ul>${subs.map(s => `<details><summary>Trocar a refeição inteira: ${h(s.nome)}</summary><div class="alts"><div><span>${h(s.txt)}</span></div></div></details>`).join('')}`);
-  }).join('');
-  for (const ex of pl.extras) html += `<section class="extra"><h2>${inline(ex.titulo)}</h2><div class="md">${md(ex.linhas.join('\n'), S.pessoa === 'michele' ? PLANO_M : PLANO_D)}</div></section>`;
+  return out;
+}
+function altBtn(a, it, pl, quem) {
+  const g = a.n.match(/^([\d,.½]+)\s+porç(?:ão|ões)\s+do grupo\s+(\d+)\s*\(([^)]+)\)/i);
+  if (g) return `<button type="button" class="alt-lista" data-trocagrupo="${h(g[3])}" data-tp="michele"><span>Ver a lista toda: <b>${h(g[3])}</b></span><span>${h(g[1])}\u00a0${+g[1].replace(',', '.') > 1 ? 'porções' : 'porção'} ›</span></button>`;
+  return `<div class="alt"><span>${h(a.n)}</span><span>${h(nb(a.q))}</span></div>`;
+}
+function itemLinha(it, pl, quem) {
+  const alts = it.alts || [];
+  const fim = quem === 'diovane' && pl.grupoDe[it.n] ? `<button type="button" class="alt-lista" data-trocagrupo="${h(pl.grupoDe[it.n])}" data-tp="diovane"><span>Ver a lista toda: <b>${h(pl.grupoDe[it.n])}</b></span><span>›</span></button>` : '';
+  const linha = `<span class="fn">${h(it.n)}</span><span class="fq">${h(nb(it.q))}</span>`;
+  if (!alts.length) return `<li><div class="fl">${linha}<span class="fx"></span></div></li>`;
+  return `<li><details><summary class="fl">${linha}<span class="fx" aria-label="${alts.length} trocas">${alts.length}</span></summary><div class="alts">${alts.map(a => altBtn(a, it, pl, quem)).join('')}${fim}</div></details></li>`;
+}
+function aliPlano(P) {
+  const quem = QUEM[S.pessoa] ? S.pessoa : 'ambos';
+  const pl = quem === 'michele' ? P.mi : quem === 'diovane' ? P.dv : null;
+  const meals = quem === 'ambos' ? ((P.casal && P.casal.juntos) || []) : (pl && pl.meals) || [];
+  let html = quemSeg(quem, ['ambos', 'diovane', 'michele'], 'data-pessoa');
+  if (!meals.length) return html + `<p class="empty">${quem === 'ambos' ? 'As refeições dos dois ainda não estão nas notas.' : `O plano ${quem === 'michele' ? 'da Michele' : 'do Diovane'} ainda não está nas notas.`}</p>`;
+  const ni = nextIdx(meals);
+  let si = S.aliRef ? meals.findIndex(m => m.t === S.aliRef) : -1;
+  if (si < 0 && S.aliRef) si = meals.findIndex(m => m.t >= S.aliRef);
+  if (si < 0) si = ni >= 0 ? ni : 0;
+  const m = meals[si];
+  html += `<div class="rstrip" role="tablist" aria-label="Refeições do dia">${meals.map((x, i) => `<button type="button" role="tab" data-ref="${x.t}" aria-selected="${i === si}" class="${i === ni ? 'nx' : ''}${ni >= 0 && i < ni ? ' past' : ''}"><b>${x.t}</b><span>${h(refCurto(x.nome))}</span></button>`).join('')}</div>`;
+  const etiqueta = i => i === ni ? '<span class="pill">próxima</span>' : ni < 0 && i === 0 ? '<span class="pill">amanhã</span>' : '';
+  let corpo;
+  if (quem === 'ambos') {
+    const q = s => s.t ? `${h(nb(s.t))}${s.troca ? ' <em>troca</em>' : ''}` : '<span class="nada">—</span>';
+    const linhas = [
+      ...m.itens.map(it => ({ n: it.n, d: it.d, m: it.m, obs: it.obs })),
+      ...m.soD.map(([n, x]) => ({ n, d: { t: x }, m: { t: '' }, obs: '' })),
+      ...m.soM.map(([n, x]) => ({ n, d: { t: '' }, m: { t: x }, obs: '' })),
+    ];
+    corpo = `<div class="duo-h" aria-hidden="true"><span></span><span class="q-d"><i></i>Diovane</span><span class="q-m"><i></i>Michele</span></div><ul class="duo-l">${linhas.map(l => `<li><span class="fn">${h(l.n)}</span><span class="qd" data-l="Diovane">${q(l.d)}</span><span class="qm" data-l="Michele">${q(l.m)}</span>${l.obs ? `<span class="ob">${h(l.obs)}</span>` : ''}</li>`).join('')}</ul>`;
+  } else corpo = `<ul class="ritems">${m.itens.map(it => itemLinha(it, pl, quem)).join('')}</ul>`;
+  const tr = trocasDaRefeicao(P, m, quem);
+  const rodape = tr.length ? `<div class="swaps"><p class="sw-h">Trocar a refeição toda</p>${tr.map(s => `<details class="swap"><summary><i class="dot q-${s.q}"></i><span>${h(s.nome)}</span>${quem === 'ambos' ? `<small>${s.q === 'd' ? 'Diovane' : 'Michele'}</small>` : ''}</summary><div class="md">${s.html}</div></details>`).join('')}</div>` : '';
+  const meta = quem === 'diovane' && m.meta ? `<p class="rmeta">${h(m.meta)}</p>` : '';
+  html += `<section class="rcard${si === ni ? ' agora' : ''}" aria-live="polite"><header><span class="rt">${m.t}</span><div><h2>${h(m.nome)} ${etiqueta(si)}</h2>${meta}</div></header>${corpo}${rodape}</section>`;
+  const ant = meals[si - 1], prox = meals[si + 1];
+  html += `<nav class="rnav" aria-label="Outras refeições">${ant ? `<button type="button" data-ref="${ant.t}">‹ ${h(ant.nome)}</button>` : '<span></span>'}${prox ? `<button type="button" data-ref="${prox.t}">${h(prox.nome)} ›</button>` : '<span></span>'}</nav>`;
+  if (quem === 'ambos') html += '<p class="hint rfoot">Cozinhe uma vez e sirva cada prato com a quantidade do seu plano. <b>troca</b> é uma substituição que a nutricionista já liberou.</p>';
+  else {
+    if (pl.intro) html += `<p class="hint rfoot">${inline(pl.intro)}</p>`;
+    for (const ex of pl.extras) if (!/^jantar/.test(norm(ex.titulo))) html += `<details class="swap rfoot-d"><summary><span>${inline(ex.titulo)}</span></summary><div class="md">${md(ex.linhas.join('\n'), quem === 'michele' ? PLANO_M : PLANO_D)}</div></details>`;
+  }
   return html;
 }
 function aliTrocas(P) {
-  const mi = S.pessoa === 'michele';
+  const quem = S.trocaP === 'michele' ? 'michele' : 'diovane', mi = quem === 'michele';
+  let html = quemSeg(quem, ['diovane', 'michele'], 'data-trocap');
   const grupos = mi ? P.subsMi : P.dv && P.dv.grupos;
-  if (!grupos || !grupos.length) return '<p class="empty">A lista de trocas ainda não está nas notas.</p>';
+  if (!grupos || !grupos.length) return html + '<p class="empty">A lista de trocas ainda não está nas notas.</p>';
   const q = norm(S.trocaQ || '');
   const lista = grupos.map(g => ({ ...g, itens: q ? g.itens.filter(i => norm(i.n).includes(q)) : g.itens })).filter(g => g.itens.length || !q);
-  return `<p class="hint" style="margin:0 0 10px">${mi ? 'Lista da nutricionista Sarah Maia: cada item na quantidade de uma porção. Troque dentro do mesmo grupo.' : 'Lista da nutricionista Isabelle Vilaça: o que equivale à porção do plano. Troque dentro do mesmo grupo.'}</p>
-    <div class="add" style="margin:0 0 6px"><input type="text" data-keep="trocaq" data-trocaq placeholder="Procurar alimento (ex.: queijo, batata)" value="${h(S.trocaQ || '')}" aria-label="Procurar alimento"></div>
-    ${lista.map(g => `<section class="grp" data-grp="${h(g.nome)}"><h3>${mi ? `${g.num} · ` : ''}${h(g.nome)}</h3><p class="ref">${mi ? '1 porção' : 'referência: ' + h(g.ref)}</p><ul>${g.itens.map(i => `<li>${h(i.n)}<span>${h(i.q)}</span></li>`).join('')}</ul></section>`).join('') || '<p class="empty">Nada com esse nome.</p>'}`;
+  html += `<div class="add tq"><input type="search" data-keep="trocaq" data-trocaq placeholder="Procurar alimento (ex.: queijo, batata)" value="${h(S.trocaQ || '')}" aria-label="Procurar alimento"></div>
+    <p class="hint" style="margin:0 0 8px">${mi ? 'Lista da Sarah Maia: cada item é uma porção. Troque dentro do mesmo grupo; "2 porções" é o dobro.' : 'Lista da Isabelle Vilaça: cada item já vem na quantidade do plano. Troque dentro do mesmo grupo.'}</p>`;
+  html += lista.map(g => `<details class="tg" data-grp="${h(g.nome)}"${q || S.trocaOpen === g.nome ? ' open' : ''}><summary><span class="tgn">${h(g.nome)}</span><span class="tgc">${g.itens.length}</span></summary>${mi ? '' : `<p class="tgr">no lugar de ${h(g.ref)}</p>`}<ul>${g.itens.map(i => `<li><span>${h(i.n)}</span><span>${h(nb(i.q))}</span></li>`).join('')}</ul></details>`).join('') || '<p class="empty">Nada com esse nome nesta lista.</p>';
+  return html;
 }
 function aliCompras() {
   const L = listaCompras();
@@ -3079,7 +3173,7 @@ function copiar(txt, ok) {
 }
 function bind() {
   document.addEventListener('click', ev => {
-    const t = ev.target.closest('[data-commit],[data-open],[data-task],[data-compra],[data-cxdel],[data-tab],[data-mdt],[data-reveal],[data-find],[data-reg],[data-mood],[data-emo],#copyAsk,[data-act],[data-st],[data-day],[data-wk],[data-pick],[data-ficha],[data-regficha],[data-fmes],[data-ftab],[data-fo],[data-fcart],[data-fvenc],[data-fdia],[data-fcat],[data-alitab],[data-pessoa],[data-dias],[data-pego],[data-trocagrupo],[data-close]');
+    const t = ev.target.closest('[data-commit],[data-open],[data-task],[data-compra],[data-cxdel],[data-tab],[data-mdt],[data-reveal],[data-find],[data-reg],[data-mood],[data-emo],#copyAsk,[data-act],[data-st],[data-day],[data-wk],[data-pick],[data-ficha],[data-regficha],[data-fmes],[data-ftab],[data-fo],[data-fcart],[data-fvenc],[data-fdia],[data-fcat],[data-alitab],[data-pessoa],[data-dias],[data-pego],[data-trocagrupo],[data-ref],[data-trocap],[data-close]');
     if (!t) return;
     const d = t.dataset;
     if (t.id === 'copyAsk') { copiar('oi assessor, organiza a caixa do painel', 'Copiado. Cole no Claude: "oi assessor, organiza a caixa do painel"'); return; }
@@ -3152,10 +3246,12 @@ function bind() {
     if (d.fdia) { S.finDia = d.fdia; renderFinancas(); return; }
     if (d.fcat) { S.finCat = S.finCat === d.fcat ? null : d.fcat; renderFinancas(); return; }
     if (d.alitab) { S.aliTab = d.alitab; history.replaceState(null, '', '#alimentacao/' + d.alitab); renderAlimentacao(); return; }
-    if (d.pessoa) { S.pessoa = d.pessoa; LS.set(K + 'pessoa', d.pessoa); renderAlimentacao(); return; }
+    if (d.pessoa) { S.pessoa = d.pessoa; LS.set(K + 'pessoa2', d.pessoa); renderAlimentacao(); return; }
+    if (d.ref) { S.aliRef = d.ref; renderAlimentacao(); return; }
+    if (d.trocap) { S.trocaP = d.trocap; S.trocaOpen = null; LS.set(K + 'trocap', d.trocap); renderAlimentacao(); return; }
     if (d.dias) { S.dias = +d.dias; LS.set(K + 'dias', S.dias); renderAlimentacao(); renderInicio(); return; }
     if (d.pego) { clickPego(d.pego); return; }
-    if (d.trocagrupo) { S.aliTab = 'trocas'; S.trocaQ = ''; renderAlimentacao(); const g = $$('[data-grp]').find(x => x.dataset.grp === d.trocagrupo); if (g) { g.scrollIntoView({ behavior: 'smooth', block: 'start' }); g.classList.add('flash'); } return; }
+    if (d.trocagrupo) { S.aliTab = 'trocas'; S.trocaP = d.tp || (S.pessoa === 'michele' ? 'michele' : 'diovane'); S.trocaQ = ''; S.trocaOpen = d.trocagrupo; history.replaceState(null, '', '#alimentacao/trocas'); renderAlimentacao(); const g = $$('[data-grp]').find(x => x.dataset.grp === d.trocagrupo); if (g) { g.scrollIntoView({ behavior: 'smooth', block: 'start' }); g.classList.add('flash'); } return; }
   });
   // segurar o círculo: não fiz ou cancelado
   document.addEventListener('pointerdown', ev => {
