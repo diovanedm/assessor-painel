@@ -200,6 +200,10 @@ textarea::placeholder,input::placeholder{color:var(--ink3)}
 .feed b{font-weight:600}
 .feed .via{font-size:11.5px;color:var(--signal);font-weight:600;margin-left:6px;white-space:nowrap}
 .feed li.new{animation:newrow 2.4s ease-out}
+.feed li.fl{padding:0;display:block}
+.feed button.fd{display:grid;grid-template-columns:62px 1fr 14px;gap:10px;width:100%;text-align:left;padding:9px 6px;margin:0 -6px;width:calc(100% + 12px);border-radius:10px;font:inherit;color:inherit}
+.feed button.fd:hover{background:var(--raise)}
+.feed button.fd .go{color:var(--ink3);align-self:center;font-size:15px}
 @keyframes newrow{0%{background:var(--signal-soft)}100%{background:transparent}}
 
 /* ───── áreas, casos, ritmo ───── */
@@ -276,6 +280,17 @@ body.discreet .veil{filter:blur(7px);user-select:none;-webkit-user-select:none}
 a.wl{color:var(--signal);text-decoration:none}
 a.wl:hover{text-decoration:underline}
 .wlx{color:var(--ink3)}
+.cm-f{margin:18px 0 0;padding-top:14px;border-top:1px solid var(--line2)}
+.cm-f:first-of-type{border-top:0;padding-top:4px}
+.cm-h{display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap}
+.cm-h h3{font-size:16px;margin:0}
+.cm-h .rp{font-size:12px;color:var(--ink3);display:block;font-weight:400;margin-top:2px}
+.cm-add{border-left:3px solid var(--signal);padding:2px 0 2px 12px;margin:10px 0}
+.cm-add .fmk{font-size:13.5px;color:var(--ink2)}
+.cm-old{margin:8px 0;font-size:13px;color:var(--ink3)}
+.cm-old summary{cursor:pointer}
+.cm-old .md{font-size:13.5px;color:var(--ink3);text-decoration:line-through}
+.back{color:var(--signal);text-decoration:none;font-weight:600}
 .fm{display:flex;flex-wrap:wrap;gap:6px 14px;margin:14px 0 4px;font-size:13px;color:var(--ink2)}
 .fm .rsm{flex-basis:100%;color:var(--ink2);font-size:14px;padding:10px 12px;border-radius:12px;background:var(--panel)}
 
@@ -1814,7 +1829,8 @@ function renderFeed() {
   const items = S.commits.map(feedItem).filter(Boolean).slice(0, 14);
   const fresh = feedSeen && S.lastSync ? new Set(items.filter(i => !feedSeen.has(i.sha)).map(i => i.sha)) : new Set();
   if (S.lastSync) feedSeen = new Set(items.map(i => i.sha));
-  $('#feed').innerHTML = items.length ? items.map(i => `<li class="${fresh.has(i.sha) ? 'new' : ''}"><time>${h(whenTxt(i.date).replace(/^hoje /, '').replace(/^há /, ''))}</time><span><b>${h(i.label)}</b> ${h(i.txt)}${i.via ? '<span class="via">pelo painel</span>' : ''}</span></li>`).join('') : '<li><span></span><span class="muted">Ainda sem mudanças.</span></li>';
+  S.feedIdx = Object.fromEntries(items.map(i => [i.sha, i]));
+  $('#feed').innerHTML = items.length ? items.map(i => `<li class="fl${fresh.has(i.sha) ? ' new' : ''}"><button class="fd" data-commit="${h(i.sha)}" aria-label="Ver o que foi registrado: ${h(i.label)} ${h(i.txt)}"><time>${h(whenTxt(i.date).replace(/^hoje /, '').replace(/^há /, ''))}</time><span><b>${h(i.label)}</b> ${h(i.txt)}${i.via ? '<span class="via">pelo painel</span>' : ''}</span><span class="go" aria-hidden="true">›</span></button></li>`).join('') : '<li><span></span><span class="muted">Ainda sem mudanças.</span></li>';
 }
 function relDay(s) {
   if (!s || !/^\d{4}-\d{2}-\d{2}/.test(s)) return '';
@@ -1845,6 +1861,7 @@ function renderCases() {
 /* ─────────────── gaveta (só leitura + anotar) ─────────────── */
 function openNote(path) {
   if (!S.files[path]) return;
+  S.from = S.open && S.open.startsWith('@') ? S.open.slice(1) : null;
   S.open = path;
   const dr = $('#drawer'), sc = $('#scrim');
   dr.hidden = false; sc.hidden = false;
@@ -1856,17 +1873,86 @@ function closeNote() {
   const ta = $('#drNoteTxt');
   if (ta && ta.value.trim() && !closeNote.warned) { closeNote.warned = true; toast('Você escreveu uma anotação e não guardou. Feche de novo para descartar.'); return; }
   closeNote.warned = false;
-  S.open = null;
+  S.open = null; S.from = null;
   const dr = $('#drawer'), sc = $('#scrim');
   dr.classList.remove('on'); sc.classList.remove('on');
   setTimeout(() => { if (!S.open) { dr.hidden = true; sc.hidden = true; $('#drBody').innerHTML = ''; } }, 260);
 }
+/* ─────────────── registro (commit) na gaveta ─────────────── */
+const Commits = new Map();
+function openCommit(sha) {
+  S.from = null;
+  S.open = '@' + sha;
+  const dr = $('#drawer'), sc = $('#scrim');
+  dr.hidden = false; sc.hidden = false;
+  $('#drBody').innerHTML = '';
+  renderDrawer();
+  requestAnimationFrame(() => { dr.classList.add('on'); sc.classList.add('on'); $('#drClose').focus(); });
+  if (!Commits.has(sha)) {
+    Commits.set(sha, null);
+    gh(`/repos/${cfg.repo}/commits/${sha}`).then(r => {
+      if (!r.ok) throw erro('http', 'commit ' + r.status);
+      Commits.set(sha, { msg: r.json.commit.message, files: (r.json.files || []).map(f => ({ path: f.filename, status: f.status, patch: f.patch })) });
+    }).catch(e => { Commits.set(sha, { err: e }); }).finally(() => { if (S.open === '@' + sha) renderDrawer(); });
+  }
+}
+function cmLines(patch) {
+  const add = [], del = [];
+  for (const l of String(patch || '').split('\n')) {
+    if (/^\+\+\+|^---/.test(l)) continue;
+    if (l[0] === '+') add.push(l.slice(1)); else if (l[0] === '-') del.push(l.slice(1));
+  }
+  const skip = x => !x.trim() || /^\s*atualizado:/.test(x) || /^---\s*$/.test(x);
+  return { add: add.filter(x => !skip(x)), del: del.filter(x => !skip(x)) };
+}
+function cmBlock(lines, path) {
+  const runs = [];
+  for (const l of lines) {
+    const k = l.trim().startsWith('|') ? 'tb' : /^[a-z_]+:\s/.test(l) && !/^https?:/.test(l) ? 'fm' : 'md';
+    if (runs.length && runs[runs.length - 1].k === k) runs[runs.length - 1].ls.push(l); else runs.push({ k, ls: [l] });
+  }
+  return runs.map(r => {
+    if (r.k === 'tb') { const rows = r.ls.filter(l => !isSep(l)).map(cells); return `<div class="tbl"><table><tbody>${rows.map(rw => `<tr>${rw.map(c => `<td${c.length <= 24 && !/\s\S+\s\S+\s/.test(c) ? ' class="nw"' : ''}>${inline(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`; }
+    if (r.k === 'fm') return r.ls.map(l => { const m = l.match(/^([a-z_]+):\s*(.*)$/i); return `<p class="fmk"><b>${h(m[1])}</b>: ${inline(m[2].replace(/^["']|["']$/g, ''))}</p>`; }).join('');
+    return md(r.ls.join('\n'), path);
+  }).join('');
+}
+function renderCommit() {
+  const sha = S.open.slice(1), it = (S.feedIdx || {})[sha], c = Commits.get(sha);
+  $('#drTitle').textContent = it ? it.label : 'Registro';
+  const ghUrl = `https://github.com/${cfg.repo}/commit/${sha}`;
+  $('#drPath').innerHTML = `${it && it.date ? `<span>${h(whenTxt(it.date))}</span>` : ''}<span>${it && it.via ? 'pelo painel' : 'pelo assessor'}</span><a href="${h(ghUrl)}" target="_blank" rel="noopener noreferrer">ver no GitHub</a>`;
+  const body = $('#drBody');
+  if (!c) { body.innerHTML = '<p class="empty" style="padding:30px 0">Carregando o que foi registrado…</p>'; return; }
+  if (c.err) { body.innerHTML = `<p class="empty" style="padding:30px 0">Não consegui abrir este registro agora${c.err.code === 'offline' ? ' (sem conexão)' : ''}.</p>`; Commits.delete(sha); return; }
+  const files = c.files.filter(f => incluir(f.path) && f.status !== 'removed');
+  const sub = c.msg.split('\n')[0].replace(/\s*\[(agenda|planilha|drive|tarefas?|ticktick)\]/g, '').trim();
+  mdTasks = [];
+  let html = `<div class="fm"><span class="rsm">${h(it ? it.txt : sub)}</span></div>`;
+  if (!files.length) html += '<p class="empty">Este registro não mexeu em nenhuma nota.</p>';
+  for (const f of files) {
+    const nf = S.files[f.path], title = nf ? plain(nf.title) : f.path.split('/').pop().replace(/\.md$/, '');
+    const open = nf ? `<button class="btn" data-open="${h(f.path)}">Abrir a nota</button>` : '';
+    html += `<section class="cm-f"><div class="cm-h"><h3>${h(title)}<span class="rp">${h(f.path)}${f.status === 'added' ? ' · nota nova' : ''}</span></h3>${open}</div>`;
+    if (nf && nf.sens && cfg.discreet && !S.reveal.has(f.path)) { html += `<div class="gate" style="padding:18px 0">${ICON.lock.replace('<svg', '<svg style="width:22px;height:22px;color:var(--ink3)"')}<p>Conteúdo de ${h(AREAS[nf.area]?.nome || 'um assunto reservado')}.</p><button class="btn" data-reveal="${h(f.path)}">Mostrar</button></div></section>`; continue; }
+    if (!f.patch) { html += '<p class="muted">Mudança grande demais pra mostrar aqui. Abra a nota.</p></section>'; continue; }
+    const { add, del } = cmLines(f.patch);
+    if (add.length) html += `<div class="cm-add md">${cmBlock(add, f.path)}</div>`;
+    else html += '<p class="muted">Só tirou coisas desta nota.</p>';
+    if (del.length) html += `<details class="cm-old"><summary>O que saiu ou foi trocado (${del.length})</summary><div class="md">${cmBlock(del.map(l => l.replace(/^(\s*)- \[([ xX])\] /, (_, sp, x) => sp + '- ' + (x === ' ' ? '☐ ' : '☑ '))), null)}</div></details>`;
+    html += '</section>';
+  }
+  const scroll = body.scrollTop;
+  body.innerHTML = html;
+  body.scrollTop = scroll;
+}
 function renderDrawer() {
+  if (S.open && S.open.startsWith('@')) { renderCommit(); return; }
   const f = S.files[S.open];
   if (!f) { closeNote(); return; }
   $('#drTitle').textContent = plain(f.title);
   const ghUrl = `https://github.com/${cfg.repo}/blob/${encodeURIComponent(cfg.branch || 'main')}/${repoPath(f.path)}`;
-  $('#drPath').innerHTML = `<span>${h(f.path)}</span>${f.meta.atualizado ? `<span>${relDay(f.meta.atualizado)}</span>` : ''}<a href="${h(ghUrl)}" target="_blank" rel="noopener noreferrer">abrir no GitHub</a>`;
+  $('#drPath').innerHTML = `${S.from ? `<a href="#" class="back" data-commit="${h(S.from)}">← voltar ao registro</a>` : ''}<span>${h(f.path)}</span>${f.meta.atualizado ? `<span>${relDay(f.meta.atualizado)}</span>` : ''}<a href="${h(ghUrl)}" target="_blank" rel="noopener noreferrer">abrir no GitHub</a>`;
   const body = $('#drBody');
   const draft = $('#drNoteTxt') ? $('#drNoteTxt').value : '';
   const focused = document.activeElement && document.activeElement.id === 'drNoteTxt';
@@ -2993,7 +3079,7 @@ function copiar(txt, ok) {
 }
 function bind() {
   document.addEventListener('click', ev => {
-    const t = ev.target.closest('[data-open],[data-task],[data-compra],[data-cxdel],[data-tab],[data-mdt],[data-reveal],[data-find],[data-reg],[data-mood],[data-emo],#copyAsk,[data-act],[data-st],[data-day],[data-wk],[data-pick],[data-ficha],[data-regficha],[data-fmes],[data-ftab],[data-fo],[data-fcart],[data-fvenc],[data-fdia],[data-fcat],[data-alitab],[data-pessoa],[data-dias],[data-pego],[data-trocagrupo],[data-close]');
+    const t = ev.target.closest('[data-commit],[data-open],[data-task],[data-compra],[data-cxdel],[data-tab],[data-mdt],[data-reveal],[data-find],[data-reg],[data-mood],[data-emo],#copyAsk,[data-act],[data-st],[data-day],[data-wk],[data-pick],[data-ficha],[data-regficha],[data-fmes],[data-ftab],[data-fo],[data-fcart],[data-fvenc],[data-fdia],[data-fcat],[data-alitab],[data-pessoa],[data-dias],[data-pego],[data-trocagrupo],[data-close]');
     if (!t) return;
     const d = t.dataset;
     if (t.id === 'copyAsk') { copiar('oi assessor, organiza a caixa do painel', 'Copiado. Cole no Claude: "oi assessor, organiza a caixa do painel"'); return; }
@@ -3043,6 +3129,7 @@ function bind() {
       if (a === 'copiar-gs') { copiar(GS_CODE(), 'Código copiado. Cole no Apps Script da planilha.'); return; }
       return;
     }
+    if (d.commit) { ev.preventDefault(); openCommit(d.commit); return; }
     if (d.open !== undefined) { ev.preventDefault(); closeFind(); openNote(d.open); return; }
     if (d.task) { clickTask(d.task); return; }
     if (d.compra) { const t2 = S.files[COMPRAS]?.tasks.find(x => x.raw === d.compra); if (t2) clickCompra(t2); return; }
