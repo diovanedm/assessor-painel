@@ -847,6 +847,66 @@ const LS = {
   keys() { try { return Object.keys(localStorage); } catch { return []; } },
 };
 const K = 'assessor.painel.';
+/* cache das notas: IndexedDB (cabe centenas de MB; o localStorage para em ~5 MB e o painel
+   passaria a baixar tudo de novo a cada abertura). Sem IndexedDB, volta pro localStorage. */
+const Blobs = {
+  mem: new Map(), db: null,
+  async init() {
+    if (this.db || !window.indexedDB) return;
+    try {
+      this.db = await new Promise((ok, no) => {
+        const r = indexedDB.open('assessor-painel', 1);
+        r.onupgradeneeded = () => r.result.createObjectStore('b');
+        r.onsuccess = () => ok(r.result);
+        r.onerror = () => no(r.error);
+        r.onblocked = () => no(new Error('blocked'));
+      });
+    } catch { this.db = null; }
+  },
+  store(mode) { return this.db.transaction('b', mode).objectStore('b'); },
+  async load(shas) {
+    const want = [...new Set(shas)].filter(x => x && !this.mem.has(x));
+    if (this.db && want.length) {
+      try {
+        await new Promise(ok => {
+          const st = this.store('readonly');
+          let n = want.length;
+          const fim = () => { if (--n === 0) ok(); };
+          for (const x of want) { const g = st.get(x); g.onsuccess = () => { if (g.result != null) this.mem.set(x, g.result); fim(); }; g.onerror = fim; }
+        });
+      } catch { }
+    }
+    /* migra o que ainda estiver no localStorage (versão antiga do painel) */
+    for (const x of want) {
+      if (this.mem.has(x)) continue;
+      const t = LS.raw(K + 'b.' + x);
+      if (t == null) continue;
+      this.mem.set(x, t);
+      if (this.db) { this.put(x, t); LS.del(K + 'b.' + x); }
+    }
+  },
+  get(x) { const t = this.mem.get(x); return t == null ? null : t; },
+  put(x, t) {
+    this.mem.set(x, t);
+    if (this.db) { try { this.store('readwrite').put(t, x); return; } catch { } }
+    LS.put(K + 'b.' + x, t);
+  },
+  gc(keep) {
+    for (const x of [...this.mem.keys()]) if (!keep.has(x)) this.mem.delete(x);
+    for (const k of LS.keys()) if (k.startsWith(K + 'b.') && !keep.has(k.slice(K.length + 2))) LS.del(k);
+    if (!this.db) return;
+    try {
+      const st = this.store('readwrite');
+      const r = st.getAllKeys();
+      r.onsuccess = () => { for (const k of r.result) if (!keep.has(k)) st.delete(k); };
+    } catch { }
+  },
+  clear() {
+    this.mem.clear();
+    for (const k of LS.keys()) if (k.startsWith(K + 'b.')) LS.del(k);
+    if (this.db) { try { this.store('readwrite').clear(); } catch { } }
+  },
+};
 const cfg = Object.assign({ token: '', repo: 'diovanedm/meu-assessor-dados', branch: '', interval: 15, theme: 'auto', discreet: true }, LS.get(K + 'cfg', {}));
 const saveCfg = () => LS.set(K + 'cfg', cfg);
 const devHost = ['localhost', '127.0.0.1'].includes(location.hostname);
@@ -1184,12 +1244,12 @@ const repoPath = p => p.split('/').map(encodeURIComponent).join('/');
 function b64dec(s) { const bin = atob(String(s).replace(/\s/g, '')); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return new TextDecoder().decode(u); }
 function b64enc(str) { const u = new TextEncoder().encode(str); let bin = ''; for (let i = 0; i < u.length; i += 0x8000) bin += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(bin); }
 async function getBlob(sha) {
-  const c = LS.raw(K + 'b.' + sha);
+  const c = Blobs.get(sha);
   if (c != null) return c;
   const r = await gh(`/repos/${cfg.repo}/git/blobs/${sha}`);
   if (!r.ok) throw erro('http', 'blob ' + r.status);
   const t = b64dec(r.json.content);
-  LS.put(K + 'b.' + sha, t);
+  Blobs.put(sha, t);
   return t;
 }
 async function pool(items, n, fn) {
@@ -1201,18 +1261,19 @@ function saveSnap() {
   for (const p in S.files) files[p] = S.files[p].sha;
   LS.set(K + 'snap', { repo: cfg.repo, head: S.head, files, commits: S.commits.slice(0, 30), finSha: S.finSha });
 }
-function loadSnap() {
+async function loadSnap() {
   const s = LS.get(K + 'snap', null);
   if (!s || s.repo !== cfg.repo) return false;
-  for (const p in s.files) { const t = LS.raw(K + 'b.' + s.files[p]); if (t != null) S.files[p] = parseFile(p, s.files[p], t); }
+  await Blobs.load([...Object.values(s.files), s.finSha]);
+  for (const p in s.files) { const t = Blobs.get(s.files[p]); if (t != null) S.files[p] = parseFile(p, s.files[p], t); }
   S.head = s.head; S.commits = s.commits || [];
-  if (s.finSha) { const t = LS.raw(K + 'b.' + s.finSha); if (t != null) { try { S.fin = JSON.parse(t); S.finSha = s.finSha; } catch { } } }
+  if (s.finSha) { const t = Blobs.get(s.finSha); if (t != null) { try { S.fin = JSON.parse(t); S.finSha = s.finSha; } catch { } } }
   return Object.keys(S.files).length > 0;
 }
 function gcBlobs() {
-  const keep = new Set(Object.values(S.files).map(f => K + 'b.' + f.sha));
-  if (S.finSha) keep.add(K + 'b.' + S.finSha);
-  for (const k of LS.keys()) if (k.startsWith(K + 'b.') && !keep.has(k)) LS.del(k);
+  const keep = new Set(Object.values(S.files).map(f => f.sha));
+  if (S.finSha) keep.add(S.finSha);
+  Blobs.gc(keep);
 }
 
 async function sync(force = false) {
@@ -1239,10 +1300,11 @@ async function sync(force = false) {
     const next = {};
     let finSha = null;
     for (const e of tr.json.tree) { if (e.type !== 'blob') continue; if (e.path === FIN) finSha = e.sha; else if (incluir(e.path)) next[e.path] = e.sha; }
-    if (finSha !== S.finSha) { if (finSha) { try { S.fin = JSON.parse(await getBlob(finSha)); S.finSha = finSha; } catch { } } else { S.fin = null; S.finSha = null; } S._fm = null; }
+    if (finSha !== S.finSha) { if (finSha) { try { await Blobs.load([finSha]); S.fin = JSON.parse(await getBlob(finSha)); S.finSha = finSha; } catch { } } else { S.fin = null; S.finSha = null; } S._fm = null; }
     const fresh = p => (S.wrote[p] || 0) >= t0;
     const changed = Object.keys(next).filter(p => (!S.files[p] || S.files[p].sha !== next[p]) && !fresh(p));
     const removed = Object.keys(S.files).filter(p => !(p in next) && !fresh(p));
+    await Blobs.load(changed.map(p => next[p]));
     await pool(changed, 6, async p => { S.files[p] = parseFile(p, next[p], await getBlob(next[p])); });
     for (const p of removed) delete S.files[p];
     const prev = S.head;
@@ -1293,7 +1355,7 @@ async function doWrite(path, transform, message) {
     const r = await gh(`/repos/${cfg.repo}/contents/${repoPath(path)}`, { method: 'PUT', body });
     if (r.ok) {
       const nsha = r.json.content.sha;
-      LS.put(K + 'b.' + nsha, out);
+      Blobs.put(nsha, out);
       S.files[path] = parseFile(path, nsha, out);
       S.ours.add(r.json.commit.sha);
       S.wrote[path] = Date.now();
@@ -1918,7 +1980,7 @@ function showCfg() {
   $('#cClose').onclick = () => { o.hidden = true; };
   $('#cOut').onclick = () => {
     cfg.token = ''; cfg.branch = ''; saveCfg();
-    for (const k of LS.keys()) if (k.startsWith(K + 'b.') || k === K + 'snap') LS.del(k);
+    Blobs.clear(); LS.del(K + 'snap');
     S.files = {}; S.head = null; S.commits = []; S.etag = null;
     o.hidden = true; showSetup();
   };
@@ -3119,10 +3181,11 @@ function tick() {
   if (Date.now() - S.lastTry >= wait) sync();
 }
 
-function start() {
+async function start() {
   $('#setup').hidden = true;
   $('#app').hidden = false;
-  if (loadSnap()) reindex(); else buildCaixa();
+  await Blobs.init();
+  if (await loadSnap()) reindex(); else buildCaixa();
   route();
   render();
   sync(true);
