@@ -1,0 +1,1 @@
+try{var c=JSON.parse(localStorage.getItem('assessor.painel.cfg')||'{}');var t=c.theme||'auto';if(t==='auto')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;}catch(e){document.documentElement.dataset.theme='light';}
