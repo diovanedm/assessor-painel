@@ -417,6 +417,7 @@ button.w:active,a.w:active{transform:scale(.985)}
 .menu li:last-child a,.menu li:last-child button{border-bottom:0}
 .menu .e{width:26px;text-align:center;font-size:19px}
 .menu .badge{margin-left:auto}
+.menu-nota{margin:12px 4px 0;color:var(--ink3);font-size:13px}
 .sts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .sts button{height:64px;border-radius:16px;border:1.5px solid var(--line);background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:13.5px;font-weight:650;color:var(--ink2)}
 .sts button b{font-size:19px;line-height:1}

@@ -28,3 +28,24 @@ export function lerCaptura(texto, cont = []) {
   const t = /^\(sem texto, .+\)$/.test(texto || '') ? '' : texto || '';
   return { texto: [t, ...linhas].filter(Boolean).join('\n'), anexos };
 }
+
+/** Linhas de painel/organizados.md (gravadas pelo `cerebro.py caixa tirar c1=<nota>`):
+ *  "- 2026-11-19 16:03 — 📝 Anotação (cultura): … → [[bateria]] (organizado 2026-11-19 16:33)"
+ *  → { data, hora, texto, destino, orgData, orgHora }. A mais nova vem primeiro. */
+export function lerOrganizados(body) {
+  const out = [];
+  for (const l of String(body || '').split(/\r?\n/)) {
+    const m = l.match(/^- (\d{4}-\d{2}-\d{2}) (\d{1,2}:\d{2}) — (.*) → (.+?)(?: \(organizado (\d{4}-\d{2}-\d{2}) (\d{1,2}:\d{2})\))?$/u);
+    if (m) out.push({ data: m[1], hora: m[2], texto: m[3], destino: m[4].trim(), orgData: m[5] || m[1], orgHora: m[6] || '' });
+  }
+  return out;
+}
+
+/** "[[bateria]]" → { stem: 'bateria' }; "planilha" → { texto: 'na planilha' }. */
+export function destinoLegivel(destino) {
+  const m = String(destino || '').match(/^\[\[([^\]|#]+)(?:\|[^\]]*)?\]\]$/);
+  if (m) return { stem: m[1].trim() };
+  const d = String(destino || '').trim(), n = d.toLowerCase();
+  const fixos = { planilha: 'na planilha', ticktick: 'no TickTick', agenda: 'na agenda', calendar: 'na agenda', journal: 'no journal', organizado: '' };
+  return { texto: n in fixos ? fixos[n] : d };
+}

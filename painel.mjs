@@ -1,14 +1,14 @@
 /* ─────────────── utilidades ─────────────── */
-import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDaNota, linkDeRegistro, metasDaTabela, notaSolta, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=b08edc099ce0';
-import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=b08edc099ce0';
-import { visaoBemEstar } from './bem-estar.mjs?v=b08edc099ce0';
-import { casosEmAndamento, pontoDeParada } from './memoria.mjs?v=b08edc099ce0';
-import { linhasCaptura, lerCaptura, tipoAnexo, extAudio } from './captura.mjs?v=b08edc099ce0';
+import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDaNota, linkDeRegistro, metasDaTabela, notaSolta, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=402afaf7205a';
+import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=402afaf7205a';
+import { visaoBemEstar } from './bem-estar.mjs?v=402afaf7205a';
+import { casosEmAndamento, pontoDeParada } from './memoria.mjs?v=402afaf7205a';
+import { linhasCaptura, lerCaptura, tipoAnexo, extAudio, lerOrganizados, destinoLegivel } from './captura.mjs?v=402afaf7205a';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const h = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=b08edc099ce0';
+import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=402afaf7205a';
 const DOW = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 const DOWL = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
 const MON = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
@@ -27,7 +27,7 @@ const PAGES = [
   { id: 'financas', nome: 'Finanças', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="6" width="17" height="13" rx="3"/><path d="M3.5 10.5h17"/><path d="M15 15h2.5"/></svg>' },
   { id: 'alimentacao', nome: 'Alimentação', mais: true, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5h16a8 8 0 0 1-16 0Z"/><path d="M9.5 9c0-1.6 1.2-2 1.2-3.6M13.5 9c0-1.6 1.2-2 1.2-3.6"/></svg>' },
   { id: 'registrar', nome: 'Capturar', mais: true, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/></svg>' },
-  { id: 'caixa', nome: 'Caixa', mais: true, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 13.5 6 5h12l2.5 8.5V19H3.5v-5.5Z"/><path d="M3.5 13.5h5l1.5 2h4l1.5-2h5"/></svg>' },
+  { id: 'caixa', nome: 'Caixa de entrada', mais: true, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 13.5 6 5h12l2.5 8.5V19H3.5v-5.5Z"/><path d="M3.5 13.5h5l1.5 2h4l1.5-2h5"/></svg>' },
   { id: 'areas', nome: 'Memória', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="m15.5 8.5-2 5-5 2 2-5 5-2Z"/></svg>' },
 ];
 const MAIS_ICON = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5.5" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="18.5" cy="12" r="1.9"/></svg>';
@@ -875,7 +875,7 @@ function dialSvg(items, nm, dow) {
 
 const isChecked = g => { const o = taskOv(g); return o ? o.kind === 'feita' : g.checked; };
 const byDue = (a, b) => (a.due || '9').localeCompare(b.due || '9') || (b.prio === 'alta') - (a.prio === 'alta');
-import { organizarTarefas, primeiroPasso, prioridadesDoDia } from './tarefas.mjs?v=b08edc099ce0';
+import { organizarTarefas, primeiroPasso, prioridadesDoDia } from './tarefas.mjs?v=402afaf7205a';
 function estadoTarefa(g) {
   if (g.nova) return { feita:false, data:'' };
   const item = taskOv(g);
@@ -939,7 +939,8 @@ function renderTasks() {
   const meuDia = [...grupos.atrasadas, ...grupos.hoje];
   const selecionadas = S.tab === 'hoje' ? meuDia : grupos[S.tab] || [];
   const reservadas = selecionadas.filter(tarefaReservada).length;
-  const contagem = { ...grupos, hoje:meuDia };
+  // O número da aba é o que a lista mostra; as reservadas escondidas aparecem só no aviso de baixo.
+  const contagem = Object.fromEntries(Object.entries({ ...grupos, hoje:meuDia }).map(([k, v]) => [k, v.filter(mostrar)]));
   $('#tasksDate').textContent = now().toLocaleDateString('pt-BR', {weekday:'long', day:'numeric', month:'long'});
   $('#tabs').innerHTML = Object.entries(abas).map(([id,titulo]) => `<a href="#tarefas/${id}" ${S.tab === id ? 'aria-current="page"' : ''}>${titulo}<span>${contagem[id].length}</span></a>`).join('');
   const expandidos = new Set($$('#tasks details[open]').map(el => el.dataset.taskLista));
@@ -1135,7 +1136,16 @@ function whenTxt(d) {
   return dayLabel(t) + ' ' + hm(d);
 }
 let feedSeen = null;
+function renderOndeFicou() {
+  const el = $('#orgList');
+  if (!el) return;
+  const lista = organizados().slice(0, 20);
+  el.innerHTML = lista.length
+    ? lista.map(o => `<li><span class="org-o">${textoOrganizado(o)}<small>${h(o.data === ymd(now()) ? 'hoje ' + o.hora : dm(o.data) + ' ' + o.hora)}</small></span><span class="org-d">✅ ${destinoHtml(o.destino) ? 'Guardado ' + destinoHtml(o.destino) : 'Organizado'}</span></li>`).join('')
+    : '<li class="muted">Quando o assessor organizar a caixa, aparece aqui onde cada coisa ficou.</li>';
+}
 function renderFeed() {
+  renderOndeFicou();
   const items = S.commits.map(feedItem).filter(Boolean).slice(0, 14);
   const fresh = feedSeen && S.lastSync ? new Set(items.filter(i => !feedSeen.has(i.sha)).map(i => i.sha)) : new Set();
   if (S.lastSync) feedSeen = new Set(items.map(i => i.sha));
@@ -2009,7 +2019,7 @@ function atalhosDaMemoria() {
 function wCaixa() {
   const visiveis = S.cx.filter(it => !cfg.discreet || (it.path !== RESERVADA && !VEIL.has(it.area) && !['compra','comprovante','receita','transferencia'].includes(it.kind)));
   const n = visiveis.length;
-  return `<a class="hj-inbox" href="#caixa" id="wCaixa"><span><strong>Caixa de entrada</strong><small>${n ? `${n} ${n === 1 ? 'item para organizar' : 'itens para organizar'}` : 'Nenhum item visível para organizar'}</small></span><span aria-hidden="true">→</span></a>`;
+  return `<a class="hj-inbox" href="${n ? '#caixa' : '#caixa/historico'}" id="wCaixa"><span><strong>Caixa de entrada</strong><small>${n ? `${n} ${n === 1 ? 'item esperando o assessor' : 'itens esperando o assessor'}` : 'Nada esperando o assessor · ver onde ficou'}</small></span><span aria-hidden="true">→</span></a>`;
 }
 function wAreas() {
   const areas = AREA_ORDER.filter(a => S.files['areas/'+a+'/'+a+'.md']);
@@ -2085,12 +2095,10 @@ function sheetMais() {
   const n = S.cx.length;
   openSheet('Mais', `<ul class="menu">
     <li><a href="#registrar" data-close><span class="e">📝</span>Capturar</a></li>
-    <li><a href="#caixa" data-close><span class="e">📥</span>Caixa${n ? `<span class="badge">${n}</span>` : ''}</a></li>
+    <li><a href="#caixa" data-close><span class="e">📥</span>Caixa de entrada${n ? `<span class="badge">${n}</span>` : ''}</a></li>
     <li><a href="#alimentacao" data-close><span class="e">🥗</span>Alimentação</a></li>
-    <li><button type="button" data-act="buscar"><span class="e">🔎</span>Buscar nas notas</button></li>
-    <li><button type="button" data-act="olho"><span class="e">${cfg.discreet ? '👁️' : '🙈'}</span>${cfg.discreet ? 'Mostrar emocional, saúde e valores' : 'Esconder emocional, saúde e valores'}</button></li>
-    <li><button type="button" data-act="ajustes"><span class="e">⚙️</span>Ajustes</button></li>
-  </ul>`);
+  </ul>
+  <p class="menu-nota">Buscar, mostrar/esconder e ajustes ficam nos ícones do topo.</p>`);
 }
 
 /* ─────────────── formulários (folha e Registrar usam os mesmos) ─────────────── */
@@ -2371,15 +2379,42 @@ function renderRegistrar() {
   if (!f) { body.innerHTML = formCaptura(); f = body.firstElementChild; ligarCaptura(f); }
   renderConversa();
 }
+// Onde cada item da caixa foi parar (painel/organizados.md, gravado pelo assessor ao organizar).
+const ORGANIZADOS = 'painel/organizados.md';
+const organizados = () => lerOrganizados(S.files[ORGANIZADOS]?.body);
+function destinoHtml(destino) {
+  const d = destinoLegivel(destino);
+  if (d.stem) {
+    const path = S.stems[d.stem.toLowerCase()], f = path && S.files[path];
+    if (!f) return `em ${h(d.stem)}`;
+    if (cfg.discreet && (f.sens || VEIL.has(f.area))) return 'numa nota reservada';
+    return `em <button type="button" class="cap-dest" data-open="${h(path)}">${h(plain(f.title))} <span aria-hidden="true">›</span></button>`;
+  }
+  return h(d.texto);
+}
+function textoOrganizado(o) {
+  const reservado = /^🔒/u.test(o.texto) || (cfg.discreet && /^(💬|💭|🧭|💳|🧾|💰|🔄)/u.test(o.texto));
+  return reservado ? '<span class="muted">Item reservado</span>' : h(plain(o.texto.replace(/^💬 Captura:\s*/u, '')));
+}
+function respostaOrganizado(o) {
+  const onde = destinoHtml(o.destino);
+  return `<li class="chat-reply"><div class="bubble">✅ ${onde ? 'Guardado ' + onde : 'Organizado pelo assessor'}</div><time>organizado ${h(o.orgData === ymd(now()) ? o.orgHora : dm(o.orgData) + ' ' + o.orgHora)}</time></li>`;
+}
 function renderConversa() {
   const log = $('#regLog');
   if (!log) return;
-  const hoje = S.cx.filter(it => it.date === ymd(now()));
-  const html = hoje.length
-    ? hoje.map(it => `<li class="chat-msg${it.kind === 'captura' ? ' chat-livre' : ''}${it.pending ? ' busy' : ''}"><div class="bubble">${cxLabel(it, false)}</div><time>${h(it.time)}${it.pending ? ' · enviando…' : ''}</time></li>`).join('')
-    : '<li class="chat-empty">Escreva do jeito que vier: um gasto, uma ideia, como você está, um print. O assessor organiza.</li>';
+  const d = ymd(now());
+  // Hoje: o que ainda está na caixa e o que o assessor já guardou, cada um com a resposta de onde ficou.
+  const naCaixa = S.cx.filter(it => it.date === d).map(it => ({ chave: it.date + ' ' + pad5(String(it.time || '')), html:
+    `<li class="chat-msg${it.kind === 'captura' ? ' chat-livre' : ''}${it.pending ? ' busy' : ''}"><div class="bubble">${cxLabel(it, false)}</div><time>${h(it.time)}${it.pending ? ' · enviando…' : ' · na caixa, o assessor ainda não organizou'}</time></li>` }));
+  const feitos = organizados().filter(o => o.data === d || o.orgData === d).map(o => ({ chave: o.data + ' ' + pad5(o.hora), html:
+    `<li class="chat-msg chat-livre feito"><div class="bubble">${textoOrganizado(o)}</div><time>${h(o.data === d ? o.hora : dm(o.data) + ' ' + o.hora)}</time></li>${respostaOrganizado(o)}` }));
+  const itens = [...feitos, ...naCaixa].sort((a, b) => a.chave.localeCompare(b.chave));
+  const html = itens.length
+    ? itens.map(i => i.html).join('')
+    : '<li class="chat-empty">Escreva do jeito que vier: um gasto, uma ideia, como você está, um print. O assessor organiza e mostra aqui onde ficou.</li>';
   if (log.innerHTML === html) return;
-  const cresceu = log.children.length < hoje.length;
+  const cresceu = log.children.length < itens.length;
   log.innerHTML = html;
   if (cresceu && S.page === 'registrar') log.lastElementChild?.scrollIntoView({ block: 'nearest' });
 }
@@ -2524,13 +2559,13 @@ function enviarCaptura(f) {
       }
       anexos.push({ tipo: a.tipo, caminho: a.caminho });
     }
-    return addCaixa(linhasCaptura(texto, anexos), { msg: 'captura', ok: 'Guardado. O assessor organiza.' });
+    return addCaixa(linhasCaptura(texto, anexos), { msg: 'captura', ok: 'Na caixa. Quando o assessor organizar, aparece aqui onde ficou.' });
   });
 }
 
 /* ─────────────── Finanças (o conteúdo do "Meus gastos", lendo o espelho da planilha) ─────────────── */
-import { brl, brl0, c2, addM, dim, pnum, valorCapturado, calcularFinancas, orcamentoDoMes, filtrarLancamentos } from './financas.mjs?v=b08edc099ce0';
-import { lancamentosRealizados, graficoLancamentos } from './financas-visao.mjs?v=b08edc099ce0';
+import { brl, brl0, c2, addM, dim, pnum, valorCapturado, calcularFinancas, orcamentoDoMes, filtrarLancamentos } from './financas.mjs?v=402afaf7205a';
+import { lancamentosRealizados, graficoLancamentos } from './financas-visao.mjs?v=402afaf7205a';
 const FCAT = { 'Moradia': ['🏠', '#7B61FF'], 'Mercado': ['🛒', '#22B07D'], 'Alimentação fora': ['🍔', '#FF8A3D'], 'Transporte': ['🚗', '#3D8BFF'], 'Saúde': ['💊', '#FF5C7A'], 'Educação': ['📚', '#A35CF7'], 'Família': ['👨‍👩‍👧', '#F2B705'], 'Bebê': ['🍼', '#38BDF8'], 'Lazer': ['🎉', '#E05CD0'], 'Assinaturas': ['📺', '#5B6BF5'], 'Contas fixas': ['💡', '#F59E0B'], 'Revenda': ['📦', '#A0785A'], 'Outros': ['🛍️', '#8E949C'], 'Uber e 99': ['🚕', '#3D8BFF'], 'Delivery': ['🛵', '#FF8A3D'], 'Comer fora': ['🍔', '#FF5C7A'], 'Compras avulsas (Outros)': ['🛍️', '#8E949C'], 'Receita': ['💰', '#22B07D'], 'Conta': ['🧾', '#F59E0B'], 'Fatura': ['💳', '#7C3AED'], 'Pix e boleto': ['⚡', '#3D8BFF'] };
 const fic = n => FCAT[n] || ['•', '#8E949C'];
 const CARTAO_COR = { 'Nubank': 'linear-gradient(135deg,#6A06B0,#A855F7)', 'Mercado Pago': 'linear-gradient(135deg,#0077C8,#22C1F5)', 'Bradesco Amazon': 'linear-gradient(135deg,#A30825,#F0435F)', 'XP': 'linear-gradient(135deg,#1f2937,#4B5563)' };
