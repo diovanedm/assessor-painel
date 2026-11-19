@@ -1,0 +1,140 @@
+/* Hierarquia da visão mensal. As abas detalhadas usam os mesmos controles da planilha. */
+.fin {
+  --fin-acento: #447553;
+  --fin-despesa: #c5884c;
+  --fin-card: #e7efdd;
+  --fin-card-texto: #203d32;
+  --fin-card-suave: #456054;
+  max-width: 1120px;
+}
+:root[data-theme="dark"] .fin {
+  --fin-acento: #a4cf92;
+  --fin-despesa: #edbd89;
+  --fin-card: #263d32;
+  --fin-card-texto: #edfae7;
+  --fin-card-suave: #bed1bf;
+}
+.fin .fin-heading { gap: 18px; margin: 0 0 24px; align-items: end; }
+.fin-titulo { display: flex; align-items: center; gap: 14px; }
+.fin-ocultar { min-height: 44px; display: inline-flex; align-items: center; gap: 6px; color: var(--ink2); font-size: 13px; }
+.fin-ocultar svg { width: 15px; height: 15px; }
+.fin-contexto { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+.fin-contexto > a { display: inline-flex; align-items: center; gap: 7px; min-height: 44px; color: var(--signal); font-weight: 550; text-decoration: none; }
+.fin-contexto > a:hover { text-decoration: underline; }
+.fin-voltar { display: inline-flex; align-items: center; min-height: 38px; margin-bottom: 5px; color: var(--ink2); text-decoration: none; }
+.fin-heading .fin-acts { display: flex; width: auto; flex-wrap: nowrap; gap: 9px; }
+.fin-heading .btn, .fin-acts summary { flex: none; min-height: 44px; padding: 0 16px; border-radius: 12px; font-size: 14px; }
+.fin-acts summary { border: 1px solid var(--line); background: var(--panel); }
+.fin-menu { position: relative; }
+.fin-menu summary, .fin-detalhes summary, .fin-valores summary { cursor: pointer; list-style: none; }
+.fin-menu summary::-webkit-details-marker, .fin-detalhes summary::-webkit-details-marker, .fin-valores summary::-webkit-details-marker { display: none; }
+.fin-menu summary { display: flex; align-items: center; justify-content: center; gap: 9px; font-weight: 600; }
+.fin-menu summary::after, .fin-detalhes summary::after, .fin-valores summary::after { content: ''; width: 6px; height: 6px; flex: none; border: solid currentColor; border-width: 0 1.5px 1.5px 0; transform: rotate(45deg); }
+.fin-menu[open] summary::after, .fin-detalhes[open] > summary::after, .fin-valores[open] summary::after { transform: rotate(225deg); }
+.fin-pop { position: absolute; top: calc(100% + 4px); z-index: 6; right: 0; min-width: 180px; max-width: 90vw; padding: 6px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 8px 24px #0002; }
+.fin-pop a, .fin-pop button { display: flex; align-items: center; text-align: left; min-height: 44px; width: 100%; padding: 8px 12px; border-radius: 8px; font: 500 14px/1.35 var(--f-ui); text-decoration: none; }
+.fin-pop a:hover, .fin-pop button:hover, .fin-pop a[aria-current] { background: var(--signal-soft); }
+.fin-links { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; padding: 0 0 14px; border-bottom: 1px solid var(--line2); }
+.fin-links > a, .fin-links summary { min-height: 44px; padding: 8px 14px; display: inline-flex; align-items: center; text-decoration: none; color: var(--ink2); font-size: 14px; font-weight: 600; border-radius: 12px; }
+.fin-links > a[aria-current], .fin-links .fin-ativa { background: var(--signal-soft); color: var(--signal); }
+.fin-links > a:hover, .fin-links summary:hover { color: var(--signal); }
+
+.fin-periodo { display: flex; align-items: center; gap: 12px; width: max-content; max-width: 100%; margin: 22px 0 16px; }
+.fin-periodo strong { font-size: 17px; font-weight: 600; letter-spacing: -.025em; }
+.fin-periodo strong::first-letter { text-transform: uppercase; }
+.fin-periodo button { font: 500 21px/1 var(--f-ui); width: 44px; height: 44px; border: 1px solid var(--line2); border-radius: 50%; background: var(--panel); }
+.fin-periodo button:disabled { opacity: .4; }
+.fin-visao { display: grid; grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr); gap: 18px; align-items: start; }
+.fin-visao > *, .fin-col-saldo { min-width: 0; }
+.fin .fsec { margin: 18px 0; padding: clamp(19px, 2.2vw, 30px); }
+.fin .fin-visao .fsec { margin: 0; }
+.fin-col-saldo { display: grid; gap: 12px; }
+.fin-saldo { border-radius: 22px; margin: 0; padding: clamp(22px, 2.6vw, 35px); background: var(--fin-card); color: var(--fin-card-texto); display: grid; gap: 18px; }
+.fin-saldo h2 { margin: 0; font-size: 15px; font-weight: 600; }
+.fin-quantia { margin: 8px 0 2px; font-size: clamp(31px, 3.1vw, 50px); letter-spacing: -.07em; font-weight: 600; line-height: 1.1; overflow-wrap: anywhere; }
+.fin-ausente { margin: 8px 0 0; font-size: 21px; }
+.fin-saldo-info, .fin-legenda { margin: 7px 0 0; font-size: 13px; color: var(--ink2); line-height: 1.5; }
+.fin-saldo-info, .fin-projecao span { color: var(--fin-card-suave); }
+.fin-projecao { display: grid; gap: 2px; padding-top: 16px; border-top: 1px solid color-mix(in srgb, var(--fin-card-texto) 20%, transparent); }
+.fin-projecao span { font-size: 13px; }
+.fin-projecao strong { font-size: 18px; font-weight: 600; }
+.fin-saldo a, .fin-recentes header a, .fin-detalhes-conteudo > a { display: inline-flex; align-items: center; gap: 8px; width: fit-content; min-height: 44px; font-weight: 600; text-decoration: none; font-size: 14px; }
+.fin-saldo a:hover, .fin-recentes header a:hover, .fin-detalhes-conteudo > a:hover { text-decoration: underline; }
+.fin-saldo a { border-radius: 8px; }
+.fin-detalhes { background: var(--panel); border: 1px solid var(--line2); border-radius: 15px; }
+.fin-detalhes summary, .fin-valores summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 48px; font-size: 14px; }
+.fin-detalhes summary { padding: 13px 19px; font-weight: 600; }
+.fin-detalhes-conteudo { padding: 0 18px 14px; }
+.fin-detalhes-conteudo h3 { font-size: 15px; margin: 10px 0; }
+.fin .fin-detalhes .fsec { padding: 0; margin-top: 16px; border: 0; border-radius: 0; box-shadow: none; }
+.fin-lista-valores { font-size: 13px; padding-top: 12px; border-top: 1px solid var(--line2); }
+.fin-lista-valores div { display: flex; justify-content: space-between; gap: 12px; margin: 7px 0; }
+.fin-lista-valores dd { margin: 0; text-align: right; font-weight: 600; }
+.fin-totais { display: flex; gap: 18px 36px; margin: 19px 0 24px; flex-wrap: wrap; }
+.fin-total { display: grid; gap: 4px; }
+.fin-total strong { font-size: clamp(17px, 2vw, 25px); font-weight: 600; letter-spacing: -.04em; }
+.fin-key { display: inline-flex; align-items: center; gap: 6px; color: var(--ink2); font-size: 13px; }
+.fin-key::before { content: ''; width: 9px; height: 9px; border-radius: 3px; }
+.chave-receita::before, .barra-receita { background: var(--fin-acento); }
+.chave-despesa::before, .barra-despesa { background: var(--fin-despesa); }
+.fin-barras, .fin-rotulos { display: flex; gap: 8px; }
+.fin-barras { height: 108px; position: relative; background: repeating-linear-gradient(to top, var(--line2) 0 1px, transparent 1px 50%); }
+.fin-base { position: absolute; width: 100%; height: 1px; background: var(--line); }
+.fin-par { flex: 1; position: relative; }
+.fin-par i { position: absolute; width: min(26%, 24px); min-height: 1px; border-radius: 4px 4px 0 0; }
+.fin-par .barra-receita { right: 51%; }
+.fin-par .barra-despesa { left: 51%; }
+.fin-rotulos { margin-top: 7px; color: var(--ink2); font-size: 12px; }
+.fin-rotulos span { flex: 1; text-align: center; }
+.fin-valores { margin-top: 12px; border-top: 1px solid var(--line2); }
+.fin-valores summary { justify-content: start; color: var(--ink2); font-size: 13px; }
+.fin-valores table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.fin-valores th, .fin-valores td { padding: 7px 2px; border-bottom: 1px solid var(--line2); text-align: end; }
+.fin-valores th:first-child { text-align: start; }
+.fin-empty { margin: 22px 0 8px; color: var(--ink2); }
+.fin-recentes { grid-column: 1 / -1; }
+.fin-recentes header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px 12px; }
+.fin-recentes header a { color: var(--signal); }
+.fin .row { padding: 13px 0; }
+.fin .row .nm { white-space: normal; overflow-wrap: anywhere; line-height: 1.4; }
+.fin .row .mt { color: var(--ink2); margin-top: 3px; }
+.fin .fin-cx { margin: 0 0 14px; }
+.fin > .source-date, .fin > .setup-fin { margin: 24px 0 0; }
+body.discreet .fin.fin-revelada .veil { filter: none; user-select: text; -webkit-user-select: text; }
+.fin-privado { margin-top: 18px; display: grid; justify-items: center; gap: 14px; padding: 42px 20px; border: 1px solid var(--line2); background: var(--panel); border-radius: 20px; }
+.fin-privado svg { width: 28px; height: 28px; color: var(--signal); }
+.fin-privado h2 { margin: 0; text-align: center; font-size: 19px; }
+
+@media (max-width: 810px) {
+  .fin-visao { grid-template-columns: 1fr; gap: 16px; }
+}
+@media (max-width: 680px) {
+  .fin .fin-heading { margin-bottom: 14px; }
+  .fin .fin-acts { gap: 6px; }
+  .fin-heading .btn, .fin-acts summary { padding: 0 12px; }
+  .fin-links { column-gap: 0; row-gap: 3px; padding-bottom: 8px; }
+  .fin-links > a, .fin-links summary { padding-inline: 10px; }
+  .fin-links { position: relative; }
+  .fin-links .fin-menu { position: static; }
+  .fin-links .fin-pop { left: 0; right: 0; max-width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .fin-contexto { margin-bottom: 2px; font-size: 14px; }
+  .fin-menu .fin-pop { min-width: 170px; }
+  .fin-periodo { margin: 16px auto; }
+  .fin-saldo { padding: 22px; gap: 12px; }
+  .fin-quantia { font-size: clamp(33px, 9.5vw, 46px); }
+  .fin-fluxo .fin-total strong { font-size: 21px; }
+  .fin .row { gap: 8px; }
+  .fin .row .ico { width: 30px; height: 30px; font-size: 14px; }
+  .fin .row .vl { font-size: 13px; }
+  .fin .row .mt { font-size: 12px; }
+}
+@media (max-width: 430px) {
+  .fin .fin-heading { align-items: start; }
+  .fin-heading .fin-acts { width: 100%; }
+  .fin-links > a, .fin-links summary { padding-inline: 8px; font-size: 13px; }
+  .fin-col-saldo { display: contents; }
+  .fin-saldo { grid-row: 1; }
+  .fin-fluxo { grid-row: 2; }
+  .fin-detalhes { grid-row: 4; }
+  .fin-recentes { grid-row: 3; }
+}

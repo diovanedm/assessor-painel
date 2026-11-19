@@ -1,4 +1,6 @@
 /* ─────────────── utilidades ─────────────── */
+import { destinoDaArea, linkDeRegistro, notasDaArea, primeiraMeta, secoesDeLeitura } from './areas.mjs';
+import { visaoBemEstar } from './bem-estar.mjs';
 import { casosEmAndamento, pontoDeParada } from './memoria.mjs';
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -21,10 +23,10 @@ const PAGES = [
   { id: 'inicio', nome: 'Hoje', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7" rx="2.2"/><rect x="13" y="4" width="7" height="7" rx="2.2"/><rect x="4" y="13" width="7" height="7" rx="2.2"/><rect x="13" y="13" width="7" height="7" rx="2.2"/></svg>' },
   { id: 'tarefas', nome: 'Tarefas', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="7" r="2"/><path d="M11 7h9M11 17h9"/><path d="m4.5 17 1.5 1.5L8.5 15.5"/></svg>' },
   { id: 'financas', nome: 'Finanças', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="6" width="17" height="13" rx="3"/><path d="M3.5 10.5h17"/><path d="M15 15h2.5"/></svg>' },
-  { id: 'alimentacao', nome: 'Alimentação', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5h16a8 8 0 0 1-16 0Z"/><path d="M9.5 9c0-1.6 1.2-2 1.2-3.6M13.5 9c0-1.6 1.2-2 1.2-3.6"/></svg>' },
+  { id: 'alimentacao', nome: 'Alimentação', mais: true, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5h16a8 8 0 0 1-16 0Z"/><path d="M9.5 9c0-1.6 1.2-2 1.2-3.6M13.5 9c0-1.6 1.2-2 1.2-3.6"/></svg>' },
   { id: 'registrar', nome: 'Capturar', mais: true, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/></svg>' },
   { id: 'caixa', nome: 'Caixa', mais: true, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 13.5 6 5h12l2.5 8.5V19H3.5v-5.5Z"/><path d="M3.5 13.5h5l1.5 2h4l1.5-2h5"/></svg>' },
-  { id: 'areas', nome: 'Memória', mais: true, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="m15.5 8.5-2 5-5 2 2-5 5-2Z"/></svg>' },
+  { id: 'areas', nome: 'Memória', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="m15.5 8.5-2 5-5 2 2-5 5-2Z"/></svg>' },
 ];
 const MAIS_ICON = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5.5" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="18.5" cy="12" r="1.9"/></svg>';
 
@@ -147,7 +149,7 @@ const S = {
   tasks: [], compras: { secs: [], heads: [] }, agenda: { series: [], events: [] }, habits: [], inbox: [], stems: {}, name: '',
   cx: [], ov: null, pendAdd: [], pendDel: new Set(),
   syncing: false, lastSync: 0, lastTry: 0, pending: 0, err: null, rateReset: 0, wrote: {}, resync: false,
-  page: 'inicio', tab: 'hoje', reg: 'nota', open: null, reveal: new Set(), minute: -1, day: '',
+  page: 'inicio', areaRoute: null, areaHash: '', tab: 'hoje', reg: 'nota', open: null, reveal: new Set(), minute: -1, day: '',
   notaArea: 'geral', regFicha: 'estou', fichas: [], plano: null, comprados: [], sel: null, wk: 0, _idx: {},
   extratoTipo: '', extratoBusca: '',
   fin: null, finSha: null, _fm: null, finMes: null, finTab: 'resumo', finOpen: {}, finDia: null, finCat: null, fcart: null,
@@ -660,7 +662,7 @@ function clickCompra(t) {
 /* ─────────────── markdown → HTML ─────────────── */
 function wl(stem, alias) {
   const p = S.stems[String(stem).trim().toLowerCase()];
-  const label = alias || (p ? S.files[p].title : stem);
+  const label = alias || (p ? h(S.files[p].title) : stem);
   return p ? `<a href="#" class="wl" data-open="${h(p)}">${label}</a>` : `<span class="wlx">${label}</span>`;
 }
 function inline(t) {
@@ -675,8 +677,17 @@ function inline(t) {
 }
 const plain = t => String(t || '').replace(/\[\[([^\]|#]+)(?:#[^\]|]*)?(?:\|([^\]]+))?\]\]/g, (_, st, al) => al || (S.stems[st.toLowerCase()] ? S.files[S.stems[st.toLowerCase()]].title : st)).replace(/\*\*/g, '').replace(/`/g, '');
 
-let mdTasks = [];
-function md(src, path) {
+function tabelaDeRegistros(head, rows) {
+  return `<div class="reading-entries">${rows.map(cells => {
+    const fields = cells.slice(1).map((value, i) => {
+      if (!value.trim()) return '';
+      return `<div><dt>${inline(head[i+1] || 'Detalhe')}</dt><dd>${inline(value)}</dd></div>`;
+    }).join('');
+    return `<details><summary>${inline(cells[0])}</summary><dl>${fields}</dl></details>`;
+  }).join('')}</div>`;
+}
+
+function md(src, path, reading = false) {
   const L = src.split('\n');
   let out = '', i = 0, para = [];
   const flush = () => { if (para.length) { out += `<p>${inline(para.join(' '))}</p>`; para = []; } };
@@ -694,15 +705,16 @@ function md(src, path) {
       flush();
       const head = cells(l); i += 2; const rows = [];
       while (i < L.length && L[i].trim().startsWith('|')) rows.push(cells(L[i++]));
-      out += `<div class="tbl"><table><thead><tr>${head.map(c => `<th>${inline(c)}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr>${r.map(c => `<td${c.length <= 24 && !/\s\S+\s\S+\s/.test(c) ? ' class="nw"' : ''}>${inline(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+      if (reading && head.length >= 4 && /^(data|dia)\b/.test(norm(head[0])) && rows.length) out += tabelaDeRegistros(head, rows);
+      else out += `<div class="tbl"><table><thead><tr>${head.map(c => `<th>${inline(c)}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr>${r.map(c => `<td${c.length <= 24 && !/\s\S+\s\S+\s/.test(c) ? ' class="nw"' : ''}>${inline(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
       continue;
     }
     if (/^>/.test(l)) {
       flush(); const buf = [];
       while (i < L.length && /^>/.test(L[i])) buf.push(L[i++].replace(/^>\s?/, ''));
       const co = buf[0] && buf[0].match(/^\[!(\w+)\]([-+]?)\s*(.*)$/);
-      if (co) { const inner = md(buf.slice(1).join('\n'), path); out += `<details${co[2] === '-' ? '' : ' open'}><summary>${inline(co[3] || co[1])}</summary>${inner}</details>`; }
-      else out += `<blockquote>${md(buf.join('\n'), path)}</blockquote>`;
+      if (co) { const inner = md(buf.slice(1).join('\n'), path, reading); out += `<details${co[2] === '-' ? '' : ' open'}><summary>${inline(co[3] || co[1])}</summary>${inner}</details>`; }
+      else out += `<blockquote>${md(buf.join('\n'), path, reading)}</blockquote>`;
       continue;
     }
     if (/^\s*([-*+]|\d+\.)\s+/.test(l)) {
@@ -737,9 +749,8 @@ function renderList(items, path) {
       const key = tid ? 'id:' + tid : path + '\n' + it.raw;
       const g = S.tasks.find(x => x.key === key);
       const st = g ? isChecked(g) : tm[2] !== ' ';
-      const idx = mdTasks.push({ key, path, raw: it.raw }) - 1;
       const box = g && taskOv(g);
-      html += `<li class="tk${st ? ' done' : ''}"><button class="chk" role="checkbox" aria-checked="${st}" data-mdt="${idx}" aria-label="${st ? 'Reabrir' : 'Marcar como feita'}">${ICON.check}</button><span>${inline(tm[3].replace(/\s*🆔\s*\S+/g, '') + (it.cont || ''))}${box ? ' <span class="tag">na caixa</span>' : ''}</span></li>`;
+      html += `<li class="tk${st ? ' done' : ''}"><button class="chk" role="checkbox" aria-checked="${st}" data-mdt="${h(key)}" data-mdpath="${h(path)}" data-mdraw="${h(it.raw)}" aria-label="${st ? 'Reabrir' : 'Marcar como feita'}">${ICON.check}</button><span>${inline(tm[3].replace(/\s*🆔\s*\S+/g, '') + (it.cont || ''))}${box ? ' <span class="tag">na caixa</span>' : ''}</span></li>`;
     } else {
       html += `<li>${inline(it.raw.replace(/^\s*([-*+]|\d+\.)\s+/, '') + (it.cont || ''))}</li>`;
     }
@@ -754,34 +765,50 @@ function render() {
   document.body.classList.toggle('discreet', !!cfg.discreet);
   $('#eye').setAttribute('aria-pressed', String(!cfg.discreet));
   $('#eyeSlash').style.display = cfg.discreet ? '' : 'none';
-  renderNav(); renderInicio(); renderTasks(); renderFinancas(); renderAlimentacao(); renderRegistrar(); renderCaixa(); renderFeed(); renderInbox(); renderRhythm(); renderAreas(); renderCases();
+  renderNav(); renderInicio(); renderTasks(); renderFinancas(); renderAlimentacao(); renderRegistrar(); renderCaixa(); renderFeed(); renderInbox(); renderRhythm(); renderAreas(); renderCases(); renderAreaPage();
   if (S.open && document.activeElement?.id !== 'drNoteTxt') renderDrawer();
 }
 function renderNav() {
+  const active = S.page === 'area' ? (S.areaRoute.area === 'financas' ? 'financas' : 'areas') : S.page;
   const n = S.cx.length;
   const badge = p => p.id === 'caixa' && n ? `<span class="badge" aria-label="${n} na caixa">${n}</span>` : '';
-  $('#nav').innerHTML = PAGES.map(p => `<a href="#${p.id}"${S.page === p.id ? ' aria-current="page"' : ''}>${p.icon}<span>${p.nome}</span>${badge(p)}</a>`).join('');
-  const naMais = PAGES.some(p => p.mais && p.id === S.page);
-  $('#tabbar').innerHTML = PAGES.filter(p => !p.mais).map(p => `<a href="#${p.id}"${S.page === p.id ? ' aria-current="page"' : ''}>${p.icon}<span>${p.nome}</span></a>`).join('') +
-    `<a href="#" data-act="mais"${naMais ? ' aria-current="page"' : ''} aria-label="Mais: registrar, caixa, áreas">${MAIS_ICON}<span>Mais</span>${n ? `<span class="badge" aria-label="${n} na caixa">${n}</span>` : ''}</a>`;
+  $('#nav').innerHTML = PAGES.map(p => `<a href="#${p.id}"${active === p.id ? ' aria-current="page"' : ''}>${p.icon}<span>${p.nome}</span>${badge(p)}</a>`).join('');
+  const naMais = PAGES.some(p => p.mais && p.id === active);
+  $('#tabbar').innerHTML = PAGES.filter(p => !p.mais).map(p => `<a href="#${p.id}"${active === p.id ? ' aria-current="page"' : ''}>${p.icon}<span>${p.nome}</span></a>`).join('') +
+    `<a href="#" data-act="mais"${naMais ? ' aria-current="page"' : ''} aria-label="Mais opções">${MAIS_ICON}<span>Mais</span>${n ? `<span class="badge" aria-label="${n} na caixa">${n}</span>` : ''}</a>`;
 }
 function route() {
   let [id, sub] = location.hash.slice(1).split('/');
+  let area = destinoDaArea(location.hash, AREA_ORDER);
+  if (area?.area === 'financas' && !area.registros) {
+    history.replaceState(null, '', '#financas');
+    id = 'financas'; sub = ''; area = null;
+  }
   if (!id || id === 'hoje') id = 'inicio';
-  const p = PAGES.some(x => x.id === id) ? id : 'inicio';
+  const p = area ? 'area' : id === 'area' ? 'areas' : PAGES.some(x => x.id === id) ? id : 'inicio';
+  const changed = p !== S.page || (p === 'area' && location.hash !== S.areaHash);
+  const previousArea = S.areaRoute?.area || (S.page === 'financas' ? 'financas' : null);
+  const nextArea = area?.area || (p === 'financas' ? 'financas' : null);
+  if (previousArea && previousArea !== nextArea) S.reveal.delete(`#area/${previousArea}`);
+  S.areaRoute = area;
+  S.areaHash = area ? location.hash : '';
   if (p === 'alimentacao' && ['plano', 'compras', 'trocas'].includes(sub)) S.aliTab = sub;
-  if (p === 'financas' && FIN_TABS.some(t => t[0] === sub)) S.finTab = sub;
+  if (p === 'financas') S.finTab = FIN_TABS.some(t => t[0] === sub) ? sub : 'resumo';
   if (p === 'registrar' && ['nota', 'emocional', 'compra'].includes(sub)) S.reg = sub;
-  const changed = p !== S.page;
   if (changed && p === 'alimentacao') S.aliRef = null;
   S.page = p;
   closeSheet();
   for (const el of $$('.page')) el.hidden = el.dataset.page !== p;
   renderNav();
+  renderAreaPage();
   if (p === 'alimentacao') renderAlimentacao();
-  if (p === 'financas') renderFinancas();
+  if (p === 'financas' || (previousArea === 'financas' && nextArea !== previousArea)) renderFinancas();
   if (p === 'registrar') renderRegistrar();
-  if (changed) window.scrollTo(0, 0);
+  document.title = `${area ? AREAS[area.area].nome : PAGES.find(page => page.id === p)?.nome || 'Hoje'} · Meu Assessor`;
+  if (changed) {
+    window.scrollTo(0, 0);
+    if (p === 'area') $('#areaPage h1')?.focus({ preventScroll: true });
+  }
 }
 
 function dialSvg(items, nm, dow) {
@@ -963,6 +990,7 @@ function renderRhythm() {
   let any = false;
   const boxH = S.cx.filter(i => i.kind === 'habito');
   for (const a of rows) {
+    if (cfg.discreet && VEIL.has(a)) continue;
     let okN = 0, planN = 0, cellsH = '', has = false;
     for (const d of days) {
       const plan = seriesOn(d).filter(s => s.area === a);
@@ -1019,17 +1047,106 @@ function relDay(s) {
   const diff = Math.round((pymd(ymd(now())) - pymd(s.slice(0, 10))) / 864e5);
   return diff <= 0 ? 'mexida hoje' : diff === 1 ? 'mexida ontem' : diff < 15 ? `mexida há ${diff} dias` : `mexida em ${dm(s.slice(0, 10))}`;
 }
-const openCount = prefix => S.tasks.filter(g => !isChecked(g) && g.members.some(m => m.path.startsWith(prefix))).length;
 function renderAreas() {
   $('#memoryLinks').innerHTML = atalhosDaMemoria();
   $('#areaList').innerHTML = AREA_ORDER.map(a => {
-    const p = `areas/${a}/${a}.md`, f = S.files[p];
-    if (!f) return '';
-    const st = norm(f.meta.status || '');
-    const nOpen = openCount(`areas/${a}/`);
-    return `<button class="area" data-open="${h(p)}" style="--c:${areaColor(a)}"><div class="hd"><span class="emo">${AREAS[a].emoji}</span><span class="nm">${h(AREAS[a].nome)}</span>${STATUS[st] ? `<span class="lamp s-${st}">${STATUS[st]}</span>` : ''}</div><p class="rs${VEIL.has(a) ? ' veil' : ''}">${h(plain(f.meta.resumo || ''))}</p><div class="ft">${nOpen ? `<span>${nOpen} ${nOpen > 1 ? 'tarefas abertas' : 'tarefa aberta'}</span>` : ''}<span>${relDay(f.meta.atualizado)}</span></div></button>`;
-  }).join('');
+    const file = S.files[`areas/${a}/${a}.md`];
+    if (!file) return '';
+    const status = norm(file.meta.status || '');
+    let detail = '';
+    if (cfg.discreet && (file.sens || VEIL.has(a))) {
+      detail = `<span class="area-status">${ICON.lock} Área reservada</span>`;
+    } else if (Object.hasOwn(STATUS, status)) {
+      detail = `<span class="area-status lamp s-${status}">${STATUS[status]}</span>`;
+    }
+    return `<a class="area-tile" href="#area/${a}" style="--c:${areaColor(a)}">
+      <span class="tile-mark" aria-hidden="true">${AREAS[a].emoji}</span>
+      <span class="tile-name">${h(AREAS[a].nome)}</span>${detail}
+    </a>`;
+  }).join('') || '<p class="empty">Nenhuma área registrada.</p>';
 }
+function areaRecordList(files, area) {
+  return `<ul class="reading-index">${files.map(f => {
+    const principal = f.path === `areas/${area}/${area}.md`;
+    const date = String(f.meta.atualizado || '').slice(0, 10);
+    const meta = [principal ? 'Nota principal' : '', /^\d{4}-\d{2}-\d{2}$/.test(date) ? `Atualizado em ${dm(date)}/${date.slice(0, 4)}` : ''].filter(Boolean);
+    return `<li><a href="${h(linkDeRegistro(f.path))}"><span class="book-icon" aria-hidden="true">${BOOK_ICON}</span><span class="index-title">${h(plain(f.title))}${meta.length ? `<small>${h(meta.join(' · '))}</small>` : ''}</span><span aria-hidden="true">›</span></a></li>`;
+  }).join('')}</ul>`;
+}
+
+const BOOK_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M6 4.5h11.5v15H7.3A2.3 2.3 0 0 1 5 17.2V6a1.5 1.5 0 0 1 1-1.5Z"/><path d="M5.5 16h12M9 8h5"/></svg>';
+
+function visaoGeralArea(area, files) {
+  const root = `areas/${area}/${area}.md`, f = S.files[root];
+  const goal = f && primeiraMeta(secoesDeLeitura(f.body));
+  const tasks = S.tasks.filter(g => !isChecked(g) && (!cfg.discreet || !g.sens)
+    && g.members.some(m => m.path.startsWith(`areas/${area}/`))).sort(byDue);
+  const recentes = files.filter(note => note !== f).slice(0, 3);
+  return `<div class="area-overview">
+    <section class="area-card focus-card"><h2>${goal ? 'Meta em foco' : 'Panorama'}</h2>
+      <p>${h(short(plain(goal || f?.meta.resumo || 'Abra os registros para consultar o que você guardou nesta área.'), 200))}</p>
+      ${f ? `<a class="area-link" href="${h(linkDeRegistro(root))}">Ler a nota principal <span aria-hidden="true">→</span></a>` : ''}</section>
+    <section class="area-card"><h2>Próximos passos</h2>${tasks.length ? `<ul class="area-steps">${tasks.slice(0, 3).map(t => taskLi(t)).join('')}</ul>` : '<p class="area-empty">Nenhuma tarefa aberta nas notas desta área.</p>'}</section>
+    ${recentes.length ? `<section class="area-card area-recent"><div class="area-card-head"><h2>Registros recentes</h2><a class="area-link" href="#area/${area}/registros">Ver todos</a></div>${areaRecordList(recentes, area)}</section>` : ''}
+    </div>`;
+}
+
+function leituraDaNota(f, sections) {
+  const date = String(f.meta.atualizado || '').slice(0, 10);
+  return `<article class="reading-note">
+    <header><div>${/^\d{4}-\d{2}-\d{2}$/.test(date) ? `<time datetime="${date}">Atualizado em ${dm(date)}/${date.slice(0,4)}</time>` : ''}
+      <h2>${h(plain(f.title))}</h2></div><button type="button" class="btn ghost" data-anotar-nota="${h(f.path)}">Anotar aqui</button></header>
+    ${f.meta.resumo ? `<details class="reading-part" data-section="resumo"><summary>Resumo da nota</summary><div class="md"><p>${inline(f.meta.resumo)}</p></div></details>` : ''}
+    ${sections.map((s, i) => `<details class="reading-part" data-section="${i}"${sections.length === 1 ? ' open' : ''}>
+      <summary>${h(plain(s.title))}</summary><div class="md">${md(s.text, f.path, true)}</div></details>`).join('')}
+    ${!sections.length && !f.meta.resumo ? '<p class="area-empty">Esta nota ainda está vazia.</p>' : ''}
+    </article>`;
+}
+
+let lastAreaMarkup = '';
+function renderAreaPage() {
+  const el = $('#areaPage'), route = S.areaRoute;
+  if (S.page !== 'area' || !route) {
+    if (el.childElementCount) el.replaceChildren();
+    lastAreaMarkup = '';
+    return;
+  }
+  const { area, registros, path } = route;
+  const label = AREAS[area].nome, base = `#area/${area}`;
+  const gate = cfg.discreet && VEIL.has(area) && !S.reveal.has(base);
+  const same = el.dataset.route === location.hash && el.dataset.locked === String(gate);
+  const openDetails = new Map();
+  const detailKey = d => d.dataset.section ?? d.querySelector(':scope > summary')?.textContent;
+  if (same) for (const d of $$('details', el)) openDetails.set(detailKey(d), d.open);
+  el.dataset.route = location.hash;
+  el.dataset.locked = String(gate);
+  el.style.setProperty('--area-accent', areaColor(area));
+  const overview = area === 'financas' ? '#financas' : base;
+  const index = `${base}/registros`;
+  const files = notasDaArea(S.files, area).filter(f => !cfg.discreet || !f.sens || S.reveal.has(base));
+  let body;
+  if (gate) {
+    body = `<div class="area-gate">${ICON.lock}<h2>Área reservada</h2><p>O modo discreto está ativo.</p><button class="btn" data-reveal-area="${area}">Mostrar esta área</button></div>`;
+  } else if (path) {
+    const f = files.find(file => file.path === path);
+    body = f ? leituraDaNota(f, secoesDeLeitura(f.body)) : `<p class="area-card">${S.head ? 'Este registro não foi encontrado.' : 'Carregando o registro…'}</p>`;
+  } else if (registros) {
+    body = `<section class="area-card library"><h2>Registros escritos</h2>${files.length ? areaRecordList(files, area) : `<p class="area-empty">${S.head ? 'Nenhuma nota nesta área.' : 'Carregando suas notas…'}</p>`}</section>`;
+  } else if (SENS.has(area)) {
+    body = visaoBemEstar(area, Object.values(S.files), ymd(now()));
+  } else {
+    body = visaoGeralArea(area, files);
+  }
+  const hide = cfg.discreet && S.reveal.has(base) ? `<button class="btn ghost" data-ocultar-area="${area}">Ocultar área</button>` : '';
+  const markup = `<a class="area-back" href="${path ? index : '#areas'}"><span aria-hidden="true">←</span> ${path ? 'Todos os registros' : 'Todas as áreas'}</a>
+    <div class="area-heading"><h1 tabindex="-1">${label}</h1><div class="area-tools">${hide}${gate || registros ? '' : `<button class="btn ghost" data-area-captura="${area}">＋ Anotar</button>`}</div></div>
+    <nav class="area-tabs" aria-label="Seções de ${label}"><a href="${overview}"${!registros ? ' aria-current="page"' : ''}>Visão geral</a><a href="${index}"${registros ? ' aria-current="page"' : ''}>Registros escritos</a></nav>${body}`;
+  if (same && markup === lastAreaMarkup) return;
+  lastAreaMarkup = markup;
+  el.innerHTML = markup;
+  for (const node of $$('details', el)) if (openDetails.has(detailKey(node))) node.open = openDetails.get(detailKey(node));
+}
+
 function renderCases() {
   const cs = casosEmAndamento(S.files);
   $('#casesCount').textContent = cs.length || '';
@@ -1043,6 +1160,13 @@ function renderCases() {
 /* ─────────────── gaveta (só leitura + anotar) ─────────────── */
 function openNote(path) {
   if (!S.files[path]) return;
+  const area = path.split('/')[1];
+  if (path.startsWith('areas/') && AREA_ORDER.includes(area)) {
+    if (S.open) { closeNote(); if (S.open) return; }
+    const target = path === `areas/${area}/${area}.md` ? `#area/${area}` : linkDeRegistro(path);
+    if (location.hash !== target) location.hash = target;
+    return;
+  }
   S.from = S.open && S.open.startsWith('@') ? S.open.slice(1) : null;
   S.open = path;
   const dr = $('#drawer'), sc = $('#scrim');
@@ -1109,7 +1233,6 @@ function renderCommit() {
   if (c.err) { body.innerHTML = `<p class="empty" style="padding:30px 0">Não consegui abrir este registro agora${c.err.code === 'offline' ? ' (sem conexão)' : ''}.</p>`; Commits.delete(sha); return; }
   const files = c.files.filter(f => incluir(f.path) && f.status !== 'removed');
   const sub = c.msg.split('\n')[0].replace(/\s*\[(agenda|planilha|drive|tarefas?|ticktick)\]/g, '').trim();
-  mdTasks = [];
   let html = `<div class="fm"><span class="rsm">${h(it ? it.txt : sub)}</span></div>`;
   if (!files.length) html += '<p class="empty">Este registro não mexeu em nenhuma nota.</p>';
   for (const f of files) {
@@ -1142,7 +1265,6 @@ function renderDrawer() {
     body.innerHTML = `<div class="gate">${ICON.lock.replace('<svg', '<svg style="width:28px;height:28px;color:var(--ink3)"')}<p>Esta nota é de ${h(AREAS[f.area]?.nome || 'um assunto reservado')}.</p><button class="btn" data-reveal="${h(f.path)}">Mostrar a nota</button></div>`;
     return;
   }
-  mdTasks = [];
   const meta = [];
   if (f.meta.status) meta.push(`<span>Status: <b>${h(f.meta.status)}</b></span>`);
   if (Array.isArray(f.meta.pessoas) && f.meta.pessoas.length) meta.push(`<span>Pessoas: ${f.meta.pessoas.map(p => wl(p)).join(', ')}</span>`);
@@ -1558,7 +1680,7 @@ function sheetMais() {
   openSheet('Mais', `<ul class="menu">
     <li><a href="#registrar" data-close><span class="e">📝</span>Registrar</a></li>
     <li><a href="#caixa" data-close><span class="e">📥</span>Caixa${n ? `<span class="badge">${n}</span>` : ''}</a></li>
-    <li><a href="#areas" data-close><span class="e">🧭</span>Memória</a></li>
+    <li><a href="#alimentacao" data-close><span class="e">🥗</span>Alimentação</a></li>
     <li><button type="button" data-act="buscar"><span class="e">🔎</span>Buscar nas notas</button></li>
     <li><button type="button" data-act="olho"><span class="e">${cfg.discreet ? '👁️' : '🙈'}</span>${cfg.discreet ? 'Mostrar emocional, saúde e valores' : 'Esconder emocional, saúde e valores'}</button></li>
     <li><button type="button" data-act="ajustes"><span class="e">⚙️</span>Ajustes</button></li>
@@ -1793,6 +1915,7 @@ function renderRegistrar() {
 
 /* ─────────────── Finanças (o conteúdo do "Meus gastos", lendo o espelho da planilha) ─────────────── */
 import { brl, brl0, c2, addM, dim, pnum, valorCapturado, calcularFinancas, orcamentoDoMes, filtrarLancamentos } from './financas.mjs';
+import { lancamentosRealizados, graficoLancamentos } from './financas-visao.mjs';
 const FCAT = { 'Moradia': ['🏠', '#7B61FF'], 'Mercado': ['🛒', '#22B07D'], 'Alimentação fora': ['🍔', '#FF8A3D'], 'Transporte': ['🚗', '#3D8BFF'], 'Saúde': ['💊', '#FF5C7A'], 'Educação': ['📚', '#A35CF7'], 'Família': ['👨‍👩‍👧', '#F2B705'], 'Bebê': ['🍼', '#38BDF8'], 'Lazer': ['🎉', '#E05CD0'], 'Assinaturas': ['📺', '#5B6BF5'], 'Contas fixas': ['💡', '#F59E0B'], 'Revenda': ['📦', '#A0785A'], 'Outros': ['🛍️', '#8E949C'], 'Uber e 99': ['🚕', '#3D8BFF'], 'Delivery': ['🛵', '#FF8A3D'], 'Comer fora': ['🍔', '#FF5C7A'], 'Compras avulsas (Outros)': ['🛍️', '#8E949C'], 'Receita': ['💰', '#22B07D'], 'Conta': ['🧾', '#F59E0B'], 'Fatura': ['💳', '#7C3AED'], 'Pix e boleto': ['⚡', '#3D8BFF'] };
 const fic = n => FCAT[n] || ['•', '#8E949C'];
 const CARTAO_COR = { 'Nubank': 'linear-gradient(135deg,#6A06B0,#A855F7)', 'Mercado Pago': 'linear-gradient(135deg,#0077C8,#22C1F5)', 'Bradesco Amazon': 'linear-gradient(135deg,#A30825,#F0435F)', 'XP': 'linear-gradient(135deg,#1f2937,#4B5563)' };
@@ -1877,16 +2000,18 @@ async function guardarMovimento(form) {
   botao.disabled = false;
 }
 
+function linhaFinanceira(r, hoje) {
+  const receita = r.tipo === 'Receita';
+  const estado = r.data > hoje ? 'Previsto' : r.pagamento === 'Crédito' ? 'Na fatura' : receita ? 'Recebido' : 'Pago';
+  const [ic, cor] = fic(receita ? 'Receita' : r.categoria);
+  const meta = [dm(r.data), r.categoria, r.pagamento, estado].filter(Boolean).map(h).join(' · ');
+  return `<li>${frow(ic, cor, h(r.descricao || r.categoria || r.tipo), meta,
+    `<span class="vl veil ${receita ? 'grn' : ''}">${receita && r.valor > 0 ? '+' : ''}${brl(receita ? r.valor : -r.valor)}</span>`)}</li>`;
+}
+
 function linhasDoExtrato(M, mes) {
-  const lancamentos = filtrarLancamentos(M, mes, S.extratoTipo, S.extratoBusca);
-  const hoje = ymd(now());
-  return lancamentos.map(r => {
-    const receita = r.tipo === 'Receita';
-    const estado = r.data > hoje ? 'Previsto' : r.pagamento === 'Crédito' ? 'Na fatura' : receita ? 'Recebido' : 'Pago';
-    const [ic, cor] = fic(receita ? 'Receita' : r.categoria);
-    return `<li>${frow(ic, cor, h(r.descricao || r.categoria), `${dm(r.data)} · ${h(r.categoria)} · ${h(r.pagamento)} · ${estado}`,
-      `<span class="vl veil ${receita ? 'grn' : ''}">${receita ? '+' : '−'} ${brl(r.valor)}</span>`)}</li>`;
-  }).join('') || '<li class="empty">Nenhum lançamento com esses filtros neste mês.</li>';
+  const lancamentos = filtrarLancamentos(M, mes, S.extratoTipo, S.extratoBusca), hoje = ymd(now());
+  return lancamentos.map(item => linhaFinanceira(item, hoje)).join('') || '<li class="empty">Nenhum lançamento com esses filtros neste mês.</li>';
 }
 
 function verExtrato(M, mes) {
@@ -1921,39 +2046,53 @@ function resumoDaPlanilha() {
   return linhas ? `<section class="fsec"><h2>Resumo da planilha</h2><p class="hint">Valores da última leitura indicada no topo.</p><ul class="rows">${linhas}</ul></section>` : '';
 }
 
-function cabecalhoFinanceiro() {
+function cabecalhoFinanceiro(reveladaLocalmente) {
   const gerado = S.fin?.gerado ? new Date(S.fin.gerado) : null;
   const data = gerado && !isNaN(gerado) ? gerado.toLocaleString('pt-BR', { dateStyle:'short', timeStyle:'short', timeZone:'America/Sao_Paulo' }) : '';
-  return `<header class="fin-heading"><div class="page-h"><h1>Finanças</h1>
-    <p class="source-date">${data ? 'Espelho da planilha em ' + h(data) : 'Aguardando o espelho da planilha'}</p></div>
+  return `<div class="fin-contexto"><a class="fin-voltar" href="#areas">‹ Áreas</a>
+    <a class="fin-escritos" href="#area/financas/registros">Registros escritos <span aria-hidden="true">↗</span></a></div>
+    <header class="fin-heading"><div class="page-h"><div class="fin-titulo"><h1>Finanças</h1>
+    ${reveladaLocalmente ? `<button type="button" class="fin-ocultar" data-ocultar-area="financas" aria-label="Ocultar finanças">${ICON.lock} Ocultar</button>` : ''}</div>
+    <p class="source-date">${data ? 'Planilha atualizada em ' + h(data) : 'Aguardando o espelho da planilha'}</p></div>
     <div class="fin-acts"><button type="button" class="btn" data-act="compra">＋ Despesa</button>
-    <button type="button" class="btn ghost" data-act="receita">＋ Receita</button>
-    <button type="button" class="btn ghost" data-act="transferencia">Transferir</button>
-    <button type="button" class="btn ghost" data-act="comprovante">Comprovante</button></div></header>`;
+    <details class="fin-menu"><summary>Outras ações</summary><div class="fin-pop">
+      <button type="button" data-act="receita">Adicionar receita</button>
+      <button type="button" data-act="transferencia">Transferir entre contas</button>
+      <button type="button" data-act="comprovante">Enviar comprovante</button></div></details></div></header>`;
+}
+
+function navegacaoFinanceira() {
+  const links = lista => lista.map(([id, nome]) => `<a href="#financas/${id}" ${S.finTab === id ? 'aria-current="page"' : ''}>${nome}</a>`).join('');
+  const principais = FIN_TABS.slice(0, 3), outras = FIN_TABS.slice(3);
+  const ativa = outras.find(([id]) => id === S.finTab);
+  return `<nav class="fin-links" aria-label="Seções de finanças">${links(principais)}
+    <details class="fin-menu"><summary${ativa ? ' class="fin-ativa"' : ''}>${ativa ? ativa[1] : 'Mais'}</summary>
+    <div class="fin-pop">${links(outras)}</div></details></nav>`;
 }
 
 function renderFinancas() {
   const el = $('#fin');
   if (!el) return;
-  const M = finModel();
+  const revelada = cfg.discreet && S.reveal.has('#area/financas');
+  const M = finModel(), cabecalho = cabecalhoFinanceiro(revelada), links = navegacaoFinanceira();
+  el.classList.toggle('fin-revelada', revelada);
+  if (!M) { el.innerHTML = `${cabecalho}${setupFin(true)}`; return; }
+  if (cfg.discreet && !revelada) {
+    el.innerHTML = `${cabecalho}${links}<div id="finBody" class="fin-privado">${ICON.lock}<h2>Finanças em modo discreto</h2>
+      <button type="button" class="btn" data-reveal-area="financas">Mostrar finanças</button></div>`;
+    return;
+  }
   const cx = S.cx.filter(i => ['compra', 'comprovante', 'receita', 'transferencia'].includes(i.kind));
   const cxHtml = cx.length ? `<div class="fin-cx"><a href="#caixa">${cx.length} ${cx.length === 1 ? 'registro financeiro aguardando' : 'registros financeiros aguardando'} conferência na caixa</a></div>` : '';
-  const cabecalho = cabecalhoFinanceiro();
-  if (!M) { el.innerHTML = `${cabecalho}${cxHtml}${setupFin(true)}`; return; }
-  if (!S.finMes || !M.meses.includes(S.finMes)) S.finMes = M.meses.includes(ymd(now()).slice(0, 7)) ? ymd(now()).slice(0, 7) : M.meses[M.meses.length - 1];
-  const mes = S.finMes, i = M.meses.indexOf(mes), pj = M.proj[i], k = finKpi(M, mes), rcm = M.rc[mes];
-  const atual = pj.tipo === 'atual';
-  const nomeMes = MESES[+mes.slice(5) - 1].replace(/^./, c => c.toUpperCase()) + ' ' + mes.slice(0, 4);
-  const top = `<div class="fin-top">
-    <div class="fin-nav"><button type="button" data-fmes="${i - 1}" ${i <= 0 ? 'disabled' : ''} aria-label="Mês anterior">‹</button><b>${nomeMes}</b><button type="button" data-fmes="${i + 1}" ${i >= M.meses.length - 1 ? 'disabled' : ''} aria-label="Próximo mês">›</button></div>
-    <div class="sal"><div><div class="l">Saldo inicial</div><div class="v veil${pj.saldo_inicial < 0 ? ' neg' : ''}">${pj.saldo_inicial == null ? '—' : brl(pj.saldo_inicial)}</div></div>${atual ? `<div><div class="l">Saldo estimado hoje</div><div class="v veil${pj.saldo_atual < 0 ? ' neg' : ''}">${pj.saldo_atual == null ? '—' : brl(pj.saldo_atual)}</div></div>` : `<div><div class="l">Entradas − saídas</div><div class="v veil">${brl(pj.entradas - pj.saidas)}</div></div>`}<div class="big"><div class="l">${pj.tipo === 'passado' ? 'Saldo final' : 'Previsão no fim do mês'}</div><div class="v veil${pj.saldo_final < 0 ? ' neg' : ''}">${pj.saldo_final == null ? '—' : brl(pj.saldo_final)}</div></div></div>
-    <div class="fin-pills"><div>💳 ${atual ? 'Já no cartão, a pagar' : 'Fatura já lançada'}<b class="veil">${brl(rcm ? rcm.ja_no_cartao : 0)}</b></div><div>⏳ ${atual ? 'Vai entrar até fechar' : 'Vai entrar (recorrentes)'}<b class="veil">${brl(rcm ? rcm.vai_entrar : 0)}</b></div></div>
-    <p class="fin-l">Reserva no cofrinho, fora do saldo: <b class="veil">${brl(pj.reserva)}</b> · saldos de ${pj.saldo_em ? dm(pj.saldo_em) : '—'}${atual ? `<br>Gasto no mês: <b class="veil">${brl(k.total)}</b> · média de <b class="veil">${brl(k.media)}</b> por dia` : ''}</p>
-    ${pj.tipo !== 'futuro' && pj.saldo_inicial == null ? '<p class="fin-l">Falta o saldo do dia 1 deste mês na aba Saldos mensais.</p>' : ''}
-  </div>`;
-  const tabs = `<div class="fin-tabs" role="tablist" aria-label="Finanças">${FIN_TABS.map(([id, l]) => `<button role="tab" type="button" data-ftab="${id}" aria-selected="${S.finTab === id}">${l}</button>`).join('')}</div>`;
-  el.innerHTML = `${cabecalho}${top}${cxHtml}${tabs}<div id="finBody">${finTab(M, mes, pj, k)}</div>${setupFin(false)}`;
+  const mesAtual = ymd(now()).slice(0, 7);
+  if (!M.meses.includes(S.finMes)) S.finMes = M.meses.includes(mesAtual) ? mesAtual : M.meses.at(-1);
+  const mes = S.finMes, i = M.meses.indexOf(mes), pj = M.proj[i];
+  const nomeMes = MESES[Number(mes.slice(5)) - 1] + ' de ' + mes.slice(0, 4);
+  const seletor = `<div class="fin-periodo" aria-label="Mês selecionado"><button type="button" data-fmes="${i - 1}" ${i <= 0 ? 'disabled' : ''} aria-label="Mês anterior">‹</button>
+    <strong>${nomeMes}</strong><button type="button" data-fmes="${i + 1}" ${i >= M.meses.length - 1 ? 'disabled' : ''} aria-label="Próximo mês">›</button></div>`;
+  el.innerHTML = `${cabecalho}${links}${seletor}${cxHtml}<div id="finBody">${finTab(M, mes, pj, finKpi(M, mes))}</div>${setupFin(false)}`;
 }
+
 const planilhaUrl = () => { const m = (S.files['areas/financas/financas.md']?.text || '').match(/Google Sheets `([\w-]{25,})`/); return m ? `https://docs.google.com/spreadsheets/d/${m[1]}/edit` : 'https://docs.google.com/spreadsheets/'; };
 function setupFin(vazio) {
   const auto = /apps script/i.test(S.fin?.fonte || '');
@@ -1967,23 +2106,47 @@ function setupFin(vazio) {
     <li>Execute <b>instalar</b> e autorize. O primeiro espelho é enviado na instalação. O acionador confere as mudanças a cada dez minutos.</li></ol>${fonte}</details>`;
 }
 
+function cartaoSaldo(M, pj) {
+  const atual = pj.tipo === 'atual', futuro = pj.tipo === 'futuro';
+  const saldo = atual ? pj.saldo_atual : pj.saldo_final;
+  const titulo = atual ? 'Saldo estimado hoje' : futuro ? 'Saldo previsto no fim do mês' : 'Saldo no fim do mês';
+  const proximo = atual ? pj.saldo_final : pj.saldo_inicial;
+  const rcm = M.rc[pj.mes];
+  const bancos = M.saldos.map(r => `<li>${frow(r.reserva ? '◉' : '▤', corBanco(r.conta), h(r.conta),
+    `${r.atualizado ? 'Saldo em ' + dm(r.atualizado) : 'Sem data de atualização'}${r.reserva ? ' · Reserva' : ''}`,
+    `<span class="vl">${r.saldo == null ? '—' : brl(r.saldo)}</span>`)}</li>`).join('');
+  return `<section class="fin-saldo"><div><h2>${titulo}</h2>
+    ${saldo == null ? '<p class="fin-ausente">Saldo indisponível</p>' : `<p class="fin-quantia">${brl(saldo)}</p>`}
+    ${atual ? '<p class="fin-saldo-info">Disponível nas contas, sem as reservas</p>' : ''}</div>
+    <div class="fin-projecao"><span>${atual ? 'Previsão para o fim do mês' : futuro ? 'Saldo inicial previsto' : 'Saldo inicial'}</span>
+    <strong>${proximo == null ? 'Sem registro' : brl(proximo)}</strong></div>
+    <a href="#financas/previsao">Ver fluxo de caixa <span aria-hidden="true">→</span></a></section>
+    ${atual ? `<details class="fin-detalhes"><summary>Saldos, reservas e cartões</summary><div class="fin-detalhes-conteudo">
+    <h3>Saldo em cada conta</h3><ul class="rows">${bancos || '<li class="empty">Sem saldos registrados.</li>'}</ul>
+    <dl class="fin-lista-valores"><div><dt>Saldo inicial do mês</dt><dd>${pj.saldo_inicial == null ? 'Sem registro' : brl(pj.saldo_inicial)}</dd></div>
+    ${rcm ? `<div><dt>No cartão, a pagar</dt><dd>${brl(rcm.ja_no_cartao)}</dd></div><div><dt>Recorrentes até o fechamento</dt><dd>${brl(rcm.vai_entrar)}</dd></div>` : ''}</dl>
+    <a href="#financas/cartoes">Ver faturas →</a>${resumoDaPlanilha()}</div></details>` : ''}`;
+}
+
+function visaoMensal(M, mes, pj) {
+  const hoje = ymd(now()), movimento = lancamentosRealizados(M.lanc, mes, hoje);
+  const recentes = movimento.itens.slice(0, 4);
+  const tituloRegistro = pj.tipo === 'futuro' ? 'Lançamentos previstos' : 'Últimos lançamentos';
+  const lista = pj.tipo === 'futuro' ? filtrarLancamentos(M, mes, '', '').reverse().slice(0, 4) : recentes;
+  return `<div class="fin-visao"><div class="fin-col-saldo">${cartaoSaldo(M, pj)}</div>
+    <section class="fsec fin-fluxo"><h2>Receitas e despesas</h2>
+    <p class="fin-legenda">Por data do lançamento${pj.tipo === 'atual' ? ', até ' + dm(hoje) : ''}. Inclui compras no crédito e no vale.</p>
+    ${graficoLancamentos(movimento)}</section>
+    <section class="fsec fin-recentes"><header><h2>${tituloRegistro}</h2><a href="#financas/extrato">Ver extrato <span aria-hidden="true">→</span></a></header>
+    <ul class="rows">${lista.map(r => linhaFinanceira(r, hoje)).join('') || '<li class="empty">Sem lançamentos para mostrar.</li>'}</ul></section></div>`;
+}
+
 function finTab(M, mes, pj, k) {
   const t = S.finTab, O = S.finOpen;
   if (t === 'extrato') return verExtrato(M, mes);
   if (t === 'orcamento') return verOrcamento(M, mes);
   const lancMes = M.desp.filter(r => r.data.startsWith(mes));
-  if (t === 'resumo') {
-    const bancos = M.saldos.map(r => frow(r.reserva ? '🐷' : '🏦', corBanco(r.conta), h(r.conta), `${r.atualizado ? 'atualizado em ' + dm(r.atualizado) : 'sem data'}${r.reserva ? ' <span class="pill">reserva</span>' : ''}`, `<span class="vl veil">${r.saldo == null ? '—' : brl(r.saldo)}</span>`)).map(x => `<li>${x}</li>`).join('');
-    const its = M.movs.filter(x => x.mes === mes && x.origem === 'Conta' && x.situacao !== 'feito');
-    const tot = its.reduce((s, x) => s - x.valor, 0);
-    const contas = `<li>${frow('🧾', '#F59E0B', 'Contas de ' + MESES[+mes.slice(5) - 1], its.length ? `${its.length} ${its.length > 1 ? 'contas pendentes' : 'conta pendente'} · toque para ${O.contas ? 'fechar' : 'ver'}` : 'Nenhuma conta pendente neste mês', `<span class="vl red veil">${brl(tot)}</span>`, its.length ? 'data-fo="contas"' : '')}${O.contas ? `<div class="sub">${its.map(x => `<div><span class="d">${dm(x.data)}</span><span class="n">${h(x.descricao)}${x.situacao === 'atrasada' ? ' <span class="pill atr">atrasada</span>' : ''}</span><span class="v veil">${brl(-x.valor)}</span></div>`).join('')}</div>` : ''}</li>`;
-    const cur = ymd(now()).slice(0, 7);
-    const cards = mes === cur ? fCards(M) : mes < cur ? M.faturas.filter(f => f.mes === mes) : M.faturas.filter(f => f.mes === mes && f.status !== 'paga').sort((a, b) => b.total - a.total);
-    const cc = cards.map(r => { const key = 'c|' + r.cartao + '|' + r.vencimento; const it = M.fatItens.filter(x => x.cartao === r.cartao && x.vencimento === r.vencimento); return `<li>${frow('💳', corBanco(r.cartao), h(r.cartao), `vence ${dm(r.vencimento)} · ${ST_FAT[r.status]} · toque para ${O[key] ? 'fechar' : 'ver'}`, `<span class="vl veil">${brl(r.total)}${r.previsto > 0 ? `<small>vai entrar ${brl(r.previsto)}</small>` : ''}</span>`, `data-fo="${h(key)}"`)}${O[key] ? `<div class="sub">${it.map(x => `<div><span class="d">${dm(x.data)}</span><span class="n">${h(x.descricao)}${x.origem === 'previsto' ? ' <span class="pill">previsto</span>' : ''}</span><span class="v veil">${brl(x.valor)}</span></div>`).join('') || '<div><span class="n muted">Nenhuma compra nesta fatura.</span></div>'}${r.credito ? `<div><span class="d">—</span><span class="n">Crédito do cartão (pagamento a mais)</span><span class="v veil" style="color:var(--ok)">− ${brl(r.credito)}</span></div>` : ''}</div>` : ''}</li>`; }).join('');
-    return `${resumoDaPlanilha()}<section class="fsec"><h2>Saldo em cada banco</h2><p class="hint">O cofrinho é reserva e fica fora do saldo.</p><ul class="rows">${bancos || '<li class="empty">Nenhuma conta na aba Saldos.</li>'}</ul>${pj.saldo_atual != null ? `<p class="hint">Saldo atual, sem a reserva: <b class="veil" style="color:var(--ink)">${brl(pj.saldo_atual)}</b></p>` : ''}</section>
-      <section class="fsec"><h2>Contas a pagar no mês</h2><p class="hint">Boletos e contas fixas que ainda não foram pagos.</p><ul class="rows">${contas}</ul></section>
-      <section class="fsec"><h2>Cartão de crédito</h2><p class="hint">A fatura de cada cartão, com as cobranças recorrentes que ainda vão cair.</p><ul class="rows">${cc || '<li class="empty">Nenhuma fatura neste mês.</li>'}</ul></section>`;
-  }
+  if (t === 'resumo') return visaoMensal(M, mes, pj);
   if (t === 'alerta') {
     const gr = {}; let evit = 0, evitN = 0, total = 0, cred = 0, credN = 0, form = 0, formN = 0;
     for (const r of lancMes) { total += r.valor; if (r.pagamento === 'Crédito') { cred += r.valor; credN++; if (r.valor <= 30) { form += r.valor; formN++; } } const g2 = grupoEvit(r); if (g2) { evit += r.valor; evitN++; const x = gr[g2] || (gr[g2] = { t: 0, n: 0 }); x.t += r.valor; x.n++; } }
@@ -2090,7 +2253,6 @@ function abaContas(M, mes) {
     ).join('') || '<li class="empty">Nenhuma cobrança lançada neste mês.</li>'}</ul></section>`;
 }
 
-function fCards(M) { const by = {}; for (const r of M.faturas) { if (r.status === 'paga') continue; if (!by[r.cartao]) by[r.cartao] = r; } return Object.values(by).sort((a, b) => b.total - a.total); }
 function ritmoSvg(M, mes) {
   const acum = mm => { const d = {}; for (const r of M.desp) if (r.data.startsWith(mm)) d[r.data] = (d[r.data] || 0) + r.valor; const [y, m] = mm.split('-').map(Number); const nd = mm === ymd(now()).slice(0, 7) ? now().getDate() : dim(y, m); const out = []; let ac = 0; for (let i = 1; i <= nd; i++) { ac += d[mm + '-' + pad(i)] || 0; out.push([i, ac]); } return out; };
   const cur = acum(mes), ant = M.desp.some(r => r.data.startsWith(addM(mes, -1))) ? acum(addM(mes, -1)) : [];
@@ -2357,10 +2519,25 @@ function copiar(txt, ok) {
 }
 function bind() {
   document.addEventListener('click', ev => {
-    const t = ev.target.closest('[data-commit],[data-open],[data-task],[data-compra],[data-cxdel],[data-tab],[data-mdt],[data-reveal],[data-find],[data-reg],[data-mood],[data-emo],#copyAsk,[data-act],[data-st],[data-day],[data-wk],[data-pick],[data-ficha],[data-regficha],[data-fmes],[data-ftab],[data-fo],[data-fcart],[data-fvenc],[data-fdia],[data-fcat],[data-alitab],[data-pessoa],[data-dias],[data-pego],[data-trocagrupo],[data-ref],[data-trocap],[data-close]');
+    const t = ev.target.closest('[data-commit],[data-open],[data-task],[data-compra],[data-cxdel],[data-tab],[data-mdt],[data-reveal],[data-find],[data-reg],[data-mood],[data-emo],#copyAsk,[data-act],[data-st],[data-day],[data-wk],[data-pick],[data-ficha],[data-regficha],[data-fmes],[data-ftab],[data-fo],[data-fcart],[data-fvenc],[data-fdia],[data-fcat],[data-alitab],[data-pessoa],[data-dias],[data-pego],[data-trocagrupo],[data-ref],[data-trocap],[data-close],[data-reveal-area],[data-ocultar-area],[data-area-captura],[data-anotar-nota]');
     if (!t) return;
     const d = t.dataset;
     if (t.id === 'copyAsk') { copiar('oi assessor, organiza a caixa do painel', 'Copiado. Cole no Claude: "oi assessor, organiza a caixa do painel"'); return; }
+    const privacyArea = d.revealArea || d.ocultarArea;
+    if (privacyArea && AREA_ORDER.includes(privacyArea)) {
+      if (d.ocultarArea) S.reveal.delete('#area/' + privacyArea); else S.reveal.add('#area/' + privacyArea);
+      if (S.page === 'financas') renderFinancas(); else renderAreaPage();
+      return;
+    }
+    if (d.areaCaptura && AREA_ORDER.includes(d.areaCaptura)) {
+      openSheet('Anotar em ' + AREAS[d.areaCaptura].nome, formNota(d.areaCaptura), { focus: 'textarea' });
+      return;
+    }
+    if (d.anotarNota && S.files[d.anotarNota]) {
+      const f = S.files[d.anotarNota];
+      openSheet('Anotar sobre ' + plain(f.title), `<form class="f2" data-form="nota-vinculada" data-path="${h(f.path)}"><label class="field">Sua anotação<textarea name="txt" required></textarea></label><div class="form-foot"><button class="btn" type="submit">Guardar na caixa</button></div></form>`, { focus: 'textarea' });
+      return;
+    }
     if (d.close !== undefined) { closeSheet(); return; }
     if (d.pick) {
       const grp = t.closest('[role="radiogroup"]');
@@ -2414,9 +2591,8 @@ function bind() {
     if (d.cxdel) { const it = S.cx.find(i => i.path + '\n' + i.block === d.cxdel); if (it) delCaixa(it, 'Tirei da caixa.'); return; }
     if (d.tab) { S.tab = d.tab; renderTasks(); $(`[data-tab="${d.tab}"]`)?.focus(); return; }
     if (d.mdt) {
-      const m = mdTasks[+d.mdt]; if (!m) return;
-      if (S.tasks.some(x => x.key === m.key)) clickTask(m.key);
-      else if (m.path === COMPRAS) { const t2 = S.files[COMPRAS].tasks.find(x => x.raw === m.raw); if (t2) clickCompra(t2); }
+      if (S.tasks.some(x => x.key === d.mdt)) clickTask(d.mdt);
+      else if (d.mdpath === COMPRAS) { const t2 = S.files[COMPRAS]?.tasks.find(x => x.raw === d.mdraw); if (t2) clickCompra(t2); }
       return;
     }
     if (d.reveal) { S.reveal.add(d.reveal); renderDrawer(); return; }
@@ -2480,13 +2656,16 @@ function bind() {
     if (kind === 'receita' || kind === 'transferencia') { guardarMovimento(f); return; }
     if (kind === 'outro') { const txt = oneLine(f.txt.value); if (!txt) { f.txt.focus(); return; } const lugar = f.lugar.value; addCaixa([`🛒 Comprado: ${txt}${lugar ? ` (no lugar de ${lugar})` : ''}`], { msg: `comprado — ${short(txt, 40)}`, ok: lugar ? `Anotado no lugar de ${lugar}.` : 'Anotado.' }); f.txt.value = ''; f.lugar.value = ''; return; }
     if (kind === 'addcompra') { const txt = oneLine(f.txt.value); if (!txt) { f.txt.focus(); return; } addCompraBox(txt, f.sec.value); f.txt.value = ''; return; }
-    if (f.id === 'drNote') {
+    if (f.id === 'drNote' || kind === 'nota-vinculada') {
       ev.preventDefault();
-      const v = $('#drNoteTxt').value.trim(); const nf = S.files[S.open]; if (!v || !nf) return;
+      const field = kind === 'nota-vinculada' ? f.elements.txt : $('#drNoteTxt');
+      const v = field.value.trim(), nf = S.files[kind === 'nota-vinculada' ? f.dataset.path : S.open];
+      if (!v || !nf) return;
       const lines = v.split(/\n+/);
       const an = AREAS[nf.area]?.nome || (nf.path.startsWith('casos/') ? 'Caso' : 'Geral');
       addCaixa([`📝 Anotação (${an}): ${lines[0]} → ${nf.path}`, ...lines.slice(1)], { sens: nf.sens, msg: `anotação sobre ${short(plain(nf.title), 40)}`, ok: 'Guardado na caixa. O assessor atualiza a nota.' });
-      $('#drNoteTxt').value = '';
+      field.value = '';
+      if (kind === 'nota-vinculada') closeSheet();
     }
   });
   document.addEventListener('keydown', ev => {

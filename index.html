@@ -19,6 +19,9 @@
 <script src="./tema.js"></script>
 <link rel="stylesheet" href="./painel.css">
 <link rel="stylesheet" href="./layout.css">
+<link rel="stylesheet" href="./areas.css">
+<link rel="stylesheet" href="./bem-estar.css">
+<link rel="stylesheet" href="./financas-ui.css">
 </head>
 <body class="discreet">
 
@@ -109,19 +112,23 @@
   <main class="page" id="p-areas" data-page="areas" hidden>
     <div class="page-h"><h1>Memória</h1><p>Casos, áreas e notas que você quer encontrar de novo.</p><div id="memoryLinks" class="memory-links"></div></div>
     <div class="stack">
-      <section class="sec narrow" id="secRhythm" aria-labelledby="hRh">
-        <header><h2 id="hRh">Ritmo da semana</h2></header>
-        <div id="rhythm"></div>
-      </section>
       <section class="sec" id="secAreas" aria-labelledby="hAreas">
         <header><h2 id="hAreas">Áreas</h2></header>
         <div class="areas" id="areaList"></div>
+      </section>
+      <section class="sec narrow" id="secRhythm" aria-labelledby="hRh">
+        <header><h2 id="hRh">Ritmo da semana</h2></header>
+        <div id="rhythm"></div>
       </section>
       <section class="sec" id="secCases" aria-labelledby="hCases">
         <header><h2 id="hCases">Casos abertos</h2><span class="count" id="casesCount"></span></header>
         <div class="cases" id="cases"></div>
       </section>
     </div>
+  </main>
+
+  <main class="page" id="p-area" data-page="area" hidden>
+    <div class="area-page" id="areaPage"></div>
   </main>
 
   <nav class="tabbar" id="tabbar" aria-label="Páginas"></nav>
