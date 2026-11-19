@@ -316,3 +316,9 @@
 @media (prefers-reduced-motion: reduce) { .sm-caret svg { transition: none; } }
 .sm-sub-mais > li > a.sm-row { padding-left: 34px; }
 .sm-sub > li > a.sm-row:not(:has(.sm-ic)) { padding-left: 34px; }
+
+/* "## Também: …" da nota da área (ex.: renda extra e música no Trabalho): cartão à parte, largura toda */
+.area-main .area-tambem { grid-column: 1/-1; }
+.area-tambem h3 small { display: block; font: 600 11px/1.4 var(--f-ui); letter-spacing: .06em; text-transform: uppercase; color: var(--ink3); margin-bottom: 2px; }
+.area-tambem .md { margin-top: 10px; font-size: 14.5px; line-height: 1.6; color: var(--ink2); }
+.area-tambem .md ul { padding-left: 18px; margin: 0; }

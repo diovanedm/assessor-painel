@@ -1,14 +1,14 @@
 /* ─────────────── utilidades ─────────────── */
-import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDaNota, linkDeRegistro, metasDaTabela, notaSolta, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=402afaf7205a';
-import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=402afaf7205a';
-import { visaoBemEstar } from './bem-estar.mjs?v=402afaf7205a';
-import { casosEmAndamento, pontoDeParada } from './memoria.mjs?v=402afaf7205a';
-import { linhasCaptura, lerCaptura, tipoAnexo, extAudio, lerOrganizados, destinoLegivel } from './captura.mjs?v=402afaf7205a';
+import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDaNota, linkDeRegistro, metasDaTabela, notaSolta, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=220ab830493e';
+import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=220ab830493e';
+import { visaoBemEstar } from './bem-estar.mjs?v=220ab830493e';
+import { casosEmAndamento, pontoDeParada } from './memoria.mjs?v=220ab830493e';
+import { linhasCaptura, lerCaptura, tipoAnexo, extAudio, lerOrganizados, destinoLegivel } from './captura.mjs?v=220ab830493e';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const h = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=402afaf7205a';
+import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=220ab830493e';
 const DOW = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 const DOWL = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
 const MON = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
@@ -875,7 +875,7 @@ function dialSvg(items, nm, dow) {
 
 const isChecked = g => { const o = taskOv(g); return o ? o.kind === 'feita' : g.checked; };
 const byDue = (a, b) => (a.due || '9').localeCompare(b.due || '9') || (b.prio === 'alta') - (a.prio === 'alta');
-import { organizarTarefas, primeiroPasso, prioridadesDoDia } from './tarefas.mjs?v=402afaf7205a';
+import { organizarTarefas, primeiroPasso, prioridadesDoDia } from './tarefas.mjs?v=220ab830493e';
 function estadoTarefa(g) {
   if (g.nova) return { feita:false, data:'' };
   const item = taskOv(g);
@@ -1354,6 +1354,8 @@ function corpoDoTopico(C, T, vista) {
     const secs = principal ? secoesDeLeitura(principal.body) : [];
     const agora = secs.find(s => /^agora\b/.test(norm(s.title)));
     const importante = secs.find(s => /^importante\b/.test(norm(s.title)));
+    // "## Também: …" na nota da área = assunto paralelo (ex.: renda extra no Trabalho), num cartão à parte
+    const tambem = secs.filter(s => /^tambem\b/.test(norm(s.title)));
     const meta = T.metasSec.flatMap(s => metasDaTabela(s.texto))[0];
     const metaLista = !meta && primeiraMeta(secs);
     const status = norm(principal?.meta.status || '');
@@ -1363,6 +1365,7 @@ function corpoDoTopico(C, T, vista) {
       <section class="area-card focus-card"><div class="area-card-head"><h3>Como está</h3>${Object.hasOwn(STATUS, status) ? `<span class="area-status lamp s-${status}">${STATUS[status]}</span>` : ''}</div>
         <p>${h(short(plain(principal?.meta.resumo || 'Ainda sem resumo. O assessor escreve um quando você contar como está esta área.'), 240))}</p>
         ${agora ? (() => { const { inicio, resto, n } = cortarLista(agora.text, 4); return `<div class="md resumo-agora">${md(inicio, principal.path, true)}</div>${n ? `<details class="resumo-mais" data-section="agora-mais"><summary>Mais ${n} ${n === 1 ? 'item' : 'itens'} em “Agora”</summary><div class="md resumo-agora">${md(resto, principal.path, true)}</div></details>` : ''}`; })() : ''}</section>
+      ${tambem.map(t => { const nome = plain(t.title).replace(/^também\s*:?\s*/i, ''); return `<section class="area-card area-tambem"><div class="area-card-head"><h3><small>Também nesta área</small>${h(nome.charAt(0).toUpperCase() + nome.slice(1))}</h3></div><div class="md">${md(t.text, principal.path, true)}</div></section>`; }).join('')}
       <section class="area-card"><div class="area-card-head"><h3>Meta em foco</h3><a class="area-link" href="${linkTopico(area, 'metas')}">Metas →</a></div>
         ${meta ? `<ul class="metas">${barraMeta(meta)}</ul>` : metaLista ? `<p class="area-empty">${inline(metaLista)}</p>` : `<p class="area-empty">Nenhuma meta definida para o trimestre.</p>`}</section>
       <section class="area-card"><div class="area-card-head"><h3>Próximos passos</h3><a class="area-link" href="${linkTopico(area, 'tarefas')}">Tarefas →</a></div>
@@ -2564,8 +2567,8 @@ function enviarCaptura(f) {
 }
 
 /* ─────────────── Finanças (o conteúdo do "Meus gastos", lendo o espelho da planilha) ─────────────── */
-import { brl, brl0, c2, addM, dim, pnum, valorCapturado, calcularFinancas, orcamentoDoMes, filtrarLancamentos } from './financas.mjs?v=402afaf7205a';
-import { lancamentosRealizados, graficoLancamentos } from './financas-visao.mjs?v=402afaf7205a';
+import { brl, brl0, c2, addM, dim, pnum, valorCapturado, calcularFinancas, orcamentoDoMes, filtrarLancamentos } from './financas.mjs?v=220ab830493e';
+import { lancamentosRealizados, graficoLancamentos } from './financas-visao.mjs?v=220ab830493e';
 const FCAT = { 'Moradia': ['🏠', '#7B61FF'], 'Mercado': ['🛒', '#22B07D'], 'Alimentação fora': ['🍔', '#FF8A3D'], 'Transporte': ['🚗', '#3D8BFF'], 'Saúde': ['💊', '#FF5C7A'], 'Educação': ['📚', '#A35CF7'], 'Família': ['👨‍👩‍👧', '#F2B705'], 'Bebê': ['🍼', '#38BDF8'], 'Lazer': ['🎉', '#E05CD0'], 'Assinaturas': ['📺', '#5B6BF5'], 'Contas fixas': ['💡', '#F59E0B'], 'Revenda': ['📦', '#A0785A'], 'Outros': ['🛍️', '#8E949C'], 'Uber e 99': ['🚕', '#3D8BFF'], 'Delivery': ['🛵', '#FF8A3D'], 'Comer fora': ['🍔', '#FF5C7A'], 'Compras avulsas (Outros)': ['🛍️', '#8E949C'], 'Receita': ['💰', '#22B07D'], 'Conta': ['🧾', '#F59E0B'], 'Fatura': ['💳', '#7C3AED'], 'Pix e boleto': ['⚡', '#3D8BFF'] };
 const fic = n => FCAT[n] || ['•', '#8E949C'];
 const CARTAO_COR = { 'Nubank': 'linear-gradient(135deg,#6A06B0,#A855F7)', 'Mercado Pago': 'linear-gradient(135deg,#0077C8,#22C1F5)', 'Bradesco Amazon': 'linear-gradient(135deg,#A30825,#F0435F)', 'XP': 'linear-gradient(135deg,#1f2937,#4B5563)' };
