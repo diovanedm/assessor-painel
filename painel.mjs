@@ -1,14 +1,14 @@
 /* ─────────────── utilidades ─────────────── */
-import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDaNota, linkDeRegistro, metasDaTabela, notaSolta, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=430a02d37814';
-import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=430a02d37814';
-import { visaoBemEstar } from './bem-estar.mjs?v=430a02d37814';
-import { blocosDaSemanaModelo, casosEmAndamento, pontoDeParada, textoDaBusca } from './memoria.mjs?v=430a02d37814';
-import { linhasCaptura, lerCaptura, tipoAnexo, extAudio, lerOrganizados, destinoLegivel } from './captura.mjs?v=430a02d37814';
+import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDaNota, linkDeRegistro, metasDaTabela, notaSolta, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=8787cb127060';
+import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=8787cb127060';
+import { visaoBemEstar } from './bem-estar.mjs?v=8787cb127060';
+import { blocosDaSemanaModelo, casosEmAndamento, pontoDeParada, textoDaBusca } from './memoria.mjs?v=8787cb127060';
+import { linhasCaptura, lerCaptura, tipoAnexo, extAudio, lerOrganizados, destinoLegivel } from './captura.mjs?v=8787cb127060';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const h = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=430a02d37814';
+import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=8787cb127060';
 const DOW = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 const DOWL = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
 const MON = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
@@ -101,7 +101,7 @@ const Blobs = {
     if (this.db) { try { this.store('readwrite').clear(); } catch { } }
   },
 };
-const cfg = Object.assign({ token: '', repo: 'diovanedm/meu-assessor-dados', branch: '', interval: 15, theme: 'auto', discreet: true }, LS.get(K + 'cfg', {}));
+const cfg = Object.assign({ token: '', repo: 'diovanedm/meu-assessor-dados', branch: '', interval: 15, theme: 'auto', discreet: true, finUrl: '', finToken: '' }, LS.get(K + 'cfg', {}));
 const saveCfg = () => LS.set(K + 'cfg', cfg);
 const devHost = ['localhost', '127.0.0.1'].includes(location.hostname);
 const API = (devHost && new URLSearchParams(location.search).get('api')) || 'https://api.github.com';
@@ -154,7 +154,7 @@ const S = {
   syncing: false, lastSync: 0, lastTry: 0, pending: 0, err: null, rateReset: 0, wrote: {}, resync: false,
   page: 'inicio', areaRoute: null, areaHash: '', tab: 'hoje', reg: 'nota', open: null, reveal: new Set(), minute: -1, day: '',
   notaArea: 'geral', regFicha: 'estou', fichas: [], plano: null, comprados: [], sel: null, wk: 0, _idx: {},
-  extratoTipo: '', extratoBusca: '',
+  extratoTipo: '', extratoBusca: '', planAba: 'Lançamentos', planBusca: '',
   fin: null, finSha: null, _fm: null, finMes: null, finTab: 'resumo', finOpen: {}, finDia: null, finCat: null, fcart: null,
   aliTab: 'plano', pessoa: LS.get(K + 'pessoa2', 'ambos'), aliRef: null, trocaP: LS.get(K + 'trocap', 'diovane'), trocaOpen: null, dias: LS.get(K + 'dias', 7), trocaQ: '',
 };
@@ -842,7 +842,7 @@ function route() {
 
 const isChecked = g => { const o = taskOv(g); return o ? o.kind === 'feita' : g.checked; };
 const byDue = (a, b) => (a.due || '9').localeCompare(b.due || '9') || (b.prio === 'alta') - (a.prio === 'alta');
-import { organizarTarefas, primeiroPasso, prioridadesDoDia } from './tarefas.mjs?v=430a02d37814';
+import { organizarTarefas, primeiroPasso, prioridadesDoDia } from './tarefas.mjs?v=8787cb127060';
 function estadoTarefa(g) {
   if (g.nova) return { feita:false, data:'' };
   const item = taskOv(g);
@@ -1753,10 +1753,14 @@ function showCfg() {
     <label for="cInt">Intervalo de sincronização</label><select id="cInt">${[10,15,30,60].map(s => `<option value="${s}"${cfg.interval === s ? ' selected' : ''}>${s} segundos</option>`).join('')}</select>
     <details class="capture-extra"><summary>Conexão com o GitHub</summary><label for="cRepo">Repositório conectado</label><input id="cRepo" value="${h(cfg.repo)}" disabled>
       <p class="hint">Token terminado em ${h(cfg.token.slice(-4))}.</p><button class="btn ghost signout" type="button" id="cOut">Desconectar deste aparelho</button></details>
+    <details class="capture-extra"><summary>Edição da planilha</summary><p class="hint">${appPlanilha() ? 'Conectada neste aparelho. Em Finanças, toque numa linha para editar ou apagar.' : 'Desconectada. Em Finanças, as linhas ficam só para leitura.'}</p>
+      <button class="btn ghost" type="button" id="cFin">${appPlanilha() ? 'Trocar link ou senha' : 'Conectar edição'}</button>${appPlanilha() ? ' <button class="btn ghost" type="button" id="cFinOut">Desconectar</button>' : ''}</details>
     <div class="form-foot"><button class="btn" type="submit">Salvar ajustes</button></div>
   </form></div>`;
   $('#cfgForm').onsubmit = ev => { ev.preventDefault(); cfg.interval = +$('#cInt').value; cfg.theme = $('#cTheme').value; saveCfg(); applyTheme(); o.hidden = true; };
   $('#cClose').onclick = () => { o.hidden = true; };
+  $('#cFin').onclick = () => { o.hidden = true; openSheet('Conectar edição da planilha', formConectarPlanilha(), { focus: '#feUrl' }); };
+  if ($('#cFinOut')) $('#cFinOut').onclick = () => { cfg.finUrl = ''; cfg.finToken = ''; saveCfg(); o.hidden = true; renderFinancas(); toast('Edição da planilha desconectada deste aparelho.'); };
   $('#cOut').onclick = () => {
     cfg.token = ''; cfg.branch = ''; saveCfg();
     Blobs.clear(); LS.del(K + 'snap'); capturePanes.clear(); $('#regBody').replaceChildren();
@@ -2531,8 +2535,9 @@ function enviarCaptura(f) {
 }
 
 /* ─────────────── Finanças (o conteúdo do "Meus gastos", lendo o espelho da planilha) ─────────────── */
-import { brl, brl0, c2, addM, dim, pnum, valorCapturado, calcularFinancas, orcamentoDoMes, filtrarLancamentos } from './financas.mjs?v=430a02d37814';
-import { lancamentosRealizados, graficoLancamentos } from './financas-visao.mjs?v=430a02d37814';
+import { brl, brl0, c2, addM, dim, pnum, valorCapturado, calcularFinancas, orcamentoDoMes, filtrarLancamentos } from './financas.mjs?v=8787cb127060';
+import { lancamentosRealizados, graficoLancamentos } from './financas-visao.mjs?v=8787cb127060';
+import { ABAS_EDITAVEIS, colunasDaAba, linhaDoEspelho, linhaNova, linhasDaAba, paraCampo, paraPlanilha, pedidoPlanilha } from './financas-edicao.mjs?v=8787cb127060';
 const FCAT = { 'Moradia': ['🏠', '#7B61FF'], 'Mercado': ['🛒', '#22B07D'], 'Alimentação fora': ['🍔', '#FF8A3D'], 'Transporte': ['🚗', '#3D8BFF'], 'Saúde': ['💊', '#FF5C7A'], 'Educação': ['📚', '#A35CF7'], 'Família': ['👨‍👩‍👧', '#F2B705'], 'Bebê': ['🍼', '#38BDF8'], 'Lazer': ['🎉', '#E05CD0'], 'Assinaturas': ['📺', '#5B6BF5'], 'Contas fixas': ['💡', '#F59E0B'], 'Revenda': ['📦', '#A0785A'], 'Outros': ['🛍️', '#8E949C'], 'Uber e 99': ['🚕', '#3D8BFF'], 'Delivery': ['🛵', '#FF8A3D'], 'Comer fora': ['🍔', '#FF5C7A'], 'Compras avulsas (Outros)': ['🛍️', '#8E949C'], 'Receita': ['💰', '#22B07D'], 'Conta': ['🧾', '#F59E0B'], 'Fatura': ['💳', '#7C3AED'], 'Pix e boleto': ['⚡', '#3D8BFF'] };
 const fic = n => FCAT[n] || ['•', '#8E949C'];
 const CARTAO_COR = { 'Nubank': 'linear-gradient(135deg,#6A06B0,#A855F7)', 'Mercado Pago': 'linear-gradient(135deg,#0077C8,#22C1F5)', 'Bradesco Amazon': 'linear-gradient(135deg,#A30825,#F0435F)', 'XP': 'linear-gradient(135deg,#1f2937,#4B5563)' };
@@ -2564,10 +2569,10 @@ function finKpi(M, mes) {
   return { total: c2(total), media: c2(total / nd), nd, maior, dias };
 }
 const V = (v, cls = '') => `<span class="veil${cls ? ' ' + cls : ''}">${brl(v)}</span>`;
-const FIN_TABS = [['resumo', 'Visão geral'], ['extrato', 'Lançamentos'], ['orcamento', 'Orçamento'], ['cartoes', 'Cartões'], ['contas', 'Contas a pagar'], ['previsao', 'Fluxo de caixa'], ['categorias', 'Categorias'], ['dias', 'Dias'], ['alerta', 'Análise']];
+const FIN_TABS = [['resumo', 'Visão geral'], ['extrato', 'Lançamentos'], ['orcamento', 'Orçamento'], ['cartoes', 'Cartões'], ['contas', 'Contas a pagar'], ['previsao', 'Fluxo de caixa'], ['categorias', 'Categorias'], ['dias', 'Dias'], ['alerta', 'Análise'], ['planilha', 'Editar planilha']];
 const ST_FAT = { aberta: 'Aberta', fechada: 'Fechada', futura: 'Futura', atrasada: 'Atrasada', paga: 'Paga' };
 const frow = (ic, cor, nome, meta, dir, attrs = '') => `<${attrs ? 'button type="button" class="row" ' + attrs : 'div class="row"'}><span class="ico" style="--c:${cor}">${ic}</span><span class="mid"><div class="nm">${nome}</div>${meta ? `<div class="mt">${meta}</div>` : ''}</span>${dir}</${attrs ? 'button' : 'div'}>`;
-const fsub = list => `<div class="sub">${list.map(r => `<div><span class="d">${dm(r.data)}</span><span class="n">${h(r.descricao)}</span><span class="v veil">${brl(r.valor)}</span></div>`).join('') || '<div><span class="n muted">Nada aqui.</span></div>'}</div>`;
+const fsub = list => `<div class="sub">${list.map(r => `<button type="button" ${fedit('Lançamentos', r.linha)}><span class="d">${dm(r.data)}</span><span class="n">${h(r.descricao)}</span><span class="v veil">${brl(r.valor)}</span></button>`).join('') || '<div><span class="n muted">Nada aqui.</span></div>'}</div>`;
 function formMovimento(tipo) {
   const transferir = tipo === 'transferencia';
   const contas = (finModel()?.saldos || []).map(c => `<option value="${h(c.conta)}"></option>`).join('');
@@ -2623,7 +2628,7 @@ function linhaFinanceira(r, hoje) {
   const [ic, cor] = fic(receita ? 'Receita' : r.categoria);
   const meta = [dm(r.data), r.categoria, r.pagamento, estado].filter(Boolean).map(h).join(' · ');
   return `<li>${frow(ic, cor, h(r.descricao || r.categoria || r.tipo), meta,
-    `<span class="vl veil ${receita ? 'grn' : ''}">${receita && r.valor > 0 ? '+' : ''}${brl(receita ? r.valor : -r.valor)}</span>`)}</li>`;
+    `<span class="vl veil ${receita ? 'grn' : ''}">${receita && r.valor > 0 ? '+' : ''}${brl(receita ? r.valor : -r.valor)}</span>`, fedit('Lançamentos', r.linha))}</li>`;
 }
 
 function linhasDoExtrato(M, mes) {
@@ -2636,18 +2641,20 @@ function verExtrato(M, mes) {
   return `<section class="fsec"><h2>Lançamentos do mês</h2><div class="money-filters">
     <input type="search" id="extratoBusca" aria-label="Buscar lançamentos" placeholder="Buscar descrição, categoria ou pagamento" value="${h(S.extratoBusca)}">
     <select id="extratoTipo" aria-label="Tipo de lançamento">${opcoes.map(([v, nome]) => `<option value="${v}" ${v === S.extratoTipo ? 'selected' : ''}>${nome}</option>`).join('')}</select>
-    </div><ul class="rows" id="extratoLinhas">${linhasDoExtrato(M, mes)}</ul></section>`;
+    <button type="button" class="btn" data-fnova="Lançamentos">＋ Novo lançamento</button></div>
+    <p class="hint">Toque num lançamento para editar ou apagar.</p><ul class="rows" id="extratoLinhas">${linhasDoExtrato(M, mes)}</ul></section>`;
 }
 
 function verOrcamento(M, mes) {
   const linhas = orcamentoDoMes(M, mes).map(c => {
     const excedeu = c.restante != null && c.restante < 0;
     const status = c.restante == null ? 'Sem limite definido' : excedeu ? `Acima do limite em ${brl(-c.restante)}` : `Restam ${brl(c.restante)}`;
-    return `<li class="budget-row${excedeu ? ' excesso' : ''}"><header><b>${h(c.categoria)}</b><span class="veil">${brl(c.gasto)}</span></header>
+    const tag = c.linha ? 'button' : 'div';
+    return `<li class="budget-row${excedeu ? ' excesso' : ''}"><${tag} class="budget-item"${c.linha ? ` type="button" ${fedit('Orçamento', c.linha)}` : ''}><span class="budget-h"><b>${h(c.categoria)}</b><span class="veil">${brl(c.gasto)}</span></span>
       ${c.limite > 0 ? `<progress max="${c.limite}" value="${Math.max(0, c.gasto)}" aria-label="Orçamento de ${h(c.categoria)}"></progress>` : ''}
-      <p class="${c.limite == null ? '' : 'veil'}">${c.limite == null ? '' : 'Limite mensal ' + brl(c.limite) + ' · '}${status}</p></li>`;
+      <span class="budget-p ${c.limite == null ? '' : 'veil'}">${c.limite == null ? '' : 'Limite mensal ' + brl(c.limite) + ' · '}${status}</span></${tag}></li>`;
   });
-  return `<section class="fsec"><h2>Orçamento por categoria</h2><p class="hint">Gastos pela data da compra e limites mensais cadastrados na planilha.</p>
+  return `<section class="fsec"><header class="fe-secao"><h2>Orçamento por categoria</h2><button type="button" class="btn ghost" data-fnova="Orçamento">＋ Categoria</button></header><p class="hint">Gastos pela data da compra e limites mensais cadastrados na planilha.</p>
     <ul class="rows">${linhas.join('') || '<li class="empty">Sem categorias de orçamento neste mês.</li>'}</ul></section>`;
 }
 
@@ -2675,7 +2682,8 @@ function cabecalhoFinanceiro(reveladaLocalmente) {
     <details class="fin-menu"><summary>Outras ações</summary><div class="fin-pop">
       <button type="button" data-act="receita">Adicionar receita</button>
       <button type="button" data-act="transferencia">Transferir entre contas</button>
-      <button type="button" data-act="comprovante">Enviar comprovante</button></div></details></div></header>`;
+      <button type="button" data-act="comprovante">Enviar comprovante</button>
+      <a href="#financas/planilha">Editar a planilha</a></div></details></div></header>`;
 }
 
 function navegacaoFinanceira() {
@@ -2723,6 +2731,160 @@ function setupFin(vazio) {
     <li>Execute <b>instalar</b> e autorize. O primeiro espelho é enviado na instalação. O acionador confere as mudanças a cada dez minutos.</li></ol>${fonte}</details>`;
 }
 
+/* ─────────────── edição direta da planilha ─────────────── */
+const NOME_LINHA = { 'Lançamentos': 'lançamento', 'Contas': 'conta a pagar', 'Orçamento': 'limite do orçamento', 'Cartões': 'cartão', 'Recorrentes': 'cobrança recorrente', 'Saldos': 'saldo da conta', 'Saldos mensais': 'saldo do mês', 'Config': 'configuração' };
+const APP_URL = /^https:\/\/script\.google\.com\/(?:a\/macros\/[^/]+|macros)\/s\/[\w-]+\/exec$/;
+const appPlanilha = () => APP_URL.test(cfg.finUrl || '') && !!cfg.finToken;
+const ERRO_PLANILHA = {
+  offline: 'Sem conexão com a planilha agora. Confira a internet e tente de novo.',
+  bloqueado: 'A planilha não deixou o painel entrar. Confira se o link termina em /exec e se a implantação está para "Qualquer pessoa".',
+  resposta: 'A planilha não respondeu como esperado. Publique uma nova versão da implantação do script e tente de novo.',
+  senha: 'A planilha recusou a senha. Confira em Ajustes › Edição da planilha.',
+  mudou: 'Essa linha mudou na planilha desde a última leitura. Atualizei a tela: confira e tente de novo.',
+  aba: 'Essa aba não está mais na planilha.',
+  acao: 'O script da planilha está desatualizado. Publique uma nova versão da implantação.',
+};
+const erroPlanilha = (code, mensagem) => Object.assign(new Error(mensagem || code), { code });
+
+async function pedirPlanilha(pedido, url = cfg.finUrl, token = cfg.finToken) {
+  let r;
+  try {
+    r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ ...pedido, token }), redirect: 'follow', cache: 'no-store', credentials: 'omit' });
+  } catch { throw erroPlanilha(navigator.onLine === false ? 'offline' : 'bloqueado'); }
+  let j;
+  try { j = await r.json(); } catch { throw erroPlanilha('resposta'); }
+  if (j?.espelho?.abas) { S.fin = j.espelho; S._fm = null; }
+  if (!j?.ok) throw erroPlanilha(j?.erro || 'falha', j?.mensagem);
+  return j;
+}
+
+function campoPlanilha(c, valor) {
+  const id = 'fe' + c.i, nome = 'c' + c.i, req = c.obrigatoria ? ' required' : '';
+  const rotulo = `<label for="${id}">${h(c.nome)}${c.obrigatoria ? ' <span class="fe-obr">*</span>' : ''}</label>`;
+  if (c.calculada) return `<div class="field fe-calc"><span class="lbl">${h(c.nome)}</span><p>${h(valor) || '—'} <small>calculado pela planilha</small></p></div>`;
+  const v = h(paraCampo(valor, c.tipo));
+  if (c.tipo === 'data') return `<div class="field">${rotulo}<input id="${id}" name="${nome}" type="date" value="${v}"${req}></div>`;
+  if (c.tipo === 'valor' || c.tipo === 'numero') return `<div class="field">${rotulo}<input id="${id}" name="${nome}" type="text" inputmode="decimal" placeholder="${c.tipo === 'valor' ? '0,00' : '0'}" value="${v}"${req}></div>`;
+  if (c.tipo === 'mes') return `<div class="field">${rotulo}<input id="${id}" name="${nome}" type="text" inputmode="numeric" placeholder="mm/aaaa" value="${v}"${req}></div>`;
+  if (c.opcoes.length && c.opcoes.length <= 6) {
+    const opcoes = [...c.opcoes];
+    if (valor && !opcoes.includes(valor)) opcoes.unshift(valor);
+    return `<div class="field">${rotulo}<select id="${id}" name="${nome}" data-outro${req}>${c.obrigatoria ? '' : `<option value=""${valor ? '' : ' selected'}>—</option>`}${opcoes.map(o => `<option${o === valor ? ' selected' : ''}>${h(o)}</option>`).join('')}<option value="__outro">Outro…</option></select></div>`;
+  }
+  const lista = c.opcoes.length ? `<datalist id="${id}l">${c.opcoes.map(o => `<option value="${h(o)}"></option>`).join('')}</datalist>` : '';
+  return `<div class="field">${rotulo}<input id="${id}" name="${nome}" type="text" value="${v}"${lista ? ` list="${id}l"` : ''}${req}>${lista}</div>`;
+}
+
+function abrirEdicao(aba, linha) {
+  if (!S.fin?.abas?.[aba]) { toast('Essa aba não está no espelho da planilha.', { err: true }); return; }
+  const cols = colunasDaAba(S.fin, aba), nova = !linha, conectado = appPlanilha();
+  const atual = nova ? linhaNova(cols, aba, ymd(now())) : linhaDoEspelho(S.fin, aba, linha);
+  if (!nova && !atual.some(v => v.trim())) { toast('Essa linha não está mais na planilha.', { err: true }); return; }
+  const titulo = (nova ? 'Novo: ' : 'Editar ') + NOME_LINHA[aba];
+  openSheet(titulo.charAt(0).toUpperCase() + titulo.slice(1), `<form class="f2 fin-edit" data-form="fin-edit" data-aba="${h(aba)}" data-linha="${linha || ''}" autocomplete="off">
+    ${conectado ? '' : `<div class="fe-aviso"><p><b>Conecte a planilha para editar daqui.</b> É uma vez só em cada aparelho.</p><button type="button" class="btn" data-act="fin-conectar">Conectar edição</button></div>`}
+    <fieldset class="fe-campos"${conectado ? '' : ' disabled'}>${cols.map(c => campoPlanilha(c, atual[c.i] ?? '')).join('')}</fieldset>
+    ${conectado ? `<div class="form-foot"><button class="btn big" type="submit">${nova ? 'Adicionar na planilha' : 'Salvar na planilha'}</button>${nova ? '' : '<button class="btn ghost big fe-apagar" type="button" data-act="fin-apagar">Apagar</button>'}</div>
+    <p class="hint">${nova ? `Entra no fim da aba ${h(aba)}.` : `Linha ${linha} da aba ${h(aba)}.`} A mudança vai direto para a planilha.</p>` : ''}
+  </form>`, { focus: conectado && nova ? '.fe-campos input[inputmode=decimal]' : undefined });
+}
+
+async function enviarEdicao(f, pedido, ok) {
+  if (f.dataset.enviando) return;
+  f.dataset.enviando = '1';
+  const botoes = $$('button', f), sub = f.querySelector('[type=submit]'), texto = sub?.textContent;
+  botoes.forEach(b => { b.disabled = true; });
+  if (sub) sub.textContent = 'Salvando…';
+  try {
+    const j = await pedirPlanilha(pedido);
+    closeSheet();
+    renderFinancas(); renderAreaPage();
+    toast(j.aviso ? ok + ' Os outros aparelhos veem a mudança em até 10 minutos.' : ok);
+  } catch (e) {
+    if (e.code === 'mudou') { closeSheet(); renderFinancas(); }
+    toast(ERRO_PLANILHA[e.code] || 'A planilha respondeu com erro: ' + e.message, { err: true });
+  } finally {
+    delete f.dataset.enviando;
+    if (f.isConnected) { botoes.forEach(b => { b.disabled = false; }); if (sub) sub.textContent = texto; }
+  }
+}
+
+function salvarEdicao(f) {
+  const aba = f.dataset.aba, linha = Number(f.dataset.linha) || null;
+  const cols = colunasDaAba(S.fin, aba), campos = {};
+  for (const c of cols) { const el = f.elements['c' + c.i]; if (el) campos[c.i] = el.value === '__outro' ? '' : el.value; }
+  const { valores, erros } = paraPlanilha(cols, campos);
+  if (erros.length) { toast(erros[0], { err: true }); return; }
+  const antes = linha ? linhaDoEspelho(S.fin, aba, linha) : null;
+  enviarEdicao(f, pedidoPlanilha(linha ? 'editar' : 'criar', aba, linha, antes, valores), linha ? 'Salvo na planilha.' : 'Adicionado na planilha.');
+}
+
+function apagarLinha(f) {
+  const aba = f.dataset.aba, linha = Number(f.dataset.linha);
+  if (!linha) return;
+  enviarEdicao(f, pedidoPlanilha('apagar', aba, linha, linhaDoEspelho(S.fin, aba, linha)), 'Apagado da planilha.');
+}
+
+function formConectarPlanilha() {
+  return `<form class="f2" data-form="fin-conectar" autocomplete="off">
+    <ol class="fe-passos"><li>Na planilha, abra <b>Extensões → Apps Script</b> e cole a versão nova do <a href="https://github.com/${h(cfg.repo)}/blob/${encodeURIComponent(cfg.branch || 'main')}/ferramentas/espelho-planilha.gs" target="_blank" rel="noopener noreferrer">código do espelho</a>.</li>
+    <li>Execute <b>instalar</b>. A senha do painel aparece no <b>Registro de execução</b>.</li>
+    <li><b>Implantar → Nova implantação → App da Web</b>: executar como <b>eu</b>, acesso <b>Qualquer pessoa</b>. Copie o link que termina em <b>/exec</b>.</li></ol>
+    <div class="field"><label for="feUrl">Link do app da Web</label><input id="feUrl" name="url" type="text" inputmode="url" placeholder="https://script.google.com/macros/s/…/exec" value="${h(cfg.finUrl || '')}" required></div>
+    <div class="field"><label for="feSenha">Senha do painel</label><input id="feSenha" name="senha" type="password" value="${h(cfg.finToken || '')}" required></div>
+    <div class="form-foot"><button class="btn big" type="submit">Testar e conectar</button></div>
+    <p class="hint">O link e a senha ficam só neste aparelho.</p></form>`;
+}
+
+async function conectarPlanilha(f) {
+  const url = f.elements.url.value.trim(), senha = f.elements.senha.value.trim();
+  if (!APP_URL.test(url)) { toast('O link precisa ser o do app da Web, terminando em /exec.', { err: true }); f.elements.url.focus(); return; }
+  const sub = f.querySelector('[type=submit]');
+  if (sub.disabled) return;
+  sub.disabled = true; sub.textContent = 'Testando…';
+  try {
+    await pedirPlanilha({ acao: 'ping' }, url, senha);
+    cfg.finUrl = url; cfg.finToken = senha; saveCfg();
+    closeSheet(); renderFinancas();
+    toast('Edição da planilha conectada. Toque numa linha para editar ou apagar.');
+  } catch (e) {
+    toast(ERRO_PLANILHA[e.code] || 'A planilha respondeu com erro: ' + e.message, { err: true });
+  } finally { if (sub.isConnected) { sub.disabled = false; sub.textContent = 'Testar e conectar'; } }
+}
+
+const fedit = (aba, linha) => linha ? `data-fedit="${h(aba)}:${linha}"` : '';
+
+function resumoDaLinhaGenerica(aba, cols, valores) {
+  const v = i => String(valores[i] ?? '').trim();
+  if (aba === 'Lançamentos') {
+    const receita = v(1) === 'Receita';
+    return { titulo: v(4) || v(3) || v(1), meta: [v(0), v(3), v(5)].filter(Boolean).join(' · '), dir: `<span class="vl veil ${receita ? 'grn' : ''}">${receita ? '+' : ''}${h(v(2))}</span>` };
+  }
+  const dinheiro = cols.find(c => c.i > 0 && c.tipo === 'valor' && v(c.i));
+  const resto = cols.filter(c => c.i > 0 && c !== dinheiro && v(c.i) && !/observ/i.test(c.nome)).slice(0, 4).map(c => `${c.nome}: ${short(v(c.i), 40)}`);
+  return { titulo: v(0) || '(sem nome)', meta: resto.join(' · '), dir: dinheiro ? `<span class="vl veil">${h(v(dinheiro.i))}</span>` : '' };
+}
+
+function linhasPlanilha() {
+  const aba = S.planAba, cols = colunasDaAba(S.fin, aba);
+  const todas = linhasDaAba(S.fin, aba, S.planBusca), lista = todas.slice(0, 150);
+  const itens = lista.map(l => { const r = resumoDaLinhaGenerica(aba, cols, l.valores); return `<li>${frow('✎', 'var(--signal)', h(r.titulo), h(r.meta), r.dir, fedit(aba, l.linha))}</li>`; }).join('');
+  return (itens || '<li class="empty">Nenhuma linha encontrada.</li>') + (todas.length > lista.length ? `<li class="empty">Mostrando ${lista.length} de ${todas.length}. Use a busca para achar as outras.</li>` : '');
+}
+
+function abaPlanilha() {
+  const abas = ABAS_EDITAVEIS.filter(a => S.fin?.abas?.[a]);
+  if (!abas.includes(S.planAba)) S.planAba = abas[0];
+  if (!S.planAba) return '<section class="fsec"><h2>Editar planilha</h2><p class="empty">O espelho ainda não trouxe as abas da planilha.</p></section>';
+  return `<section class="fsec"><h2>Editar planilha</h2>
+    <p class="hint">${appPlanilha() ? 'Toque numa linha para editar ou apagar. As mudanças vão direto para a planilha.' : 'Para editar daqui, conecte a planilha uma vez neste aparelho.'}</p>
+    ${appPlanilha() ? '' : '<button type="button" class="btn" data-act="fin-conectar">Conectar edição</button>'}
+    <div class="mchips fe-abas">${abas.map(a => `<button type="button" data-faba="${h(a)}" aria-pressed="${a === S.planAba}">${h(a)}</button>`).join('')}</div>
+    <div class="money-filters"><input type="search" id="planBusca" aria-label="Buscar nesta aba" placeholder="Buscar em ${h(S.planAba)}" value="${h(S.planBusca)}">
+    <button type="button" class="btn" data-fnova="${h(S.planAba)}">＋ Nova linha</button></div>
+    <ul class="rows" id="planLinhas">${linhasPlanilha()}</ul></section>`;
+}
+
 function cartaoSaldo(M, pj) {
   const atual = pj.tipo === 'atual', futuro = pj.tipo === 'futuro';
   const saldo = atual ? pj.saldo_atual : pj.saldo_final;
@@ -2731,7 +2893,7 @@ function cartaoSaldo(M, pj) {
   const rcm = M.rc[pj.mes];
   const bancos = M.saldos.map(r => `<li>${frow(r.reserva ? '◉' : '▤', corBanco(r.conta), h(r.conta),
     `${r.atualizado ? 'Saldo em ' + dm(r.atualizado) : 'Sem data de atualização'}${r.reserva ? ' · Reserva' : ''}`,
-    `<span class="vl">${r.saldo == null ? '—' : brl(r.saldo)}</span>`)}</li>`).join('');
+    `<span class="vl">${r.saldo == null ? '—' : brl(r.saldo)}</span>`, fedit('Saldos', r.linha))}</li>`).join('');
   return `<section class="fin-saldo"><div><h2>${titulo}</h2>
     ${saldo == null ? '<p class="fin-ausente">Saldo indisponível</p>' : `<p class="fin-quantia">${brl(saldo)}</p>`}
     ${atual ? '<p class="fin-saldo-info">Disponível nas contas, sem as reservas</p>' : ''}</div>
@@ -2762,6 +2924,7 @@ function finTab(M, mes, pj, k) {
   const t = S.finTab, O = S.finOpen;
   if (t === 'extrato') return verExtrato(M, mes);
   if (t === 'orcamento') return verOrcamento(M, mes);
+  if (t === 'planilha') return abaPlanilha();
   const lancMes = M.desp.filter(r => r.data.startsWith(mes));
   if (t === 'resumo') return visaoMensal(M, mes, pj);
   if (t === 'alerta') {
@@ -2783,7 +2946,7 @@ function finTab(M, mes, pj, k) {
   }
   if (t === 'previsao') {
     const its = M.movs.filter(x => x.mes === mes);
-    const lst = its.map(x => { const [ic, cor] = fic(x.origem); return `<li>${frow(ic, cor, h(x.descricao), `${dm(x.data)} · ${x.origem}${x.situacao !== 'feito' ? ` <span class="pill${x.situacao === 'atrasada' ? ' atr' : ''}">${x.situacao}</span>` : ''}`, `<span class="vl${x.valor >= 0 ? ' grn' : ''} veil">${x.valor >= 0 ? '+ ' : ''}${brl(x.valor)}</span>`)}</li>`; }).join('');
+    const lst = its.map(x => { const [ic, cor] = fic(x.origem); return `<li>${frow(ic, cor, h(x.descricao), `${dm(x.data)} · ${x.origem}${x.situacao !== 'feito' ? ` <span class="pill${x.situacao === 'atrasada' ? ' atr' : ''}">${x.situacao}</span>` : ''}`, `<span class="vl${x.valor >= 0 ? ' grn' : ''} veil">${x.valor >= 0 ? '+ ' : ''}${brl(x.valor)}</span>`, x.fonte === 'lancamento' ? fedit('Lançamentos', x.linha) : x.fonte === 'conta' ? fedit('Contas', x.linha) : '')}</li>`; }).join('');
     return `<section class="fsec"><h2>Entradas e saídas do mês</h2><p class="hint">O que entra e sai da conta. Compras no crédito aparecem dentro da fatura, no vencimento. Cartão alimentação não entra.</p>
       <div class="tiles"><div class="tile"><div class="l">⬆️ Entradas</div><div class="v veil">${brl(pj.entradas)}</div><div class="s">falta entrar <span class="veil">${brl(pj.a_entrar)}</span></div></div><div class="tile"><div class="l">⬇️ Saídas</div><div class="v veil">${brl(pj.saidas)}</div><div class="s">falta sair <span class="veil">${brl(pj.a_sair)}</span></div></div></div>
       <ul class="rows">${lst || '<li class="empty">Nada previsto para este mês.</li>'}</ul>
@@ -2809,7 +2972,7 @@ function finTab(M, mes, pj, k) {
     const dw = [0, 0, 0, 0, 0, 0, 0]; for (const r of lancMes) dw[pymd(r.data).getDay()] += r.valor;
     const dmax = Math.max(1, ...dw);
     return `<section class="fsec"><h2>Calendário de gastos</h2><p class="hint">Quanto mais forte o dia, mais você gastou. Toque num dia para ver as compras.</p><div class="hm">${cal}</div></section>
-      <section class="fsec"><h2>Compras de ${dm(S.finDia)}</h2><ul class="rows">${doDia.map(r => { const [ic, cor] = fic(r.categoria); return `<li>${frow(ic, cor, h(r.descricao), `${h(r.categoria)} · ${h(r.pagamento)}`, `<span class="vl veil">${brl(r.valor)}</span>`)}</li>`; }).join('') || '<li class="empty">Nenhum gasto lançado neste dia.</li>'}</ul></section>
+      <section class="fsec"><h2>Compras de ${dm(S.finDia)}</h2><ul class="rows">${doDia.map(r => { const [ic, cor] = fic(r.categoria); return `<li>${frow(ic, cor, h(r.descricao), `${h(r.categoria)} · ${h(r.pagamento)}`, `<span class="vl veil">${brl(r.valor)}</span>`, fedit('Lançamentos', r.linha))}</li>`; }).join('') || '<li class="empty">Nenhum gasto lançado neste dia.</li>'}</ul></section>
       <section class="fsec"><h2>Semana a semana</h2><p class="hint">Total de cada semana do mês, de domingo a sábado.</p><ul class="rows">${semanas || '<li class="empty">Nenhuma despesa neste mês.</li>'}</ul></section>
       <section class="fsec"><h2>Ritmo do mês</h2><p class="hint">Quanto você já tinha gasto, somando dia após dia. Passe o dedo no gráfico para ver cada dia.</p>${ritmoSvg(M, mes)}</section>
       <section class="fsec"><h2>Em que dia da semana pesa mais</h2><div class="wds">${dw.map((v, d) => `<div><span class="v veil">${v ? Math.round(v).toLocaleString('pt-BR') : ''}</span><span class="b"><i class="${v === dmax && v ? 'mx' : ''}" style="height:${v ? Math.max(4, 100 * v / dmax) : 0}%"></i></span><span class="l">${['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][d]}</span></div>`).join('')}</div></section>`;
@@ -2823,7 +2986,7 @@ function finTab(M, mes, pj, k) {
     const lista = rows.map(([nome, v]) => { const [ic, cor] = fic(nome); const open = sel === nome; return `<li>${frow(ic, cor, h(nome), `${Math.round(100 * v / tot)}% do mês · toque para ${open ? 'fechar' : 'ver'}<div class="bar" style="--c:${cor};width:100%"><i style="width:${Math.max(3, 100 * v / max)}%"></i></div>`, `<span class="vl veil">${brl(v)}</span>`, `data-fcat="${h(nome)}"`)}${open ? fsub(lancMes.filter(r => r.categoria === nome).sort((a, b) => a.data < b.data ? 1 : -1)) : ''}</li>`; }).join('');
     const top = lancMes.slice().sort((a, b) => b.valor - a.valor).slice(0, 5);
     return `<section class="fsec"><h2>Despesas por categoria</h2><p class="hint">Toque numa fatia ou numa categoria para ver as compras dela.</p>${rows.length ? donutSvg(rows, tot, sel) : ''}<ul class="rows">${lista || '<li class="empty">Nenhuma despesa neste mês.</li>'}</ul></section>
-      <section class="fsec"><h2>As 5 maiores compras</h2><ul class="rows">${top.map((r, n) => { const [ic, cor] = fic(r.categoria); return `<li>${frow(String(n + 1), 'var(--signal)', h(r.descricao), `${dm(r.data)} · ${h(r.categoria)} · ${h(r.pagamento)}`, `<span class="vl veil">${brl(r.valor)}</span>`)}</li>`; }).join('') || '<li class="empty">Nenhuma despesa neste mês.</li>'}</ul></section>`;
+      <section class="fsec"><h2>As 5 maiores compras</h2><ul class="rows">${top.map((r, n) => { const [ic, cor] = fic(r.categoria); return `<li>${frow(String(n + 1), 'var(--signal)', h(r.descricao), `${dm(r.data)} · ${h(r.categoria)} · ${h(r.pagamento)}`, `<span class="vl veil">${brl(r.valor)}</span>`, fedit('Lançamentos', r.linha))}</li>`; }).join('') || '<li class="empty">Nenhuma despesa neste mês.</li>'}</ul></section>`;
   }
   return abaContas(M, mes);
 }
@@ -2849,11 +3012,11 @@ function abaCartoes(M, mes) {
       <div class="tile"><div class="l">Cobranças previstas</div>${V(fatura.previsto, 'v')}</div></div>
       ${fatura.credito ? `<p class="hint">Crédito a abater ${V(fatura.credito)}</p>` : ''}
       <ul class="rows">${itens.map(x => { const [icone, cor] = fic(x.categoria);
-        return `<li>${frow(icone, cor, h(x.descricao), `${dm(x.data)} · ${h(x.categoria)} · ${x.origem}`, V(x.valor, 'vl'))}</li>`;
+        return `<li>${frow(icone, cor, h(x.descricao), `${dm(x.data)} · ${h(x.categoria)} · ${x.origem}`, V(x.valor, 'vl'), fedit(x.aba, x.linha))}</li>`;
       }).join('')}</ul>`;
   }
   return `<section class="fsec"><h2>Meus cartões</h2><p class="hint">Faturas com vencimento no mês selecionado.</p>
-    <div class="ccards">${cartoes}</div></section><section class="fsec"><h2>Faturas · ${h(nome)}</h2>
+    <div class="ccards">${cartoes}</div></section><section class="fsec"><header class="fe-secao"><h2>Faturas · ${h(nome)}</h2>${(() => { const c = M.cartoes.find(x => x.cartao === nome); return c?.linha ? `<button type="button" class="btn ghost" ${fedit('Cartões', c.linha)}>Editar cartão</button>` : ''; })()}</header>
     <div class="mchips">${ciclos}</div>${detalhe}</section>`;
 }
 
@@ -2861,12 +3024,12 @@ function abaContas(M, mes) {
   const pendentes = M.movs.filter(c => c.fonte === 'conta' && c.mes === mes);
   const pagas = M.contas.filter(c => norm(c.status) === 'pago' && (c.pagoEm || c.venc).slice(0,7) === mes);
   const assinatura = M.desp.filter(c => c.data.startsWith(mes) && (c.categoria === 'Assinaturas' || /parcela|recorrente/i.test(c.descricao)));
-  const linhas = pendentes.map(c => `<li>${frow('◷', 'var(--warn)', h(c.descricao), `${dm(c.data)} · ${c.situacao === 'atrasada' ? 'Atrasada' : 'A pagar'}`, V(-c.valor, 'vl'))}</li>`);
-  linhas.push(...pagas.map(c => `<li>${frow('✓','var(--ok)', h(c.conta), `${dm(c.pagoEm || c.venc)} · Paga`, c.valor == null ? '—' : V(c.valor, 'vl'))}</li>`));
-  return `<section class="fsec"><h2>Contas do mês</h2><p class="hint">${pendentes.length} pendente(s) · total a pagar ${V(pendentes.reduce((s, c) => s - c.valor, 0))}</p>
+  const linhas = pendentes.map(c => `<li>${frow('◷', 'var(--warn)', h(c.descricao), `${dm(c.data)} · ${c.situacao === 'atrasada' ? 'Atrasada' : 'A pagar'}`, V(-c.valor, 'vl'), fedit('Contas', c.linha))}</li>`);
+  linhas.push(...pagas.map(c => `<li>${frow('✓','var(--ok)', h(c.conta), `${dm(c.pagoEm || c.venc)} · Paga`, c.valor == null ? '—' : V(c.valor, 'vl'), fedit('Contas', c.linha))}</li>`));
+  return `<section class="fsec"><header class="fe-secao"><h2>Contas do mês</h2><button type="button" class="btn ghost" data-fnova="Contas">＋ Conta</button></header><p class="hint">${pendentes.length} pendente(s) · total a pagar ${V(pendentes.reduce((s, c) => s - c.valor, 0))}</p>
     <ul class="rows">${linhas.join('') || '<li class="empty">Nenhuma conta para este mês.</li>'}</ul></section>
     <section class="fsec"><h2>Assinaturas e parcelas lançadas</h2><ul class="rows">${assinatura.map(c =>
-      `<li>${frow('↻', 'var(--signal)', h(c.descricao), `${dm(c.data)} · ${h(c.categoria)}`, V(c.valor, 'vl'))}</li>`
+      `<li>${frow('↻', 'var(--signal)', h(c.descricao), `${dm(c.data)} · ${h(c.categoria)}`, V(c.valor, 'vl'), fedit('Lançamentos', c.linha))}</li>`
     ).join('') || '<li class="empty">Nenhuma cobrança lançada neste mês.</li>'}</ul></section>`;
 }
 
@@ -3178,7 +3341,7 @@ function copiar(txt, ok) {
 }
 function bind() {
   document.addEventListener('click', ev => {
-    const t = ev.target.closest('[data-commit],[data-open],[data-task],[data-compra],[data-cxdel],[data-tab],[data-mdt],[data-reveal],[data-find],[data-reg],[data-mood],[data-emo],#copyAsk,[data-act],[data-st],[data-day],[data-wk],[data-pick],[data-ficha],[data-regficha],[data-fmes],[data-ftab],[data-fo],[data-fcart],[data-fvenc],[data-fdia],[data-fcat],[data-alitab],[data-pessoa],[data-dias],[data-pego],[data-trocagrupo],[data-ref],[data-trocap],[data-close],[data-reveal-area],[data-ocultar-area],[data-area-captura],[data-anotar-nota],[data-box-remove],[data-sumario],[data-voltar]');
+    const t = ev.target.closest('[data-commit],[data-open],[data-task],[data-compra],[data-cxdel],[data-tab],[data-mdt],[data-reveal],[data-find],[data-reg],[data-mood],[data-emo],#copyAsk,[data-act],[data-st],[data-day],[data-wk],[data-pick],[data-ficha],[data-regficha],[data-fmes],[data-ftab],[data-fo],[data-fedit],[data-fnova],[data-faba],[data-fcart],[data-fvenc],[data-fdia],[data-fcat],[data-alitab],[data-pessoa],[data-dias],[data-pego],[data-trocagrupo],[data-ref],[data-trocap],[data-close],[data-reveal-area],[data-ocultar-area],[data-area-captura],[data-anotar-nota],[data-box-remove],[data-sumario],[data-voltar]');
     if (!t) return;
     const d = t.dataset;
     if (d.sumario) { ev.preventDefault(); sumario(d.sumario === 'abrir' && !S.sumario); return; }
@@ -3234,6 +3397,15 @@ function bind() {
       if (t.tagName === 'A') ev.preventDefault();
       if (a === 'nota') { openSheet('✏️ Anotar', formNota('geral'), { focus: 'textarea' }); return; }
       if (a === 'compra') { openSheet('💳 Compra', formCompra(false), { focus: 'input[name=oque]' }); return; }
+      if (a === 'fin-conectar') { openSheet('Conectar edição da planilha', formConectarPlanilha(), { focus: '#feUrl' }); return; }
+      if (a === 'fin-apagar') {
+        const f = t.closest('form');
+        if (!f) return;
+        if (t.dataset.sure) { apagarLinha(f); return; }
+        t.dataset.sure = '1'; t.textContent = 'Toque de novo para apagar'; t.classList.add('perigo');
+        setTimeout(() => { if (t.isConnected && !f.dataset.enviando) { delete t.dataset.sure; t.textContent = 'Apagar'; t.classList.remove('perigo'); } }, 4000);
+        return;
+      }
       if (a === 'comprovante') { openSheet('🧾 Comprovante', formCompra(true)); return; }
       if (a === 'ficha-nova') { openSheet('Novo exercício', formFichaEd(null), { focus: 'input[name=nome]' }); return; }
       if (a === 'ficha-editar') { const fi = S.fichas.find(x => x.id === d.id); if (fi) openSheet('Editar exercício', formFichaEd(fi)); return; }
@@ -3262,6 +3434,9 @@ function bind() {
     if (d.reveal) { S.reveal.add(d.reveal); if (S.open) renderDrawer(); renderAreaPage(); renderNotaPage(); return; }
     if (d.find) { const r = findList[+d.find]; if (r) { closeFind(); openNote(r.f.path); } return; }
     if (d.reg) { location.hash = '#registrar/' + d.reg; return; }
+    if (d.fedit) { const k = d.fedit.lastIndexOf(':'); abrirEdicao(d.fedit.slice(0, k), Number(d.fedit.slice(k + 1))); return; }
+    if (d.fnova) { abrirEdicao(d.fnova, null); return; }
+    if (d.faba) { S.planAba = d.faba; S.planBusca = ''; renderFinancas(); return; }
     if (d.fmes) { const M = finModel(); if (M && M.meses[+d.fmes]) { S.finMes = M.meses[+d.fmes]; S.finOpen = {}; S.finDia = null; S.finCat = null; renderFinancas(); } return; }
     if (d.ftab) { S.finTab = d.ftab; history.replaceState(null, '', '#financas/' + d.ftab); renderFinancas(); return; }
     if (d.fo) { S.finOpen[d.fo] = !S.finOpen[d.fo]; renderFinancas(); return; }
@@ -3293,6 +3468,7 @@ function bind() {
   document.addEventListener('contextmenu', ev => { if (!ev.target.closest('input,textarea,select,[contenteditable]')) ev.preventDefault(); });
   document.addEventListener('input', ev => {
     const t = ev.target;
+    if (t.id === 'planBusca') { S.planBusca = t.value; $('#planLinhas').innerHTML = linhasPlanilha(); return; }
     if (t.id === 'extratoBusca' || t.id === 'extratoTipo') {
       if (t.id === 'extratoBusca') S.extratoBusca = t.value; else S.extratoTipo = t.value;
       $('#extratoLinhas').innerHTML = linhasDoExtrato(finModel(), S.finMes);
@@ -3304,6 +3480,11 @@ function bind() {
   document.addEventListener('change', ev => {
     const t = ev.target;
     if (t.matches('[name=areaNota]') && t.closest('#regBody')) S.notaArea = t.value;
+    if (t.matches('select[data-outro]') && t.value === '__outro') {
+      const campo = document.createElement('input');
+      Object.assign(campo, { type: 'text', name: t.name, id: t.id, required: t.required, placeholder: 'Escreva o valor' });
+      t.replaceWith(campo); campo.focus();
+    }
     if (t.matches('[data-ficha-escolha]')) { S.regFicha = t.value; renderRegistrar(); }
     if (t.matches('form[data-form=compra] input[type=date]')) resumoPagamento(t.form);
     if (t.matches('input[type=file][name=arq]')) {
@@ -3326,6 +3507,8 @@ function bind() {
     if (kind === 'ficha-ed') { salvarFicha(f); return; }
     if (kind === 'compra') { submitCompra(f); return; }
     if (kind === 'receita' || kind === 'transferencia') { guardarMovimento(f); return; }
+    if (kind === 'fin-edit') { salvarEdicao(f); return; }
+    if (kind === 'fin-conectar') { conectarPlanilha(f); return; }
     if (kind === 'outro') { const txt = oneLine(f.txt.value); if (!txt) { f.txt.focus(); return; } const lugar = f.lugar.value; addCaixa([`🛒 Comprado: ${txt}${lugar ? ` (no lugar de ${lugar})` : ''}`], { msg: `comprado — ${short(txt, 40)}`, ok: lugar ? `Anotado no lugar de ${lugar}.` : 'Anotado.' }); f.txt.value = ''; f.lugar.value = ''; return; }
     if (kind === 'addcompra') { const txt = oneLine(f.txt.value); if (!txt) { f.txt.focus(); return; } addCompraBox(txt, f.sec.value); f.txt.value = ''; return; }
     if (kind === 'nota-vinculada') {

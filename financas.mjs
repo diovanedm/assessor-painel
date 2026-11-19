@@ -1,4 +1,4 @@
-import { norm, pad, ymd } from './datas.mjs?v=430a02d37814';
+import { norm, pad, ymd } from './datas.mjs?v=8787cb127060';
 
 export const brl = v => (v < 0 ? '−' : '') + 'R$ ' + Math.abs(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 export const brl0 = v => (v < 0 ? '−' : '') + 'R$ ' + Math.round(Math.abs(v)).toLocaleString('pt-BR');
@@ -14,7 +14,7 @@ function piso(valor) {
 }
 
 export function orcamentoDoMes(modelo, mes) {
-  const categorias = new Map(modelo.orc.map(r => [r.categoria, { categoria: r.categoria, limite: r.limite, gasto: 0 }]));
+  const categorias = new Map(modelo.orc.map(r => [r.categoria, { categoria: r.categoria, limite: r.limite, gasto: 0, linha: r.linha }]));
   for (const item of modelo.desp) {
     if (item.data.slice(0, 7) !== mes) continue;
     const nome = item.categoria || 'Sem categoria';
@@ -84,14 +84,14 @@ function saldoConsolidado(saldos, movimentos, hoje) {
 export function calcularFinancas(espelho, referencia = new Date()) {
   if (!Array.isArray(espelho?.abas?.['Lançamentos'])) return null;
   const hoje = ymd(referencia);
-  const A = espelho.abas, rows = n => (A[n] || []).slice(1).filter(r => r && r[0]);
+  const A = espelho.abas, rows = n => (A[n] || []).map((r, k) => r && Object.assign(r.slice(), { linha: k + 1 })).slice(1).filter(r => r && r[0]);
   const lanc = [];
-  (A['Lançamentos'] || []).slice(1).forEach((r, i) => { if (!r || !r[0]) return; const data = piso(r[0]), valor = pnum(r[2]); if (!data || valor == null) return; lanc.push({ i, data, tipo: String(r[1] || '').trim(), valor, categoria: String(r[3] || '').trim(), descricao: String(r[4] || '').trim(), pagamento: String(r[5] || '').trim() }); });
-  const contas = rows('Contas').map(r => { const v = String(r[2] || '').trim(); return { conta: String(r[0]).trim(), valor: pnum(r[1]), vencimento: v, venc: piso(v), pagoEm: piso(r[5]), recorrente: String(r[3] || '').trim(), status: String(r[4] || '').trim() }; });
-  const orc = rows('Orçamento').map(r => ({ categoria: String(r[0]).trim(), limite: pnum(r[1]), gasto: pnum(r[2]) }));
-  const saldos = rows('Saldos').map(r => ({ conta: String(r[0]).trim(), saldo: pnum(r[1]), atualizado: piso(r[3]), reserva: /^s/i.test(String(r[4] || '').trim()) }));
-  const cartoes = rows('Cartões').map(r => ({ cartao: String(r[0]).trim(), fechamento: pnum(r[1]), vencimento: pnum(r[2]), ultima_paga: piso(r[3]), credito: pnum(r[4]) || 0, texto: String(r[5] || '').trim() }));
-  const rec = rows('Recorrentes').map(r => ({ descricao: String(r[0]).trim(), valor: pnum(r[1]), dia: pnum(r[2]), cartao: String(r[3] || '').trim(), categoria: String(r[4] || '').trim(), inicio: pmes(r[5]), parcelas: pnum(r[6]), ativo: !/^n/i.test(String(r[7] || '').trim()) }));
+  (A['Lançamentos'] || []).slice(1).forEach((r, i) => { if (!r || !r[0]) return; const data = piso(r[0]), valor = pnum(r[2]); if (!data || valor == null) return; lanc.push({ i, linha: i + 2, data, tipo: String(r[1] || '').trim(), valor, categoria: String(r[3] || '').trim(), descricao: String(r[4] || '').trim(), pagamento: String(r[5] || '').trim() }); });
+  const contas = rows('Contas').map(r => { const v = String(r[2] || '').trim(); return { linha: r.linha, conta: String(r[0]).trim(), valor: pnum(r[1]), vencimento: v, venc: piso(v), pagoEm: piso(r[5]), recorrente: String(r[3] || '').trim(), status: String(r[4] || '').trim() }; });
+  const orc = rows('Orçamento').map(r => ({ linha: r.linha, categoria: String(r[0]).trim(), limite: pnum(r[1]), gasto: pnum(r[2]) }));
+  const saldos = rows('Saldos').map(r => ({ linha: r.linha, conta: String(r[0]).trim(), saldo: pnum(r[1]), atualizado: piso(r[3]), reserva: /^s/i.test(String(r[4] || '').trim()) }));
+  const cartoes = rows('Cartões').map(r => ({ linha: r.linha, cartao: String(r[0]).trim(), fechamento: pnum(r[1]), vencimento: pnum(r[2]), ultima_paga: piso(r[3]), credito: pnum(r[4]) || 0, texto: String(r[5] || '').trim() }));
+  const rec = rows('Recorrentes').map(r => ({ linha: r.linha, descricao: String(r[0]).trim(), valor: pnum(r[1]), dia: pnum(r[2]), cartao: String(r[3] || '').trim(), categoria: String(r[4] || '').trim(), inicio: pmes(r[5]), parcelas: pnum(r[6]), ativo: !/^n/i.test(String(r[7] || '').trim()) }));
   const sm = rows('Saldos mensais').map(r => ({ mes: pmes(r[0]), saldo_inicial: pnum(r[1]) }));
   const config = rows('Config').map(r => ({ parametro: String(r[0]).trim(), valor: String(r[1] ?? '').trim() }));
   if (!cartoes.length && config.some(c => norm(c.parametro).includes('fatura'))) cartoes.push(cartaoAntigo(config));
@@ -109,7 +109,7 @@ export function calcularFinancas(espelho, referencia = new Date()) {
     return { fechamento: fy + '-' + pad(fm) + '-' + pad(Math.min(c.fechamento, dim(fy, fm))), vencimento: vy + '-' + pad(vm) + '-' + pad(Math.min(c.vencimento, dim(vy, vm))) };
   };
   const fatItens = [];
-  for (const r of lanc) { if (r.tipo !== 'Despesa' || r.pagamento !== 'Crédito') continue; const cartao = cartaoDe(r.descricao), c = ciclo(cartao, r.data); fatItens.push({ cartao, vencimento: c.vencimento, fechamento: c.fechamento, data: r.data, descricao: r.descricao, categoria: r.categoria, valor: c2(r.valor), origem: 'lançado' }); }
+  for (const r of lanc) { if (r.tipo !== 'Despesa' || r.pagamento !== 'Crédito') continue; const cartao = cartaoDe(r.descricao), c = ciclo(cartao, r.data); fatItens.push({ cartao, aba: 'Lançamentos', linha: r.linha, vencimento: c.vencimento, fechamento: c.fechamento, data: r.data, descricao: r.descricao, categoria: r.categoria, valor: c2(r.valor), origem: 'lançado' }); }
   const comprasLancadas = fatItens.slice();
   for (const r of rec) {
     if (!r.ativo || !r.valor || !r.dia || !r.inicio) continue;
@@ -127,7 +127,7 @@ export function calcularFinancas(espelho, referencia = new Date()) {
         comprasLancadas.splice(registrada, 1);
         continue;
       }
-      fatItens.push({ cartao, vencimento: c.vencimento, fechamento: c.fechamento, data, descricao: r.descricao + (r.parcelas ? ' ' + (n + 1) + '/' + r.parcelas : ''), categoria: r.categoria, valor: c2(r.valor), origem: 'previsto' });
+      fatItens.push({ cartao, aba: 'Recorrentes', linha: r.linha, vencimento: c.vencimento, fechamento: c.fechamento, data, descricao: r.descricao + (r.parcelas ? ' ' + (n + 1) + '/' + r.parcelas : ''), categoria: r.categoria, valor: c2(r.valor), origem: 'previsto' });
     }
   }
   fatItens.sort((a, b) => a.data < b.data ? 1 : a.data > b.data ? -1 : 0);
@@ -148,7 +148,7 @@ export function calcularFinancas(espelho, referencia = new Date()) {
     if (r.pagamento === 'Crédito' || isVA(r.pagamento)) continue;
     if (r.tipo !== 'Receita' && r.tipo !== 'Despesa') continue;
     if (r.tipo === 'Receita' && r.categoria === 'Salário') sal[r.data.slice(0, 7)] = 1;
-    movs.push({ mes: r.data.slice(0, 7), data: r.data, descricao: r.descricao, origem: r.tipo === 'Receita' ? 'Receita' : 'Pix e boleto', valor: c2(r.tipo === 'Receita' ? r.valor : -r.valor), situacao: r.data <= hoje ? 'feito' : 'previsto', fonte: 'lancamento' });
+    movs.push({ linha: r.linha, mes: r.data.slice(0, 7), data: r.data, descricao: r.descricao, origem: r.tipo === 'Receita' ? 'Receita' : 'Pix e boleto', valor: c2(r.tipo === 'Receita' ? r.valor : -r.valor), situacao: r.data <= hoje ? 'feito' : 'previsto', fonte: 'lancamento' });
   }
   let ref = 0; for (const c of config) if (/sal[aá]rio/i.test(c.parametro)) { const n = pnum(c.valor); if (n) ref = n; }
   if (ref) for (let k = 1; k <= 6; k++) { const mes = addM(cur, k); if (!sal[mes]) movs.push({ mes, data: mes + '-06', descricao: 'Salário (valor de referência)', origem: 'Receita', valor: c2(ref), situacao: 'previsto', fonte: 'salario' }); }
@@ -156,7 +156,7 @@ export function calcularFinancas(espelho, referencia = new Date()) {
     if (c.status !== 'Pendente' || c.valor == null || !c.venc) continue;
     let n = 1; if (/^s/i.test(c.recorrente)) { const m = /(\d+)\s*\/\s*(\d+)/.exec(c.conta); n = m ? Math.max(1, Number(m[2]) - Number(m[1]) + 1) : 99; }
     const [vy, vm, vd] = c.venc.split('-').map(Number);
-    for (let k = 0; k < n; k++) { let y = vy, m = vm + k; while (m > 12) { m -= 12; y++; } const mes = y + '-' + pad(m); if (mes > fim) break; const data = mes + '-' + pad(Math.min(vd, dim(y, m))); const atras = data < hoje; movs.push({ mes: atras ? cur : mes, data, descricao: c.conta, origem: 'Conta', valor: c2(-c.valor), situacao: atras ? 'atrasada' : 'previsto', fonte: 'conta' }); }
+    for (let k = 0; k < n; k++) { let y = vy, m = vm + k; while (m > 12) { m -= 12; y++; } const mes = y + '-' + pad(m); if (mes > fim) break; const data = mes + '-' + pad(Math.min(vd, dim(y, m))); const atras = data < hoje; movs.push({ linha: c.linha, mes: atras ? cur : mes, data, descricao: c.conta, origem: 'Conta', valor: c2(-c.valor), situacao: atras ? 'atrasada' : 'previsto', fonte: 'conta' }); }
   }
   for (const f of faturas) { if (f.status === 'paga' || f.total <= 0 || f.mes > fim) continue; const atras = f.status === 'atrasada'; movs.push({ mes: atras ? cur : f.mes, data: f.vencimento, descricao: 'Fatura ' + f.cartao, origem: 'Fatura', valor: c2(-f.total), situacao: atras ? 'atrasada' : 'previsto', fonte: 'fatura' }); }
   movs.sort((a, b) => a.data < b.data ? -1 : a.data > b.data ? 1 : 0);
