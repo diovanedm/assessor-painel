@@ -1,4 +1,4 @@
-import { norm, pad, pymd, ymd } from './datas.mjs?v=6e8bf3eb68dd';
+import { norm, pad, pymd, ymd } from './datas.mjs?v=0bfb3e9d96d4';
 
 /* Tópicos fixos de toda área, na ordem do sumário. `re` acha as seções (## …) das notas
    que alimentam o tópico; os tópicos sem `re` são montados pelo painel. */
@@ -6,13 +6,20 @@ export const TOPICOS = [
   { id: 'resumo', nome: 'Resumo', emoji: '📌' },
   { id: 'metas', nome: 'Metas e progresso', emoji: '🎯', re: /^(metas?|objetivos?)\b/ },
   { id: 'tarefas', nome: 'Tarefas e próximos passos', curto: 'Tarefas', emoji: '✅' },
+  { id: 'agenda', nome: 'Agenda da área', curto: 'Agenda', emoji: '🗓️' },
   { id: 'combinados', nome: 'Combinados', emoji: '🤝', re: /combinad|^acordos?\b|^regras?\b/, tambem: (titulo, texto) => /^historico\b/.test(titulo) && /combinad/i.test(texto) },
   { id: 'decisoes', nome: 'Decisões', emoji: '🧭', re: /^decis/ },
   { id: 'padroes', nome: 'Padrões e aprendizados', emoji: '🔁', re: /^padro|aprendiz|^tecnicas que funcionam|^distracoes|^o que (funciona|trava)/ },
   { id: 'numeros', nome: 'Números e documentos', emoji: '🔢', re: /^(numeros|documentos|contatos)\b/ },
+  { id: 'materiais', nome: 'Materiais e links', emoji: '🔗', re: /^(materia|links?\b|recursos|referencias|leituras?\b|lendo\b|lidos\b|trilhas?\b|cursos?\b|videos?\b)/ },
   { id: 'pessoas', nome: 'Pessoas e casos', emoji: '👥' },
   { id: 'perguntas', nome: 'Perguntas em aberto', emoji: '❓', re: /^(perguntas|a revisar|duvidas)\b/ },
   { id: 'conquistas', nome: 'Conquistas', emoji: '🏆', re: /conquist/ },
+  // "Ver mais": ficam recolhidos no sumário
+  { id: 'esperando', nome: 'Esperando', emoji: '🚧', re: /^(esperando|aguardando)\b/, mais: true },
+  { id: 'custos', nome: 'Quanto custa', emoji: '💸', mais: true },
+  { id: 'ideias', nome: 'Ideias pra depois', emoji: '💡', re: /^(ideias?\b|quero\b|um dia\b|algum dia\b|backlog\b)/, mais: true },
+  { id: 'motivo', nome: 'Por que isso importa', emoji: '❤️', re: /^(por que|porque|motivo|pra que)\b/, mais: true },
 ];
 const TOPICO_IDS = new Set(TOPICOS.map(t => t.id));
 
@@ -188,8 +195,9 @@ export function entradasDatadas(file) {
   return out;
 }
 
-const FORA = ['eu/habitos.md', 'eu/decisoes.md', 'documentos/documentos.md'];
-const ROTULO_FORA = { 'eu/habitos.md': 'Hábitos', 'eu/decisoes.md': 'Decisões', 'documentos/documentos.md': 'Documentos' };
+const FORA = ['eu/habitos.md', 'eu/decisoes.md', 'documentos/documentos.md', 'agenda.md'];
+const ROTULO_FORA = { 'eu/habitos.md': 'Hábitos', 'eu/decisoes.md': 'Decisões', 'documentos/documentos.md': 'Documentos', 'agenda.md': 'Agenda' };
+const SO_CAMPOS = { 'agenda.md': /^(hora|o que)/ };
 
 /** Casos (pasta casos/) cujo frontmatter `area` é esta área. */
 export function casosDaArea(files, area) {
@@ -224,7 +232,7 @@ export function diasDaArea(files, area, hoje) {
       if (e.date > hoje) continue;
       if (fora) {
         if (e.tipo !== 'linha' || !linhaDeFora(e, area, casos)) continue;
-        e.campos = e.campos.filter(([k]) => !/^areas?$/.test(norm(k)));
+        e.campos = e.campos.filter(([k]) => !/^areas?$/.test(norm(k)) && (!SO_CAMPOS[f.path] || SO_CAMPOS[f.path].test(norm(k))));
       }
       const entrada = { ...e, path: f.path, fonte: ROTULO_FORA[f.path] || f.title || stem, origem: naArea ? (ehRegistroDoMes(f.path) ? 'registro' : 'area') : caso ? 'caso' : 'fora' };
       if (!porDia.has(e.date)) porDia.set(e.date, []);
@@ -236,6 +244,16 @@ export function diasDaArea(files, area, hoje) {
     .map(([date, entradas]) => ({ date, entradas: entradas.sort((a, b) => ordem[a.origem] - ordem[b.origem]) }));
 }
 
+/** Texto com algo além de cabeçalhos de tabela vazios e linhas em branco. */
+export function temConteudo(texto) {
+  let tabela = 0;
+  return String(texto || '').split('\n').some(l => {
+    const t = l.trim();
+    if (!t.startsWith('|')) { tabela = 0; return !!t && !/^#{1,6}\s/.test(t); }
+    tabela += 1;
+    return tabela > 2;
+  });
+}
 /** Seções das notas que alimentam um tópico: [{ path, fonte, titulo, texto }]. */
 export function secoesDoTopico(notas, topico) {
   const t = TOPICOS.find(x => x.id === topico);
@@ -245,10 +263,10 @@ export function secoesDoTopico(notas, topico) {
     const stem = norm(f.stem || f.path.split('/').pop().replace(/\.md$/, ''));
     if (t.re.test(stem) && !f.path.startsWith('casos/')) {
       const texto = f.body.replace(/^#\s.*$/m, '').trim();
-      if (texto) out.push({ path: f.path, fonte: f.title, titulo: f.title, texto, inteira: true });
+      if (temConteudo(texto)) out.push({ path: f.path, fonte: f.title, titulo: f.title, texto, inteira: true });
       continue;
     }
-    for (const s of secoesDeLeitura(f.body)) if (t.re.test(norm(s.title)) || t.tambem?.(norm(s.title), s.text)) out.push({ path: f.path, fonte: f.title, titulo: s.title, texto: s.text });
+    for (const s of secoesDeLeitura(f.body)) if ((t.re.test(norm(s.title)) || t.tambem?.(norm(s.title), s.text)) && temConteudo(s.text)) out.push({ path: f.path, fonte: f.title, titulo: s.title, texto: s.text });
   }
   return out;
 }
@@ -272,4 +290,40 @@ export function padroesDosHabitos(habitos, area, hoje, dias = 30) {
   const lista = [...porNome.values()].sort((a, b) => (b.feito + b.nao) - (a.feito + a.nao) || a.nome.localeCompare(b.nome, 'pt-BR'));
   const max = Math.max(...faltasPorDia);
   return { lista, total: daArea.length, diaQueMaisFalha: max > 1 ? faltasPorDia.indexOf(max) : null, desde };
+}
+
+/* Gastos da planilha que contam como da área: categorias e, quando a categoria é dividida
+   entre áreas (Educação), palavras da descrição. */
+export const CUSTOS_DA_AREA = {
+  saude: { categorias: ['Saúde'] },
+  'casa-familia': { categorias: ['Mercado', 'Moradia', 'Família', 'Contas fixas'] },
+  cultura: { categorias: ['Lazer'] },
+  ingles: { categorias: ['Educação'], descricao: /ingl|cake|english/i },
+  carreira: { categorias: ['Educação'], descricao: /alura|curso|udemy|rocketseat|livro t[eé]cnico/i },
+};
+/** Despesas da área num mês (aaaa-mm): { itens, total }. */
+export function custosDaArea(despesas, area, mes) {
+  const regra = CUSTOS_DA_AREA[area];
+  if (!regra) return { itens: [], total: 0 };
+  const cats = new Set(regra.categorias.map(c => norm(c)));
+  const itens = despesas.filter(d => String(d.data || '').startsWith(mes) && cats.has(norm(d.categoria))
+    && (!regra.descricao || regra.descricao.test(d.descricao || '')))
+    .sort((a, b) => String(b.data).localeCompare(String(a.data)));
+  return { itens, total: Math.round(itens.reduce((t, d) => t + (Number(d.valor) || 0), 0) * 100) / 100 };
+}
+
+/** Links citados nas notas (menos os de documentos do Google, que ficam em Números). */
+export function linksDasNotas(notas) {
+  const vistos = new Set(), out = [];
+  for (const f of notas) {
+    for (const linha of String(f.body || '').split('\n')) {
+      for (const m of linha.matchAll(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|(?:^|[\s(])(https?:\/\/[^\s<)]+)/g)) {
+        const url = (m[2] || m[3] || '').replace(/[.,;:]+$/, '');
+        if (!url || vistos.has(url) || /(drive|docs|mail)\.google\.com|claude\.ai/.test(url)) continue;
+        vistos.add(url);
+        out.push({ url, titulo: m[1] || '', contexto: linha.replace(/^\s*([-*+]|\d+\.)\s+(\[[ xX]\]\s*)?/, '').trim(), path: f.path, fonte: f.title });
+      }
+    }
+  }
+  return out;
 }

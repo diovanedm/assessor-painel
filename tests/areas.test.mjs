@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  areasDoTexto, destinoDaArea, diasDaArea, entradasDatadas, linkDeRegistro, metasDaTabela, notasDaArea,
+  areasDoTexto, custosDaArea, destinoDaArea, linksDasNotas, diasDaArea, entradasDatadas, linkDeRegistro, metasDaTabela, notasDaArea,
   padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico,
 } from '../areas.mjs';
 
@@ -69,11 +69,13 @@ test('dias da área juntam registros, casos da área e linhas de hábitos, decis
     nota('casos/outro.md', '| Data | O que aconteceu |\n|---|---|\n| 2026-11-18 | não é da área |', { area: 'financas' }),
     nota('eu/habitos.md', '| data | o quê | área | ✅/❌ | motivo |\n|---|---|---|---|---|\n| 2026-11-18 | Drum Groove (20h30) | trabalho | ❌ | cansado |\n| 2026-11-18 | academia | saude | ✅ | — |'),
     nota('eu/decisoes.md', '| Data | Decisão | Por quê | Áreas |\n|---|---|---|---|\n| 2026-11-10 | Pré-commit roda tudo | pedido do gestor | Trabalho |\n| 2026-11-10 | Não comprar EA111 | furada | Finanças |'),
+    nota('agenda.md', '## Compromissos\n\n| Data | Hora | O quê | Área | Obs. |\n|---|---|---|---|---|\n| 2026-11-18 qua | 09:00–09:15 | Avisar a Apsis | Trabalho | criado em 17/11 |\n| 2026-11-30 seg | 10:00 | Futuro | Trabalho | |'),
     nota('documentos/documentos.md', '## Registro\n\n| Data | Documento | Número | Caso |\n|---|---|---|---|\n| 2026-11-06 | Ocorrência | 123 | [[ao-170]] |'),
   ];
   const dias = diasDaArea(Object.fromEntries(files.map(f => [f.path, f])), 'trabalho', '2026-11-19');
   assert.deepEqual(dias.map(d => d.date), ['2026-11-18', '2026-11-17', '2026-11-10', '2026-11-06']);
-  assert.deepEqual(dias[0].entradas.map(e => e.origem), ['registro', 'fora', 'caso']);
+  assert.deepEqual(dias[0].entradas.map(e => e.origem), ['registro', 'fora', 'fora', 'caso']);
+  assert.deepEqual(dias[0].entradas.find(e => e.fonte === 'Agenda').campos, [['Hora', '09:00–09:15'], ['O quê', 'Avisar a Apsis']]);
   assert.deepEqual(dias[0].entradas[1].campos, [['o quê', 'Drum Groove (20h30)'], ['✅/❌', '❌'], ['motivo', 'cansado']]);
   assert.equal(dias[2].entradas[0].fonte, 'Decisões');
   assert.equal(dias[3].entradas[0].fonte, 'Documentos');
@@ -86,6 +88,8 @@ test('tópicos acham as seções certas e o Histórico só quando registra combi
   assert.deepEqual(secoesDoTopico([principal, cuidados], 'combinados').map(s => s.titulo), ['Combinados', 'Histórico']);
   assert.equal(secoesDoTopico([conquistas], 'conquistas')[0].inteira, true);
   assert.deepEqual(secoesDoTopico([principal], 'resumo'), []);
+  const vazia = nota('areas/ingles/progresso.md', '# P\n\n## Materiais indicados\n\n| Data | Material |\n|---|---|\n\n## Desafios\n\n- um');
+  assert.deepEqual(secoesDoTopico([vazia], 'materiais'), []);
 });
 
 test('áreas citadas em texto livre', () => {
@@ -106,4 +110,22 @@ test('padrões dos hábitos: feitos, faltas com motivo e o dia que mais falha', 
   assert.equal(p.total, 4);
   assert.deepEqual(p.lista[0], { nome: 'academia', feito: 1, nao: 2, cancelado: 0, motivos: [{ date: '2026-11-09', motivo: 'reunião' }] });
   assert.equal(p.diaQueMaisFalha, 1);
+});
+
+test('quanto custa: categorias da área e, na Educação, só o que a descrição liga à área', () => {
+  const desp = [
+    { data: '2026-11-03', categoria: 'Educação', descricao: 'Jornal Joca (Nubank)', valor: 20.92 },
+    { data: '2026-11-05', categoria: 'Educação', descricao: 'Cake Plus inglês', valor: 30 },
+    { data: '2026-11-08', categoria: 'Saúde', descricao: 'Academia', valor: 118.22 },
+    { data: '2026-10-08', categoria: 'Saúde', descricao: 'Academia', valor: 118.22 },
+  ];
+  assert.deepEqual(custosDaArea(desp, 'ingles', '2026-11').itens.map(d => d.valor), [30]);
+  assert.equal(custosDaArea(desp, 'saude', '2026-11').total, 118.22);
+  assert.equal(custosDaArea(desp, 'trabalho', '2026-11').itens.length, 0);
+});
+
+test('links das notas: sem repetir e sem os documentos do Google', () => {
+  const ls = linksDasNotas([nota('areas/ingles/progresso.md', '- [Canal X](https://youtube.com/x) bom pra listening\n- https://youtube.com/x de novo\n- [PDF](https://drive.google.com/file/1)\n- ver https://cake.me.')]);
+  assert.deepEqual(ls.map(l => [l.url, l.titulo]), [['https://youtube.com/x', 'Canal X'], ['https://cake.me', '']]);
+  assert.match(ls[0].contexto, /bom pra listening/);
 });

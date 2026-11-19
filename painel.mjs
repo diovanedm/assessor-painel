@@ -1,13 +1,13 @@
 /* ─────────────── utilidades ─────────────── */
-import { TOPICOS, areasDoTexto, casosDaArea, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDeRegistro, metasDaTabela, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=6e8bf3eb68dd';
-import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=6e8bf3eb68dd';
-import { visaoBemEstar } from './bem-estar.mjs?v=6e8bf3eb68dd';
-import { casosEmAndamento, pontoDeParada } from './memoria.mjs?v=6e8bf3eb68dd';
+import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDeRegistro, metasDaTabela, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=0bfb3e9d96d4';
+import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=0bfb3e9d96d4';
+import { visaoBemEstar } from './bem-estar.mjs?v=0bfb3e9d96d4';
+import { casosEmAndamento, pontoDeParada } from './memoria.mjs?v=0bfb3e9d96d4';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const h = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=6e8bf3eb68dd';
+import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=0bfb3e9d96d4';
 const DOW = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 const DOWL = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
 const MON = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
@@ -860,7 +860,7 @@ function dialSvg(items, nm, dow) {
 
 const isChecked = g => { const o = taskOv(g); return o ? o.kind === 'feita' : g.checked; };
 const byDue = (a, b) => (a.due || '9').localeCompare(b.due || '9') || (b.prio === 'alta') - (a.prio === 'alta');
-import { organizarTarefas, primeiroPasso } from './tarefas.mjs?v=6e8bf3eb68dd';
+import { organizarTarefas, primeiroPasso } from './tarefas.mjs?v=0bfb3e9d96d4';
 function estadoTarefa(g) {
   if (g.nova) return { feita:false, data:'' };
   const item = taskOv(g);
@@ -1157,7 +1157,7 @@ const SUMARIO_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
 const linkTopico = (area, id) => id === 'resumo' ? (area === 'financas' ? '#area/financas/resumo' : `#area/${area}`) : `#area/${area}/${id}`;
 const linkDeNota = area => `#area/${area}/nota/${encodeURIComponent(area)}`;
 const diaLongo = s => { const t = pymd(s).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }); return t.charAt(0).toUpperCase() + t.slice(1); };
-const ORIGEM_ICON = { registro: '📓', area: '📄', caso: '📂', Hábitos: '🔁', Decisões: '🧭', Documentos: '🔢' };
+const ORIGEM_ICON = { registro: '📓', area: '📄', caso: '📂', Hábitos: '🔁', Decisões: '🧭', Documentos: '🔢', Agenda: '🗓️' };
 const DICA = {
   metas: 'As metas do trimestre entram aqui quando você combinar na revisão. Ficam em “Metas do trimestre” na nota da área.',
   tarefas: 'Nenhuma tarefa nesta área. Quando você pedir uma, o assessor cria no TickTick e ela aparece aqui.',
@@ -1168,6 +1168,12 @@ const DICA = {
   pessoas: 'Pessoas e casos aparecem aqui quando estiverem ligados às notas desta área.',
   perguntas: 'O que ficou pra decidir ou conferir. O assessor traz na revisão de domingo.',
   conquistas: 'O que deu certo, com a data. Serve de prova quando o dia parecer ruim.',
+  agenda: 'Nenhum compromisso desta área na agenda. Os blocos fixos e os compromissos com a área marcada aparecem aqui.',
+  materiais: 'Cursos, vídeos, livros e links desta área. O assessor guarda em “Materiais e links” na nota da área, e os links citados nas notas aparecem aqui sozinhos.',
+  esperando: 'Nada esperando outra pessoa nesta área. Tarefas que começam com “Esperando:” aparecem aqui.',
+  custos: 'Nenhum gasto da planilha ligado a esta área neste mês.',
+  ideias: 'O que você quer fazer um dia, sem prazo. O assessor guarda em “Ideias pra depois”.',
+  motivo: 'Por que esta área importa pra você, nas suas palavras. Serve pra lembrar num dia ruim.',
   dias: 'Nenhum registro com data nesta área ainda. O assessor grava aqui o que você fez ou não fez, dia a dia.',
 };
 
@@ -1180,7 +1186,7 @@ function contextoDaArea(area, base) {
     .sort((a, b) => Number(/^(fechado|resolvido|concluido|encerrado)$/.test(norm(a.meta.status))) - Number(/^(fechado|resolvido|concluido|encerrado)$/.test(norm(b.meta.status)))
       || String(b.meta.atualizado || '').localeCompare(String(a.meta.atualizado || '')));
   const hoje = ymd(now());
-  const dias = diasDaArea(Object.fromEntries([...notas, ...casos, ...['eu/habitos.md', 'eu/decisoes.md', 'documentos/documentos.md'].map(p => S.files[p]).filter(Boolean)].map(f => [f.path, f])), area, hoje);
+  const dias = diasDaArea(Object.fromEntries([...notas, ...casos, ...['eu/habitos.md', 'eu/decisoes.md', 'documentos/documentos.md', 'agenda.md'].map(p => S.files[p]).filter(Boolean)].map(f => [f.path, f])), area, hoje);
   const tarefas = organizarTarefas(S.tasks.filter(g => g.members.some(m => S.files[m.path]?.area === area) && (!cfg.discreet || !g.sens || S.reveal.has(base))), hoje, estadoTarefa);
   const apoio = notas.filter(f => f !== principal && !ehRegistroDoMes(f.path));
   return { area, base, notas, principal, casos, dias, tarefas, apoio, hoje };
@@ -1223,24 +1229,37 @@ function topicosDaArea(C) {
     for (const m of f.text.matchAll(/\[\[([^\]|#]+)/g)) { const p = S.stems[m[1].trim().toLowerCase()]; if (p?.startsWith('pessoas/')) pessoas.add(p); }
     for (const nome of [].concat(f.meta.pessoas || [])) { const p = S.stems[String(nome).replace(/^\[\[|\]\]$/g, '').trim().toLowerCase()]; if (p?.startsWith('pessoas/')) pessoas.add(p); }
   }
-  const abertas = ['atrasadas', 'hoje', 'proximas', 'semdata'].reduce((n, k) => n + C.tarefas[k].length, 0);
+  const abertasL = ['atrasadas', 'hoje', 'proximas', 'semdata'].flatMap(k => C.tarefas[k]);
+  const abertas = abertasL.length;
+  const esperando = abertasL.filter(g => /^esperando\b/.test(norm(plain(g.text))));
+  const compromissos = S.agenda.events.filter(e => e.area === area && e.date >= C.hoje).sort((a, b) => (a.date + (a.start || '')).localeCompare(b.date + (b.start || '')));
+  const fixos = S.agenda.series.filter(x => x.area === area && (!x.until || x.until >= C.hoje));
+  const M = finModel(), mes = C.hoje.slice(0, 7);
+  const custos = M ? custosDaArea(M.desp, area, mes) : { itens: [], total: 0 };
+  const custosAntes = M ? custosDaArea(M.desp, area, ymd(addDays(pymd(mes + '-01'), -1)).slice(0, 7)) : { itens: [], total: 0 };
+  const links = linksDasNotas(notas);
   const metasSec = secoes('metas');
   const extras = { decisoes: decisoesFora, numeros: docs };
   const n = {
     resumo: 0, metas: metasSec.reduce((t, s) => t + Math.max(1, metasDaTabela(s.texto).length), 0), tarefas: abertas,
     pessoas: casos.length + pessoas.size, padroes: secoes('padroes').length + padroes.lista.length,
+    agenda: compromissos.length + fixos.length, esperando: esperando.length + secoes('esperando').length,
+    custos: custos.itens.length, materiais: secoes('materiais').length + links.length,
   };
-  for (const id of ['combinados', 'decisoes', 'numeros', 'perguntas', 'conquistas']) n[id] = secoes(id).length + (extras[id]?.length || 0);
-  return { n, secoes, decisoesFora, docs, padroes, pessoas: [...pessoas].map(p => S.files[p]).filter(Boolean), metasSec };
+  for (const id of ['combinados', 'decisoes', 'numeros', 'perguntas', 'conquistas', 'ideias', 'motivo']) n[id] = secoes(id).length + (extras[id]?.length || 0);
+  return { n, secoes, decisoesFora, docs, padroes, pessoas: [...pessoas].map(p => S.files[p]).filter(Boolean), metasSec, esperando, compromissos, fixos, custos, custosAntes, links, temFin: !!M };
 }
 
 function sumarioDaArea(C, T, vista) {
   const { area } = C;
   const atual = vista.vista === 'nota' ? null : vista.vista;
-  const topicos = TOPICOS.map(t => {
+  const item = t => {
     const vazio = t.id !== 'resumo' && !T.n[t.id];
     return `<li><a href="${linkTopico(area, t.id)}"${atual === t.id ? ' aria-current="page"' : ''}${vazio ? ' class="vazio"' : ''}><span class="sm-ic" aria-hidden="true">${t.emoji}</span><span class="sm-nome">${t.curto || t.nome}</span>${!vazio && t.id !== 'resumo' ? `<span class="sm-n">${T.n[t.id]}</span>` : ''}</a></li>`;
-  }).join('');
+  };
+  const mais = TOPICOS.filter(t => t.mais);
+  const topicos = TOPICOS.filter(t => !t.mais).map(item).join('')
+    + `<li><details class="sm-mais" data-section="sm-mais"${mais.some(t => t.id === atual) ? ' open' : ''}><summary><span class="sm-ic" aria-hidden="true">＋</span><span class="sm-nome">Ver mais</span>${mais.some(t => T.n[t.id]) ? `<span class="sm-n">${mais.reduce((n, t) => n + (T.n[t.id] || 0), 0)}</span>` : ''}</summary><ul>${mais.map(item).join('')}</ul></details></li>`;
   const meses = new Map();
   for (const d of C.dias) { const k = d.date.slice(0, 7); if (!meses.has(k)) meses.set(k, []); meses.get(k).push(d); }
   const mesAtual = (vista.dia || C.dias[0]?.date || C.hoje).slice(0, 7);
@@ -1349,9 +1368,37 @@ function corpoDoTopico(C, T, vista) {
     const nav = `<nav class="dia-nav" aria-label="Outros dias">${velho ? `<a href="#area/${area}/dia/${velho.date}">← ${dayLabel(velho.date)}</a>` : '<span></span>'}${novo ? `<a href="#area/${area}/dia/${novo.date}">${dayLabel(novo.date)} →</a>` : ''}</nav>`;
     return `${dia ? blocoDoDia(dia) : `<div class="area-card topico-vazio"><p>Nada registrado nesta área em ${dm(vista.dia)}.</p></div>`}${nav}`;
   }
+  if (id === 'agenda') {
+    if (!T.n.agenda) return vazioTopico('agenda', area);
+    const ordemDow = [1, 2, 3, 4, 5, 6, 0];
+    const quando = x => x.days.mday ? `Dia ${x.days.mday}` : ordemDow.filter(d => x.days.dows.has(d)).map(d => DOW[d]).join(', ');
+    const hora = e => e.allDay ? 'dia inteiro' : `${e.start}–${e.end}`;
+    return `${T.compromissos.length ? `<section class="area-card"><h3>Próximos compromissos</h3><ul class="dia-linhas">${T.compromissos.slice(0, 20).map(e => `<li class="dia-linha"><span class="dia-st dia-data">${dm(e.date)}</span><span>${inline(e.name)}<small>${DOW[pymd(e.date).getDay()]} · ${hora(e)}${e.obs ? ' · ' + h(short(plain(e.obs), 90)) : ''}</small></span></li>`).join('')}</ul></section>` : ''}
+      ${T.fixos.length ? `<section class="area-card"><h3>Blocos fixos da semana</h3><ul class="dia-linhas">${T.fixos.map(x => `<li class="dia-linha"><span class="dia-st dia-data">${h(quando(x))}</span><span>${inline(x.name)}<small>${hora(x)}${x.from && x.from > C.hoje ? ' · a partir de ' + dm(x.from) : ''}</small></span></li>`).join('')}</ul></section>` : ''}
+      <p class="area-nota">Espelho da agenda (<button type="button" class="secao-fonte" data-open="agenda.md">agenda.md ↗</button>). O Google Agenda manda.</p>`;
+  }
+  if (id === 'esperando') {
+    const secs = T.secoes('esperando');
+    if (!T.n.esperando) return vazioTopico('esperando', area);
+    return `${T.esperando.length ? `<section class="area-card"><h3>Esperando alguém</h3><ul class="tasks">${T.esperando.map(taskLi).join('')}</ul></section>` : ''}${secs.map(cartaoSecao).join('')}`;
+  }
+  if (id === 'custos') {
+    if (area === 'financas') return `<a class="area-card fin-atalho" href="#financas"><b>💰 Abrir Finanças</b><span>Orçamento por categoria, extrato e cartões →</span></a>`;
+    const regra = CUSTOS_DA_AREA[area];
+    if (!regra) return `<div class="area-card topico-vazio"><p>Nenhuma categoria da planilha está ligada a ${h(AREAS[area].nome)}.</p></div>`;
+    if (!T.temFin) return `<div class="area-card topico-vazio"><p>Aguardando o espelho da planilha.</p></div>`;
+    const { itens, total } = T.custos;
+    return `<section class="area-card"><div class="area-card-head"><h3>${MESES[+C.hoje.slice(5, 7) - 1]} até agora</h3><a class="area-link" href="#financas">Finanças →</a></div>
+      <p class="custo-total">${V(total)} <small>em ${itens.length} ${itens.length === 1 ? 'gasto' : 'gastos'} · mês passado ${V(T.custosAntes.total)}</small></p>
+      ${itens.length ? `<ul class="dia-linhas">${itens.slice(0, 20).map(d => `<li class="dia-linha"><span class="dia-st dia-data">${dm(d.data)}</span><span>${h(d.descricao || d.categoria)}<small>${h(d.categoria)} · ${V(d.valor)}</small></span></li>`).join('')}</ul>` : ''}
+      <p class="area-nota">Conta as categorias ${regra.categorias.map(c => `<b>${h(c)}</b>`).join(', ')}${regra.descricao ? ' (só o que é desta área pela descrição)' : ''}.</p></section>`;
+  }
   // tópicos montados a partir das seções das notas
   const secs = T.secoes(id);
   let extra = '';
+  if (id === 'materiais' && T.links.length) {
+    extra = `<section class="area-card secao-card"><header class="secao-h"><h3>Links citados nas notas</h3><small class="secao-nota">${T.links.length}</small></header><ul class="dia-linhas">${T.links.slice(0, 40).map(l => `<li class="dia-linha"><span class="dia-st" aria-hidden="true">↗</span><span><a href="${h(l.url)}" target="_blank" rel="noopener noreferrer">${h(l.titulo || l.url.replace(/^https?:\/\/(www\.)?/, '').slice(0, 60))}</a><small>${h(short(plain(l.contexto.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/https?:\/\/\S+/g, '').trim() || l.fonte), 120))} · ${h(plain(l.fonte))}</small></span></li>`).join('')}</ul></section>`;
+  }
   if (id === 'decisoes' && T.decisoesFora.length) {
     extra = `<section class="area-card secao-card"><header class="secao-h"><h3>Decisões registradas</h3><button type="button" class="secao-fonte" data-open="eu/decisoes.md">todas <span aria-hidden="true">↗</span></button></header><ul class="dia-linhas">${T.decisoesFora.sort((a, b) => b.date.localeCompare(a.date)).map(e => `<li class="dia-linha"><span class="dia-st dia-data">${dm(e.date)}</span><span>${inline(e.campos.find(([k]) => /^decis/.test(norm(k)))?.[1] || '')}${(() => { const p = e.campos.find(([k]) => /^por que/.test(norm(k))); return p ? ` <small>Por quê: ${inline(p[1])}</small>` : ''; })()}</span></li>`).join('')}</ul></section>`;
   }
@@ -2262,8 +2309,8 @@ function renderRegistrar() {
 }
 
 /* ─────────────── Finanças (o conteúdo do "Meus gastos", lendo o espelho da planilha) ─────────────── */
-import { brl, brl0, c2, addM, dim, pnum, valorCapturado, calcularFinancas, orcamentoDoMes, filtrarLancamentos } from './financas.mjs?v=6e8bf3eb68dd';
-import { lancamentosRealizados, graficoLancamentos } from './financas-visao.mjs?v=6e8bf3eb68dd';
+import { brl, brl0, c2, addM, dim, pnum, valorCapturado, calcularFinancas, orcamentoDoMes, filtrarLancamentos } from './financas.mjs?v=0bfb3e9d96d4';
+import { lancamentosRealizados, graficoLancamentos } from './financas-visao.mjs?v=0bfb3e9d96d4';
 const FCAT = { 'Moradia': ['🏠', '#7B61FF'], 'Mercado': ['🛒', '#22B07D'], 'Alimentação fora': ['🍔', '#FF8A3D'], 'Transporte': ['🚗', '#3D8BFF'], 'Saúde': ['💊', '#FF5C7A'], 'Educação': ['📚', '#A35CF7'], 'Família': ['👨‍👩‍👧', '#F2B705'], 'Bebê': ['🍼', '#38BDF8'], 'Lazer': ['🎉', '#E05CD0'], 'Assinaturas': ['📺', '#5B6BF5'], 'Contas fixas': ['💡', '#F59E0B'], 'Revenda': ['📦', '#A0785A'], 'Outros': ['🛍️', '#8E949C'], 'Uber e 99': ['🚕', '#3D8BFF'], 'Delivery': ['🛵', '#FF8A3D'], 'Comer fora': ['🍔', '#FF5C7A'], 'Compras avulsas (Outros)': ['🛍️', '#8E949C'], 'Receita': ['💰', '#22B07D'], 'Conta': ['🧾', '#F59E0B'], 'Fatura': ['💳', '#7C3AED'], 'Pix e boleto': ['⚡', '#3D8BFF'] };
 const fic = n => FCAT[n] || ['•', '#8E949C'];
 const CARTAO_COR = { 'Nubank': 'linear-gradient(135deg,#6A06B0,#A855F7)', 'Mercado Pago': 'linear-gradient(135deg,#0077C8,#22C1F5)', 'Bradesco Amazon': 'linear-gradient(135deg,#A30825,#F0435F)', 'XP': 'linear-gradient(135deg,#1f2937,#4B5563)' };

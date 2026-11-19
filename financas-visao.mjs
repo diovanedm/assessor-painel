@@ -1,4 +1,4 @@
-import { brl, c2, dim } from './financas.mjs?v=6e8bf3eb68dd';
+import { brl, c2, dim } from './financas.mjs?v=0bfb3e9d96d4';
 
 // O extrato usa a data da compra, inclusive para crédito e vale-alimentação.
 export function lancamentosRealizados(lancamentos, mes, hoje) {
