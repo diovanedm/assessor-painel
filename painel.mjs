@@ -1,14 +1,14 @@
 /* ─────────────── utilidades ─────────────── */
-import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDaNota, linkDeRegistro, metasDaTabela, notaSolta, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=220ab830493e';
-import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=220ab830493e';
-import { visaoBemEstar } from './bem-estar.mjs?v=220ab830493e';
-import { casosEmAndamento, pontoDeParada } from './memoria.mjs?v=220ab830493e';
-import { linhasCaptura, lerCaptura, tipoAnexo, extAudio, lerOrganizados, destinoLegivel } from './captura.mjs?v=220ab830493e';
+import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDaNota, linkDeRegistro, metasDaTabela, notaSolta, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=430a02d37814';
+import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=430a02d37814';
+import { visaoBemEstar } from './bem-estar.mjs?v=430a02d37814';
+import { blocosDaSemanaModelo, casosEmAndamento, pontoDeParada, textoDaBusca } from './memoria.mjs?v=430a02d37814';
+import { linhasCaptura, lerCaptura, tipoAnexo, extAudio, lerOrganizados, destinoLegivel } from './captura.mjs?v=430a02d37814';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const h = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=220ab830493e';
+import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=430a02d37814';
 const DOW = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 const DOWL = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
 const MON = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
@@ -25,7 +25,7 @@ const PAGES = [
   { id: 'inicio', nome: 'Hoje', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7" rx="2.2"/><rect x="13" y="4" width="7" height="7" rx="2.2"/><rect x="4" y="13" width="7" height="7" rx="2.2"/><rect x="13" y="13" width="7" height="7" rx="2.2"/></svg>' },
   { id: 'tarefas', nome: 'Tarefas', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="7" r="2"/><path d="M11 7h9M11 17h9"/><path d="m4.5 17 1.5 1.5L8.5 15.5"/></svg>' },
   { id: 'financas', nome: 'Finanças', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="6" width="17" height="13" rx="3"/><path d="M3.5 10.5h17"/><path d="M15 15h2.5"/></svg>' },
-  { id: 'alimentacao', nome: 'Alimentação', mais: true, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5h16a8 8 0 0 1-16 0Z"/><path d="M9.5 9c0-1.6 1.2-2 1.2-3.6M13.5 9c0-1.6 1.2-2 1.2-3.6"/></svg>' },
+  { id: 'alimentacao', nome: 'Refeições e compras', mais: true, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5h16a8 8 0 0 1-16 0Z"/><path d="M9.5 9c0-1.6 1.2-2 1.2-3.6M13.5 9c0-1.6 1.2-2 1.2-3.6"/></svg>' },
   { id: 'registrar', nome: 'Capturar', mais: true, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/></svg>' },
   { id: 'caixa', nome: 'Caixa de entrada', mais: true, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 13.5 6 5h12l2.5 8.5V19H3.5v-5.5Z"/><path d="M3.5 13.5h5l1.5 2h4l1.5-2h5"/></svg>' },
   { id: 'areas', nome: 'Memória', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="m15.5 8.5-2 5-5 2 2-5 5-2Z"/></svg>' },
@@ -118,12 +118,13 @@ const EMOCOES = ['irritação', 'raiva', 'ansiedade', 'nervoso', 'cansaço', 'tr
 const HUMOR = [['😣', 'péssimo'], ['🙁', 'mal'], ['😐', 'mais ou menos'], ['🙂', 'bem'], ['😄', 'muito bem']];
 const SENS = new Set(['emocional', 'saude']);
 const VEIL = new Set(['emocional', 'saude', 'financas']);
-const EXPEDIENTE = { 1: [8, 18], 2: [8, 18], 3: [8, 18], 4: [8, 18], 5: [8, 12] };
+const SEMANA_MODELO = 'eu/plano.md';
 const COMPRAS = 'areas/casa-familia/compras.md';
 const CAIXA = 'painel/caixa.md', RESERVADA = 'painel/caixa-reservada.md';
 const FIN = 'painel/financas.json', FICHAS = 'painel/fichas.md';
 const PLANO_D = 'areas/saude/plano-alimentar.md', PLANO_M = 'areas/casa-familia/plano-alimentar-michele.md', SUBS_M = 'areas/casa-familia/substituicoes-michele.md', CASAL = 'areas/casa-familia/alimentacao-casal.md';
 const STATUS = { bem: 'bem', atencao: 'atenção', alerta: 'alerta', parado: 'parado' };
+const STATUS_PRIORITARIOS = ['parado', 'alerta', 'atencao'];
 const ROTULOS = {
   financas: '💰 Finanças', agenda: '📅 Agenda', diario: '📓 Diário', emocional: '💭 Emocional', saude: '💪 Saúde', ingles: '🗣️ Inglês',
   trabalho: '💼 Trabalho', carreira: '🚀 Carreira', 'casa-familia': '🏡 Casa e família', casa: '🏡 Casa', familia: '🏡 Família', cultura: '📚 Cultura',
@@ -182,7 +183,7 @@ function parseFile(path, sha, text) {
   const ma = path.match(/^areas\/([^/]+)\//);
   if (ma && (!area || !AREAS[area])) area = ma[1];
   if (!area) area = 'eu';
-  const sens = SENS.has(area) || path === RESERVADA || path === 'eu/como-funciono.md';
+  const sens = SENS.has(area) || path === RESERVADA || path === SEMANA_MODELO || path === 'eu/como-funciono.md';
   const tasks = [];
   let h2 = '', h3 = '', fence = false;
   for (const l of text.split('\n')) {
@@ -839,43 +840,9 @@ function route() {
   }
 }
 
-function dialSvg(items, nm, dow) {
-  const C = 180, Rt = 160, Rb = 147, lanes = [131, 118, 105];
-  const ang = m => (m / 1440) * Math.PI * 2 - Math.PI / 2;
-  const pt = (r, m) => [C + r * Math.cos(ang(m)), C + r * Math.sin(ang(m))];
-  const arc = (r, a, b) => {
-    b = Math.min(b, a + 1439.5);
-    const [x1, y1] = pt(r, a), [x2, y2] = pt(r, b);
-    return `M${x1.toFixed(2)} ${y1.toFixed(2)}A${r} ${r} 0 ${b - a > 720 ? 1 : 0} 1 ${x2.toFixed(2)} ${y2.toFixed(2)}`;
-  };
-  let s = '';
-  for (let hh = 0; hh < 24; hh++) {
-    const mj = hh % 6 === 0, [x1, y1] = pt(mj ? Rt - 6 : Rt - 2.5, hh * 60), [x2, y2] = pt(Rt + 3, hh * 60);
-    s += `<line class="tk${mj ? ' mj' : ''}" x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"/>`;
-    if (mj) { const [lx, ly] = pt(Rt + 14, hh * 60); s += `<text class="hl" x="${lx.toFixed(1)}" y="${ly.toFixed(1)}">${hh}h</text>`; }
-  }
-  s += `<circle class="trk" cx="${C}" cy="${C}" r="${Rb}"/>`;
-  const ex = EXPEDIENTE[dow];
-  if (ex) s += `<path class="exp" d="${arc(Rb + 6, ex[0] * 60, ex[1] * 60)}"><title>Expediente</title></path>`;
-  s += `<path class="elp" d="${arc(Rb, 0, Math.max(nm, 2))}"/>`;
-  const laneEnd = [-1, -1, -1];
-  for (const it of items) {
-    const a = toMin(it.start), b = Math.max(toMin(it.end), a + 6);
-    let ln = laneEnd.findIndex(e => e <= a);
-    if (ln < 0) ln = laneEnd.indexOf(Math.min(...laneEnd));
-    laneEnd[ln] = b;
-    const cls = b <= nm ? 'past' : a <= nm ? 'cur' : '';
-    s += `<path class="ev ${cls}" stroke="${areaColor(it.area)}" d="${arc(lanes[ln], a + 2, b - 2)}"><title>${h(`${it.start}–${it.end} ${itemName(it)}`)}</title></path>`;
-  }
-  const [ix, iy] = pt(lanes[2] - 12, nm), [ox, oy] = pt(Rt + 3, nm), [nx, ny] = pt(Rb, nm);
-  s += `<line class="hand" x1="${ix.toFixed(1)}" y1="${iy.toFixed(1)}" x2="${ox.toFixed(1)}" y2="${oy.toFixed(1)}"/>`;
-  s += `<circle class="halo" cx="${nx.toFixed(1)}" cy="${ny.toFixed(1)}" r="6"/><circle class="now" cx="${nx.toFixed(1)}" cy="${ny.toFixed(1)}" r="5.5"/>`;
-  return s;
-}
-
 const isChecked = g => { const o = taskOv(g); return o ? o.kind === 'feita' : g.checked; };
 const byDue = (a, b) => (a.due || '9').localeCompare(b.due || '9') || (b.prio === 'alta') - (a.prio === 'alta');
-import { organizarTarefas, primeiroPasso, prioridadesDoDia } from './tarefas.mjs?v=220ab830493e';
+import { organizarTarefas, primeiroPasso, prioridadesDoDia } from './tarefas.mjs?v=430a02d37814';
 function estadoTarefa(g) {
   if (g.nova) return { feita:false, data:'' };
   const item = taskOv(g);
@@ -1161,7 +1128,7 @@ function renderAreas() {
   $('#memoryLinks').innerHTML = atalhosDaMemoria();
   $('#areaList').innerHTML = AREA_ORDER.map(a => {
     const file = S.files[`areas/${a}/${a}.md`];
-    if (!file) return '';
+    if (!file || a === 'financas') return '';
     const status = norm(file.meta.status || '');
     let detail = '';
     if (cfg.discreet && (file.sens || VEIL.has(a))) {
@@ -1708,8 +1675,24 @@ function doFind() {
     res = res.slice(0, 20);
   }
   findList = res; findSel = 0;
-  const mark = s => { let x = h(s.replace(/^\s*[-*|>]+\s*/, '').replace(/\s*\|\s*/g, '   ')); for (const t of terms) { if (t.length < 2) continue; const n = norm(x); let out = '', i = 0, k; while ((k = n.indexOf(t, i)) >= 0) { out += x.slice(i, k) + '<mark>' + x.slice(k, k + t.length) + '</mark>'; i = k + t.length; } x = out + x.slice(i); } return x; };
-  $('#findRes').innerHTML = res.length ? res.map((r, i) => `<li><button role="option" aria-selected="${i === 0}" data-find="${i}"><span class="rt">${h(plain(r.f.title))}</span><span class="rp">${h(AREAS[r.f.area]?.nome || r.f.meta.tipo || 'Nota')}</span><div class="sn">${cfg.discreet && (r.f.sens || VEIL.has(r.f.area) || r.f.path === CAIXA) ? 'Conteúdo reservado' : mark(short(r.sn, 220))}</div></button></li>`).join('') : `<li class="empty" style="padding:14px 12px">Nada encontrado com "${h($('#findIn').value)}".</li>`;
+  const termosVisiveis = [...new Set(terms.map(textoDaBusca))].filter(t => t.length > 1).sort((a, b) => b.length - a.length);
+  const re = termosVisiveis.length ? new RegExp(termosVisiveis.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'), 'g') : null;
+  const mark = s => {
+    if (!re) return h(s);
+    let html = '', fim = 0;
+    for (const match of norm(s).matchAll(re)) {
+      html += h(s.slice(fim, match.index)) + '<mark>' + h(s.slice(match.index, match.index + match[0].length)) + '</mark>';
+      fim = match.index + match[0].length;
+    }
+    return html + h(s.slice(fim));
+  };
+  $('#findRes').innerHTML = res.length ? res.map((r, i) => {
+    const f = r.f, reservado = cfg.discreet && (f.sens || VEIL.has(f.area) || f.path === CAIXA);
+    const titulo = textoDaBusca(plain(f.title)).replace(/ — registros de /i, ' · ');
+    const rotulo = AREAS[f.area]?.nome || tipoDaNota(f).replace(/^\S+ /, '');
+    const trecho = reservado ? 'Conteúdo reservado' : mark(short(textoDaBusca(r.sn), 220));
+    return `<li><button role="option" aria-selected="${i === 0}" data-find="${i}"><span class="rt">${h(titulo)}</span>${rotulo !== titulo ? `<span class="rp">${h(rotulo)}</span>` : ''}<div class="sn">${trecho}</div></button></li>`;
+  }).join('') : `<li class="empty" style="padding:14px 12px">Nada encontrado com “${h($('#findIn').value)}”.</li>`;
 }
 function moveFind(d) {
   if (!findList.length) return;
@@ -1812,6 +1795,7 @@ function announce(prev, changed) {
     if (p.startsWith('casos/')) secs.add('#secCases');
     if (p.startsWith('areas/')) secs.add('#secAreas');
     if (p === 'agenda.md') secs.add('#wAgenda');
+    if (p === SEMANA_MODELO) secs.add('#wPlano');
     if (p.startsWith('painel/')) { secs.add('#secCaixa'); secs.add('#wCaixa'); }
     if (p === 'eu/habitos.md') { secs.add('#secRhythm'); secs.add('#wAgenda'); }
     if (S.files[p]?.tasks.length) { secs.add('#secTasks'); secs.add('#wTarefas'); }
@@ -1851,12 +1835,6 @@ const comEmoji = it => cfg.discreet && (VEIL.has(it.area) || sensIt(it)) ? 'Comp
 const hArea = it => it.area || 'geral';
 const hKey = it => `${it.date}|${hArea(it)}|${kw(it.name)}|${it.allDay ? 'dia todo' : it.start}`;
 const sensIt = it => SENS.has(it.area) || /🧠|🩺|psic[oó]|psiq|terap/i.test(it.name);
-function relMin(m) {
-  if (m < 1) return 'agora';
-  if (m < 60) return `daqui a ${Math.round(m)} min`;
-  const hh = Math.floor(m / 60), mm = Math.round(m % 60);
-  return mm >= 10 && hh < 3 ? `daqui a ${hh} h ${mm}` : `daqui a ${Math.round(m / 60)} h`;
-}
 const ST_ICON = {
   feito: ICON.check,
   nao: ICON.x,
@@ -1934,25 +1912,6 @@ function proximaRefeicao() {
   if (cfg.discreet) return null;
   return refeicaoDoHorario(refeicoesOrdenadas(S.plano?.dv?.meals), now());
 }
-function wProximo() {
-  const n = now(), d = ymd(n), nm = n.getHours() * 60 + n.getMinutes();
-  const timed = itemsOn(d).filter(i => !i.allDay);
-  const restantes = timed.filter(i => !habitState(i) && toMin(i.end) > nm);
-  const atual = restantes.find(i => toMin(i.start) <= nm);
-  const futuro = restantes.find(i => toMin(i.start) > nm);
-  const amanha = !atual && !futuro && itemsOn(ymd(addDays(n, 1))).find(i => !i.allDay && !habitState(i));
-  const slot = atual || futuro || amanha;
-  const rotulo = atual ? 'Em andamento' : 'Próximo compromisso';
-  const quando = atual ? '' : futuro ? relMin(toMin(futuro.start) - nm) : amanha ? 'Amanhã' : '';
-  return `<section class="hj-focus" id="wProx" aria-labelledby="hj-focus-title">
-    <div class="hj-focus-copy"><span class="hj-kicker"><i aria-hidden="true"></i>${rotulo}</span>
-      <h2 id="hj-focus-title">${slot ? h(itemName(slot)) : 'Sem próximo horário'}</h2>
-      <p>${slot ? `<strong>${slot.start} – ${slot.end}</strong>${quando ? `<span>${quando}</span>` : ''}` : 'Sem horários pendentes na agenda de hoje e de amanhã.'}</p></div>
-    <div class="ring hj-clock" aria-hidden="true"><svg viewBox="0 0 360 360">${dialSvg(timed, nm, n.getDay())}</svg><div class="ring-c"><b>${hm(n)}</b><span>agora</span></div></div>
-    <footer>${atual && futuro ? `<span>Depois, ${futuro.start} · ${h(short(itemName(futuro),56))}</span>` : ''}
-      <button type="button" data-act="agenda-hoje">Ver agenda de hoje <span aria-hidden="true">↓</span></button></footer>
-  </section>`;
-}
 function fichasAll() {
   const est = { id: 'estou', emoji: '💭', nome: 'Como estou', desc: 'O check-in do journal. Preencha só o que fizer sentido.', builtin: true };
   let lista = S.fichas;
@@ -1960,23 +1919,16 @@ function fichasAll() {
   return [est, ...lista];
 }
 function wEmocional() {
-  return `<section class="hj-channel hj-journal" id="wEmo"><header><span class="hj-channel-icon" aria-hidden="true">💭</span><h3><a href="#area/emocional">Emocional</a></h3></header>
+  return `<section class="hj-channel hj-journal" id="wEmo"><header><span class="hj-channel-icon" aria-hidden="true">💭</span><h3><a href="#area/emocional">Cuidado emocional</a></h3></header>
     <div class="hj-actions"><button type="button" data-ficha="estou">Fazer check-in</button></div>
-    <details class="hj-fold" data-home-fold="fichas"><summary>Outras opções</summary><div class="hj-actions">
+    <details class="hj-fold" data-home-fold="fichas"><summary>Exercícios de terapia</summary><div class="hj-actions">
       ${cfg.discreet ? '' : fichasAll().filter(f => !f.builtin).map(f => `<button type="button" data-ficha="${h(f.id)}">${h(f.nome)}</button>`).join('')}
-      <button type="button" data-act="ficha-nova">Criar ficha</button></div></details></section>`;
-}
-function wFinancas() {
-  const mes = ymd(now()).slice(0,7), model = finModel();
-  let valor = 'Os valores estão ocultos.';
-  if (!cfg.discreet) valor = model ? `${brl(finKpi(model,mes).total)} em despesas no mês.` : 'Aguardando o espelho da planilha.';
-  return `<section class="hj-channel" id="wFin"><header><span class="hj-channel-icon" aria-hidden="true">💳</span><h3><a href="#financas">Finanças</a></h3></header>
-    <p>${h(valor)}</p><div class="hj-actions"><button type="button" data-act="compra">Registrar despesa</button><button type="button" data-act="comprovante">Comprovante</button></div></section>`;
+      <button type="button" data-act="ficha-nova">Criar exercício</button></div></details></section>`;
 }
 function wRefeicao() {
   const ref = cfg.discreet ? null : proximaRefeicao();
   const hora = ref ? `<p>${ref.amanha ? 'Amanhã' : 'Próxima refeição'}, ${ref.meal.t} · ${h(ref.meal.nome)}</p>` : '';
-  return `<section class="hj-channel" id="wRef"><header><span class="hj-channel-icon" aria-hidden="true">🍽️</span><h3><a href="#alimentacao">Alimentação</a></h3></header>
+  return `<section class="hj-channel" id="wRef"><header><span class="hj-channel-icon" aria-hidden="true">🍽️</span><h3><a href="#alimentacao">Refeições e compras</a></h3></header>
     ${hora}<div class="hj-actions"><a href="#alimentacao/plano">Ver plano</a><a id="wCompras" href="#alimentacao/compras">Lista de compras</a></div></section>`;
 }
 function wTarefas() {
@@ -2014,7 +1966,7 @@ function wRetomar() {
     ${lista || '<p class="hj-empty">Nenhum caso visível para retomar.</p>'}</section>`;
 }
 function atalhosDaMemoria() {
-  const caminhos = [['documentos/documentos.md', 'Documentos'], ['eu/decisoes.md', 'Decisões'], ['eu/plano.md', 'Meu plano']];
+  const caminhos = [['documentos/documentos.md', 'Documentos'], ['eu/decisoes.md', 'Decisões'], [SEMANA_MODELO, 'Meu plano']];
   return caminhos.filter(([p]) => S.files[p]).map(([p, nome]) =>
     `<button type="button" class="btn ghost" data-open="${h(p)}">${nome}</button>`).join('');
 }
@@ -2024,11 +1976,24 @@ function wCaixa() {
   const n = visiveis.length;
   return `<a class="hj-inbox" href="${n ? '#caixa' : '#caixa/historico'}" id="wCaixa"><span><strong>Caixa de entrada</strong><small>${n ? `${n} ${n === 1 ? 'item esperando o assessor' : 'itens esperando o assessor'}` : 'Nada esperando o assessor · ver onde ficou'}</small></span><span aria-hidden="true">→</span></a>`;
 }
-function wAreas() {
-  const areas = AREA_ORDER.filter(a => S.files['areas/'+a+'/'+a+'.md']);
-  if (!areas.length) return '';
-  return `<details class="hj-card hj-area-list" id="wAreas" data-home-fold="areas"><summary><span>Minhas áreas</span><span aria-hidden="true">⌄</span></summary>
-    <nav aria-label="Abrir uma área">${areas.map(a => `<a href="#area/${a}"><span aria-hidden="true">${AREAS[a].emoji}</span>${h(AREAS[a].nome)}</a>`).join('')}</nav></details>`;
+function wPlano(hoje) {
+  const plano = S.files[SEMANA_MODELO];
+  if (!plano) return '';
+  const blocos = blocosDaSemanaModelo(plano.body, hoje).map(b => ({ ...b, area: areaKey(b.area) }));
+  const visiveis = blocos.filter(b => !cfg.discreet || !VEIL.has(b.area));
+  const lista = visiveis.map(b => `<li><time datetime="${h(b.hora)}">${h(b.hora)}</time><span><b>${h(AREAS[b.area]?.nome || b.area)}</b> · ${h(plain(b.texto))}</span></li>`).join('');
+  const areas = AREA_ORDER.map(id => ({ id, nota: S.files[`areas/${id}/${id}.md`] }))
+    .filter(({ id, nota }) => nota && (!cfg.discreet || (!nota.sens && !VEIL.has(id))))
+    .map(({ id, nota }) => ({ id, status: norm(nota.meta.status).trim() }));
+  const pior = STATUS_PRIORITARIOS.find(status => areas.some(a => a.status === status));
+  const foco = areas.filter(a => a.status === pior).map(({ id }) =>
+    `<a href="${id === 'financas' ? '#area/financas/resumo' : '#area/' + id}">${h(AREAS[id].nome)}</a>`).join(', ');
+  return `<section class="hj-card hj-plan" id="wPlano">
+    <header class="hj-section-head"><h2>Plano de hoje</h2><a href="${h(linkDaNota(SEMANA_MODELO, plano.area, null, AREA_ORDER))}">Ver semana-modelo <span aria-hidden="true">↗</span></a></header>
+    ${lista ? `<ul>${lista}</ul>` : !blocos.length ? '<p class="hj-empty">Sem blocos previstos para hoje.</p>' : ''}
+    ${blocos.length > visiveis.length ? '<p class="hj-hint">Há blocos em modo discreto.</p>' : ''}
+    ${foco ? `<p class="hj-plan-focus"><span>${pior === 'parado' ? 'Em pausa no plano' : 'Pedem atenção no plano'}</span> ${foco}</p>` : ''}
+  </section>`;
 }
 function renderInicio() {
   const el = $('#home');
@@ -2044,10 +2009,9 @@ function renderInicio() {
     el.innerHTML = `${saudacao}<p class="hj-loading" role="status">${S.err ? 'Não foi possível carregar suas notas.' : 'Carregando suas notas…'}</p>`;
     return;
   }
-  el.innerHTML = `${saudacao}<div class="hj-board">${wProximo()}${wAgenda()}${wTarefas()}${wRetomar()}</div>
+  el.innerHTML = `${saudacao}<div class="hj-board">${wAgenda()}${wTarefas()}${wPlano(S.day)}${wRetomar()}</div>
     <section class="hj-tools"><header class="hj-section-head"><h2>Acessos rápidos</h2></header>
-      <div class="hj-channels">${wFinancas()}${wRefeicao()}${wEmocional()}</div>
-      <div class="hj-links">${wCaixa()}${wAreas()}</div></section>`;
+      <div class="hj-channels">${wRefeicao()}${wEmocional()}${wCaixa()}</div></section>`;
   for (const section of $$('details[data-home-fold]',el)) section.open = abertos.has(section.dataset.homeFold);
 }
 
@@ -2099,9 +2063,9 @@ function sheetMais() {
   openSheet('Mais', `<ul class="menu">
     <li><a href="#registrar" data-close><span class="e">📝</span>Capturar</a></li>
     <li><a href="#caixa" data-close><span class="e">📥</span>Caixa de entrada${n ? `<span class="badge">${n}</span>` : ''}</a></li>
-    <li><a href="#alimentacao" data-close><span class="e">🥗</span>Alimentação</a></li>
+    <li><a href="#alimentacao" data-close><span class="e">🥗</span>Refeições e compras</a></li>
   </ul>
-  <p class="menu-nota">Buscar, mostrar/esconder e ajustes ficam nos ícones do topo.</p>`);
+`);
 }
 
 /* ─────────────── formulários (folha e Registrar usam os mesmos) ─────────────── */
@@ -2133,7 +2097,7 @@ function formFicha(fi) {
   }
   return `<form class="f2" data-form="ficha" data-id="${h(fi.id)}" autocomplete="off">
     ${!fi.builtin && fi.desc ? `<p class="hint">${h(fi.desc)}</p>` : ''}${corpo}
-    <div class="form-foot"><button class="btn big" type="submit">Guardar na caixa</button>${!fi.builtin && !fi.semArquivo ? `<button class="btn ghost big" type="button" data-act="ficha-editar" data-id="${h(fi.id)}">Editar ficha</button>` : ''}<p class="hint">Vai para a caixa reservada.</p></div>
+    <div class="form-foot"><button class="btn big" type="submit">Guardar na caixa</button>${!fi.builtin && !fi.semArquivo ? `<button class="btn ghost big" type="button" data-act="ficha-editar" data-id="${h(fi.id)}">Editar exercício</button>` : ''}<p class="hint">Vai para a caixa reservada.</p></div>
   </form>`;
 }
 const TIPOS_CAMPO = [['texto', 'Texto'], ['escala', 'Escala 0 a 10'], ['humor', 'Humor 1 a 5'], ['emocoes', 'Emoções']];
@@ -2142,10 +2106,10 @@ function formFichaEd(fi) {
   const campos = fi ? fi.campos : [{ q: '', tipo: 'texto' }, { q: '', tipo: 'texto' }];
   return `<form class="f2" data-form="ficha-ed" data-id="${fi ? h(fi.id) : ''}" autocomplete="off">
     <p class="hint" style="margin-top:0">Pra quando a psicóloga passar algo novo: dê um nome e escreva as perguntas. O que você preencher vai pra caixa reservada.</p>
-    <div class="field" style="display:grid;grid-template-columns:64px 1fr;gap:8px"><div><label>Emoji</label><input type="text" name="emoji" value="${h(fi ? fi.emoji : '🧭')}" maxlength="4" style="text-align:center"></div><div><label>Nome da ficha</label><input type="text" name="nome" value="${h(fi ? fi.nome : '')}" placeholder="Ex.: Registro de pensamentos"></div></div>
+    <div class="field" style="display:grid;grid-template-columns:64px 1fr;gap:8px"><div><label>Emoji</label><input type="text" name="emoji" value="${h(fi ? fi.emoji : '🧭')}" maxlength="4" style="text-align:center"></div><div><label>Nome do exercício</label><input type="text" name="nome" value="${h(fi ? fi.nome : '')}" placeholder="Ex.: Registro de pensamentos"></div></div>
     <div class="field"><label>Explicação (opcional)</label><input type="text" name="desc" value="${h(fi ? fi.desc : '')}" placeholder="Ex.: usar quando bater ansiedade"></div>
     <div class="field"><span class="lbl">Campos</span><div data-campos>${campos.map(campoRow).join('')}</div><button type="button" class="btn ghost" data-act="campo-add" style="margin-top:10px">＋ Campo</button></div>
-    <div class="form-foot"><button class="btn big" type="submit">Salvar ficha</button>${fi ? '<button class="btn ghost big" type="button" data-act="ficha-del" style="color:var(--alert)">Apagar ficha</button>' : ''}</div>
+    <div class="form-foot"><button class="btn big" type="submit">Salvar exercício</button>${fi ? '<button class="btn ghost big" type="button" data-act="ficha-del" style="color:var(--alert)">Apagar exercício</button>' : ''}</div>
   </form>`;
 }
 const PAGTOS = ['Crédito', 'Pix', 'Débito', 'Dinheiro', 'Boleto', 'Alimentação'];
@@ -2338,15 +2302,15 @@ function fichasTexto(base, op) {
 function salvarFicha(f) {
   const nome = oneLine(f.nome.value).replace(/^#+\s*/, ''), emoji = (f.emoji.value || '').trim() || '🧭';
   const campos = $$('[data-campo]', f).map(r => ({ q: oneLine(r.querySelector('[data-q]').value).replace(/\s+·\s+(texto|escala|humor|emocoes)$/i, ''), tipo: r.querySelector('[data-tipo]').value })).filter(c => c.q);
-  if (!nome) { toast('Dê um nome pra ficha.'); f.nome.focus(); return; }
+  if (!nome) { toast('Dê um nome pro exercício.'); f.nome.focus(); return; }
   if (!campos.length) { toast('Escreva pelo menos um campo.'); return; }
   const set = { emoji, nome, desc: oneLine(f.desc.value), campos };
   const id = f.dataset.id;
-  write(FICHAS, base => fichasTexto(base, { set, id }), 'emocional: fichas do painel', { onOk() { if (id) capturePanes.delete('ficha-' + id); toast(id ? 'Ficha atualizada.' : 'Ficha criada.'); } });
+  write(FICHAS, base => fichasTexto(base, { set, id }), 'emocional: fichas do painel', { onOk() { if (id) capturePanes.delete('ficha-' + id); toast(id ? 'Exercício atualizado.' : 'Exercício criado.'); } });
   closeSheet();
 }
 function apagarFicha(id) {
-  write(FICHAS, base => { if (base == null) throw erro('sumiu'); return fichasTexto(base, { del: id }); }, 'emocional: fichas do painel', { onOk() { capturePanes.delete('ficha-' + id); toast('Ficha apagada.'); } });
+  write(FICHAS, base => { if (base == null) throw erro('sumiu'); return fichasTexto(base, { del: id }); }, 'emocional: fichas do painel', { onOk() { capturePanes.delete('ficha-' + id); toast('Exercício apagado.'); } });
   closeSheet();
 }
 
@@ -2567,8 +2531,8 @@ function enviarCaptura(f) {
 }
 
 /* ─────────────── Finanças (o conteúdo do "Meus gastos", lendo o espelho da planilha) ─────────────── */
-import { brl, brl0, c2, addM, dim, pnum, valorCapturado, calcularFinancas, orcamentoDoMes, filtrarLancamentos } from './financas.mjs?v=220ab830493e';
-import { lancamentosRealizados, graficoLancamentos } from './financas-visao.mjs?v=220ab830493e';
+import { brl, brl0, c2, addM, dim, pnum, valorCapturado, calcularFinancas, orcamentoDoMes, filtrarLancamentos } from './financas.mjs?v=430a02d37814';
+import { lancamentosRealizados, graficoLancamentos } from './financas-visao.mjs?v=430a02d37814';
 const FCAT = { 'Moradia': ['🏠', '#7B61FF'], 'Mercado': ['🛒', '#22B07D'], 'Alimentação fora': ['🍔', '#FF8A3D'], 'Transporte': ['🚗', '#3D8BFF'], 'Saúde': ['💊', '#FF5C7A'], 'Educação': ['📚', '#A35CF7'], 'Família': ['👨‍👩‍👧', '#F2B705'], 'Bebê': ['🍼', '#38BDF8'], 'Lazer': ['🎉', '#E05CD0'], 'Assinaturas': ['📺', '#5B6BF5'], 'Contas fixas': ['💡', '#F59E0B'], 'Revenda': ['📦', '#A0785A'], 'Outros': ['🛍️', '#8E949C'], 'Uber e 99': ['🚕', '#3D8BFF'], 'Delivery': ['🛵', '#FF8A3D'], 'Comer fora': ['🍔', '#FF5C7A'], 'Compras avulsas (Outros)': ['🛍️', '#8E949C'], 'Receita': ['💰', '#22B07D'], 'Conta': ['🧾', '#F59E0B'], 'Fatura': ['💳', '#7C3AED'], 'Pix e boleto': ['⚡', '#3D8BFF'] };
 const fic = n => FCAT[n] || ['•', '#8E949C'];
 const CARTAO_COR = { 'Nubank': 'linear-gradient(135deg,#6A06B0,#A855F7)', 'Mercado Pago': 'linear-gradient(135deg,#0077C8,#22C1F5)', 'Bradesco Amazon': 'linear-gradient(135deg,#A30825,#F0435F)', 'XP': 'linear-gradient(135deg,#1f2937,#4B5563)' };
@@ -2703,7 +2667,7 @@ function cabecalhoFinanceiro(reveladaLocalmente) {
   const gerado = S.fin?.gerado ? new Date(S.fin.gerado) : null;
   const data = gerado && !isNaN(gerado) ? gerado.toLocaleString('pt-BR', { dateStyle:'short', timeStyle:'short', timeZone:'America/Sao_Paulo' }) : '';
   return `<div class="fin-contexto"><a class="fin-voltar" href="#areas">‹ Áreas</a>
-    <a class="fin-escritos" href="#area/financas/resumo">Sumário da área <span aria-hidden="true">↗</span></a></div>
+    <a class="fin-escritos" href="#area/financas/resumo">Notas de finanças <span aria-hidden="true">↗</span></a></div>
     <header class="fin-heading"><div class="page-h"><div class="fin-titulo"><h1>Finanças</h1>
     ${reveladaLocalmente ? `<button type="button" class="fin-ocultar" data-ocultar-area="financas" aria-label="Ocultar finanças">${ICON.lock} Ocultar</button>` : ''}</div>
     <p class="source-date">${data ? 'Planilha atualizada em ' + h(data) : 'Aguardando o espelho da planilha'}</p></div>
@@ -3271,14 +3235,13 @@ function bind() {
       if (a === 'nota') { openSheet('✏️ Anotar', formNota('geral'), { focus: 'textarea' }); return; }
       if (a === 'compra') { openSheet('💳 Compra', formCompra(false), { focus: 'input[name=oque]' }); return; }
       if (a === 'comprovante') { openSheet('🧾 Comprovante', formCompra(true)); return; }
-      if (a === 'ficha-nova') { openSheet('Nova ficha', formFichaEd(null), { focus: 'input[name=nome]' }); return; }
-      if (a === 'ficha-editar') { const fi = S.fichas.find(x => x.id === d.id); if (fi) openSheet('Editar ficha', formFichaEd(fi)); return; }
+      if (a === 'ficha-nova') { openSheet('Novo exercício', formFichaEd(null), { focus: 'input[name=nome]' }); return; }
+      if (a === 'ficha-editar') { const fi = S.fichas.find(x => x.id === d.id); if (fi) openSheet('Editar exercício', formFichaEd(fi)); return; }
       if (a === 'ficha-del') { const f = t.closest('form'); if (f && f.dataset.id) { if (t.dataset.sure) apagarFicha(f.dataset.id); else { t.dataset.sure = '1'; t.textContent = 'Toque de novo pra apagar'; } } return; }
       if (a === 'campo-add') { t.closest('form').querySelector('[data-campos]').insertAdjacentHTML('beforeend', campoRow()); t.closest('form').querySelector('[data-campo]:last-child [data-q]').focus(); return; }
       if (a === 'campo-del') { const r = t.closest('[data-campo]'); if (r && r.parentElement.children.length > 1) r.remove(); else if (r) r.querySelector('[data-q]').value = ''; return; }
       if (a === 'status-desfazer') { const it = sheetCtx && sheetCtx.item; const hs = it && habitState(it); if (hs && hs.box) delCaixa(hs.item, 'Desfeito. Saiu da caixa.'); closeSheet(); return; }
       if (a === 'hoje') { S.wk = 0; S.sel = ymd(now()); renderInicio(); return; }
-      if (a === 'agenda-hoje') { ev.preventDefault(); S.wk = 0; S.sel = ymd(now()); renderInicio(); $('#wAgenda')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
       if (a === 'mais') { sheetMais(); return; }
       if (a === 'buscar') { closeSheet(); openFind(); return; }
       if (a === 'ajustes') { closeSheet(); showCfg(); return; }

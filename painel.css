@@ -78,7 +78,6 @@ h3{font-size:14px;font-weight:600;margin:22px 0 6px;color:var(--ink2)}
 
 /* ───── botões e animações comuns ───── */
 @keyframes flashi{0%,25%{box-shadow:0 0 0 3px var(--signal),var(--shadow)}100%{box-shadow:0 0 0 3px transparent,var(--shadow)}}
-@keyframes halo{0%{transform:scale(.6);opacity:.9}100%{transform:scale(2.4);opacity:0}}
 .btn{height:36px;padding:0 14px;border-radius:10px;font-size:14px;font-weight:600;background:var(--ink);color:var(--on-ink);white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none}
 .btn.big{height:44px;padding:0 20px;border-radius:12px;font-size:15px}
 .btn.ghost{background:transparent;color:var(--ink2);border:1px solid var(--line)}
@@ -328,22 +327,6 @@ button.w:active,a.w:active{transform:scale(.985)}
 
 /* próximo (o lugar do relógio) */
 .nx{display:grid;grid-template-columns:118px 1fr;gap:16px;align-items:center}
-.ring{position:relative;width:118px;aspect-ratio:1}
-.ring svg{width:100%;height:100%;display:block;overflow:visible}
-.ring .hl{display:none}
-.ring .tk{stroke:var(--ink3);stroke-width:2;opacity:.5}
-.ring .tk.mj{stroke-width:3}
-.ring .trk{fill:none;stroke:var(--line);stroke-width:6}
-.ring .exp{fill:none;stroke:var(--ink3);stroke-width:6;opacity:.4}
-.ring .elp{fill:none;stroke:var(--ink);stroke-width:6;stroke-linecap:round}
-.ring .ev{fill:none;stroke-width:16;stroke-linecap:round}
-.ring .ev.past{opacity:.28}
-.ring .hand{stroke:var(--signal);stroke-width:3;opacity:.55}
-.ring .now{fill:var(--signal)}
-.ring .halo{fill:none;stroke:var(--signal);stroke-width:3;transform-box:fill-box;transform-origin:center;animation:halo 2.6s ease-out infinite}
-.ring-c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
-.ring-c b{font:900 26px/1 var(--f-dot);color:var(--ink)}
-.ring-c span{font-size:11px;color:var(--ink3);margin-top:3px;font-weight:600}
 .nxl{display:grid;gap:9px;min-width:0}
 .nxl>div{min-width:0}
 .nxl .k{display:block;font-size:12px;color:var(--ink3);font-weight:600}
@@ -659,7 +642,6 @@ details[open]>summary.fl .fx{background:var(--ink);color:var(--on-ink)}
   .w{border-radius:24px;padding:14px}
   .wn{font-size:30px}
   .nx{grid-template-columns:104px 1fr;gap:14px}
-  .ring{width:104px}
   .sal .v{font-size:15px}
 }
 

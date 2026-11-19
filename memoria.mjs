@@ -1,4 +1,4 @@
-import { norm } from './datas.mjs?v=220ab830493e';
+import { norm } from './datas.mjs?v=430a02d37814';
 
 export function casosEmAndamento(arquivos) {
   const encerrados = /^(fechado|resolvido|concluido|encerrado)$/;
@@ -44,4 +44,48 @@ export function pontoDeParada(nota) {
   }
   const ano = parseInt(String(nota.meta.atualizado || ''), 10) || undefined;
   return situacaoAtual(trecho, ano) || nota.meta.resumo || '';
+}
+
+const DIAS_MODELO = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sab'];
+const isoDoPlano = (dia, mes, ano) => `${ano}-${mes}-${dia}`;
+
+export function blocosDaSemanaModelo(texto, hoje) {
+  const linhas = texto.split(/\r?\n/);
+  const periodo = linhas.map(l => /^##\s+Trimestre atual:\s*(\d{2})\/(\d{2})\/(\d{4})\s+a\s+(\d{2})\/(\d{2})\/(\d{4})/i.exec(l)).find(Boolean);
+  if (periodo && (hoje < isoDoPlano(...periodo.slice(1, 4)) || hoje > isoDoPlano(...periodo.slice(4, 7)))) return [];
+  const inicio = linhas.findIndex(l => /^##\s+semana[- ]modelo\b/.test(norm(l)));
+  if (inicio < 0) return [];
+  const dia = (new Date(hoje + 'T12:00:00')).getDay();
+  const blocos = [];
+  for (const linha of linhas.slice(inicio + 1)) {
+    if (/^#{1,2}\s/.test(linha)) break;
+    if (!linha.trimStart().startsWith('|')) continue;
+    const [dias, horario, area, atividade] = linha.trim().slice(1).split('|').map(c => c.trim());
+    const hora = /^(\d{1,2})[h:](\d{2})?$/.exec(horario || '');
+    if (!hora || !area || !atividade) continue;
+    const noDia = norm(dias).split(/\s+e\s+|\s*,\s*/).some(faixa => {
+      const [primeiro, ultimo = primeiro] = faixa.split(/\s*[–—-]\s*/).map(d => DIAS_MODELO.indexOf(d.slice(0, 3)));
+      return primeiro >= 0 && ultimo >= 0 && (dia - primeiro + 7) % 7 <= (ultimo - primeiro + 7) % 7;
+    });
+    if (!noDia) continue;
+    const aPartir = /,\s*a partir de (\d{2})\/(\d{2})(?:\/(\d{4}))?$/i.exec(atividade);
+    if (aPartir) {
+      const [, d, m, ano] = aPartir;
+      const anoInicio = ano || (periodo ? Number(periodo[3]) + (m < periodo[2] ? 1 : 0) : hoje.slice(0, 4));
+      if (hoje < isoDoPlano(d, m, anoInicio)) continue;
+    }
+    blocos.push({ hora: `${hora[1].padStart(2, '0')}:${hora[2] || '00'}`, area, texto: aPartir ? atividade.slice(0, aPartir.index) : atividade });
+  }
+  return blocos.sort((a, b) => a.hora.localeCompare(b.hora));
+}
+
+export function textoDaBusca(texto) {
+  return texto.normalize('NFC')
+    .replace(/^\s*(?:[-*+]\s*)?\[[ xX]\]\s*/, '')
+    .replace(/^\s*[-*|>]+\s*/, '')
+    .replace(/\s*🆔\s*\S+/gu, '')
+    .replace(/(?:📅|✅)\s*(?=\d{4}-\d{2}-\d{2})/gu, '')
+    .replace(/\b\d{4}-(\d{2})-(\d{2})\b/g, '$2/$1')
+    .replace(/\s*\|\s*/g, ' · ')
+    .replace(/\s*·\s*$/, '').trim();
 }
