@@ -1,4 +1,4 @@
-import { norm } from './datas.mjs?v=1ae1b9e24bec';
+import { norm } from './datas.mjs?v=c0273d90ee1f';
 
 export function notasDaArea(files, area) {
   const path = `areas/${area}/${area}.md`;

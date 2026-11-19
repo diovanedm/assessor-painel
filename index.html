@@ -16,12 +16,16 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Baskervville:ital@0;1&display=swap" rel="stylesheet">
-<script src="./tema.js?v=1ae1b9e24bec"></script>
-<link rel="stylesheet" href="./painel.css?v=1ae1b9e24bec">
-<link rel="stylesheet" href="./layout.css?v=1ae1b9e24bec">
-<link rel="stylesheet" href="./areas.css?v=1ae1b9e24bec">
-<link rel="stylesheet" href="./bem-estar.css?v=1ae1b9e24bec">
-<link rel="stylesheet" href="./financas-ui.css?v=1ae1b9e24bec">
+<script src="./tema.js?v=c0273d90ee1f"></script>
+<link rel="stylesheet" href="./painel.css?v=c0273d90ee1f">
+<link rel="stylesheet" href="./layout.css?v=c0273d90ee1f">
+<link rel="stylesheet" href="./areas.css?v=c0273d90ee1f">
+<link rel="stylesheet" href="./bem-estar.css?v=c0273d90ee1f">
+<link rel="stylesheet" href="./financas-ui.css?v=c0273d90ee1f">
+<link rel="stylesheet" href="./hoje.css?v=c0273d90ee1f">
+<link rel="stylesheet" href="./tarefas.css?v=c0273d90ee1f">
+<link rel="stylesheet" href="./alimentacao-ui.css?v=c0273d90ee1f">
+<link rel="stylesheet" href="./captura.css?v=c0273d90ee1f">
 </head>
 <body class="discreet">
 
@@ -44,13 +48,21 @@
 
   <!-- TAREFAS -->
   <main class="page" id="p-tarefas" data-page="tarefas" hidden>
-    <div class="narrow">
-      <div class="page-h"><h1>Tarefas</h1><p>O TickTick manda. Aqui é o espelho das notas, e o que você marca vai pra caixa.</p></div>
-      <section class="sec" id="secTasks">
-        <header><div class="tabs" role="tablist" id="tabs" style="margin-left:0"></div></header>
-        <div id="tasks"></div>
-        <form class="add" id="addTask" autocomplete="off"></form>
+    <div class="tarefa-pagina" id="secTasks">
+      <header class="tarefa-topo"><div class="page-h"><h1>Tarefas</h1><p id="tasksDate"></p></div>
+        <button type="button" class="btn" id="criarTarefa" aria-controls="taskFormBox" aria-expanded="false">＋ Nova tarefa</button></header>
+      <section id="taskFormBox" class="tarefa-form-box" aria-label="Nova tarefa" hidden>
+        <form id="addTask" autocomplete="off"><label class="tarefa-texto">O que você precisa fazer?
+          <input id="addTxt" type="text" placeholder="Escreva o primeiro passo" required></label>
+          <label>Prazo opcional<input type="date" id="addDue"></label>
+          <label class="tarefa-reservada"><input type="checkbox" id="addPrivada"> Tarefa reservada</label>
+          <div class="tarefa-salvar"><button class="btn" type="submit">Guardar na caixa</button>
+            <span>O assessor cria a tarefa no TickTick ao organizar a caixa.</span></div>
+        </form>
       </section>
+      <nav id="tabs" class="tarefa-abas" aria-label="Grupos de tarefas"></nav>
+      <div id="tasks"></div>
+      <footer class="tarefa-rodape"><span>As marcações entram na caixa para atualizar o TickTick.</span><a href="#alimentacao/compras">Lista de compras ↗</a></footer>
     </div>
   </main>
 
@@ -62,49 +74,44 @@
   <!-- ALIMENTAÇÃO -->
   <main class="page" id="p-alimentacao" data-page="alimentacao" hidden>
     <div class="ali">
-      <div class="page-h"><h1>Alimentação</h1><p>Os dois planos, as trocas e a lista de compras.</p></div>
-      <div class="seg" role="tablist" id="aliTabs"></div>
+      <header class="ali-title"><h1>Alimentação</h1><button type="button" class="btn ghost" data-act="ali-privacidade" id="aliOcultar" hidden>Ocultar planos</button></header>
+      <nav class="ali-tabs" id="aliTabs" aria-label="Alimentação"></nav>
       <div id="ali"></div>
     </div>
   </main>
 
   <!-- REGISTRAR -->
   <main class="page" id="p-registrar" data-page="registrar" hidden>
-    <div class="page-h"><h1>Capturar</h1><p>Escreve do jeito que vier. Fica na caixa até o assessor organizar.</p></div>
-    <div class="seg" role="tablist" id="regTabs">
-      <button role="tab" data-reg="nota" aria-selected="true">📝 Anotar</button>
-      <button role="tab" data-reg="emocional" aria-selected="false">🧠 Emocional</button>
-      <button role="tab" data-reg="compra" aria-selected="false">💳 Compra</button>
-    </div>
-    <div class="reg-grid">
-      <div class="card" id="regBody"></div>
-      <aside class="sec">
-        <header><h2>Hoje na caixa</h2><span class="count" id="regCount"></span></header>
-        <ul class="today-log" id="regLog"></ul>
-        <a class="more" href="#caixa">Abrir a caixa</a>
-      </aside>
+    <div class="capture-workspace">
+      <header class="workspace-head"><h1>Capturar</h1><a class="desk-link" href="#caixa">Caixa de entrada <span aria-hidden="true">↗</span></a></header>
+      <nav id="regTabs" class="capture-modes" aria-label="Tipo de captura">
+        <a href="#registrar/nota" data-mode="nota"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 15 10-10 4 4L9 19l-5 1zM13 7l4 4"/></svg>Nota</a>
+        <a href="#registrar/compra" data-mode="compra"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18m-7 5h3"/></svg>Gasto</a>
+        <a href="#registrar/comprovante" data-mode="comprovante"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6m-6 4h4"/></svg>Comprovante</a>
+        <a href="#registrar/emocional" data-mode="emocional"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 14q3.5 4.5 7 0m-7-4h.1m6.8 0h.1"/></svg>Check-in</a>
+      </nav>
+      <div class="capture-columns">
+        <section id="regBody" class="capture-paper"></section>
+        <aside class="capture-recent"><header><h2>Capturas de hoje</h2><span id="regCount" class="desk-count"></span></header>
+          <ul id="regLog" class="today-log"></ul><a class="desk-link" href="#caixa">Ver na caixa <span aria-hidden="true">→</span></a></aside>
+      </div>
     </div>
   </main>
 
   <!-- CAIXA -->
   <main class="page" id="p-caixa" data-page="caixa" hidden>
-    <div class="page-h"><h1>Caixa de entrada</h1><p>Tudo que você marcou e escreveu no painel, esperando o assessor.</p></div>
-    <div class="org" id="org"></div>
-    <div class="cols">
-      <section class="sec" id="secCaixa" aria-labelledby="hCx">
-        <header><h2 id="hCx">Esperando o assessor</h2><span class="count" id="cxCount"></span></header>
+    <div class="capture-workspace box-workspace">
+      <header class="workspace-head"><h1>Caixa de entrada</h1><a class="btn box-create" href="#registrar/nota">＋ Capturar</a></header>
+      <nav class="box-tabs" aria-label="Seções da caixa">
+        <a href="#caixa" data-inbox-tab="fila">Para organizar <span id="cxCount"></span></a>
+        <a href="#caixa/inbox" data-inbox-tab="inbox">Notas soltas <span id="inboxCount"></span></a>
+        <a href="#caixa/historico" data-inbox-tab="historico">Histórico</a>
+      </nav>
+      <section class="desk-box" id="secCaixa"><header class="box-heading"><h2>À espera do assessor</h2></header>
         <div id="cxList"></div>
-      </section>
-      <div class="stack">
-        <section class="sec" id="secFeed" aria-labelledby="hFeed">
-          <header><h2 id="hFeed">O que mudou no GitHub</h2></header>
-          <ol class="feed" id="feed"></ol>
-        </section>
-        <section class="sec" aria-labelledby="hInbox">
-          <header><h2 id="hInbox">No inbox do assessor</h2><span class="count" id="inboxCount"></span></header>
-          <ul class="inbox" id="inbox"></ul>
-        </section>
-      </div>
+        <div id="org" class="box-organizar"></div></section>
+      <section class="desk-box" id="secInbox" hidden><header class="box-heading"><h2>Notas soltas</h2></header><ul class="inbox" id="inbox"></ul></section>
+      <section class="desk-box" id="secFeed" hidden><header class="box-heading"><h2>Alterações na memória</h2></header><ol class="feed" id="feed"></ol></section>
     </div>
   </main>
 
@@ -153,6 +160,6 @@
 <div class="sheet-wrap" id="sheet" hidden><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="shTitle"><div class="sheet-h"><h2 id="shTitle"></h2><button class="ib" id="shClose" aria-label="Fechar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div><div class="sheet-b" id="shBody"></div></div></div>
 <div class="toasts" id="toasts" aria-live="polite"></div>
 
-<script type="module" src="./painel.mjs?v=1ae1b9e24bec"></script>
+<script type="module" src="./painel.mjs?v=c0273d90ee1f"></script>
 </body>
 </html>

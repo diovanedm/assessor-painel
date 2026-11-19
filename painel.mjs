@@ -1,12 +1,13 @@
 /* ─────────────── utilidades ─────────────── */
-import { destinoDaArea, linkDeRegistro, notasDaArea, primeiraMeta, secoesDeLeitura } from './areas.mjs?v=1ae1b9e24bec';
-import { visaoBemEstar } from './bem-estar.mjs?v=1ae1b9e24bec';
-import { casosEmAndamento, pontoDeParada } from './memoria.mjs?v=1ae1b9e24bec';
+import { destinoDaArea, linkDeRegistro, notasDaArea, primeiraMeta, secoesDeLeitura } from './areas.mjs?v=c0273d90ee1f';
+import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=c0273d90ee1f';
+import { visaoBemEstar } from './bem-estar.mjs?v=c0273d90ee1f';
+import { casosEmAndamento, pontoDeParada } from './memoria.mjs?v=c0273d90ee1f';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const h = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=1ae1b9e24bec';
+import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=c0273d90ee1f';
 const DOW = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 const DOWL = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
 const MON = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
@@ -792,18 +793,28 @@ function route() {
   if (previousArea && previousArea !== nextArea) S.reveal.delete(`#area/${previousArea}`);
   S.areaRoute = area;
   S.areaHash = area ? location.hash : '';
-  if (p === 'alimentacao' && ['plano', 'compras', 'trocas'].includes(sub)) S.aliTab = sub;
+  const saiDeTarefas = S.page === 'tarefas' && p !== 'tarefas';
+  if (saiDeTarefas) S.reveal.delete('#tarefas');
+  if (p === 'tarefas') S.tab = ['proximas', 'semdata', 'feitas'].includes(sub) ? sub : 'hoje';
+  if (S.page === 'alimentacao' && p !== 'alimentacao') {
+    S.reveal.delete('#alimentacao');
+    $('#ali').replaceChildren();
+  }
+  if (p === 'alimentacao') S.aliTab = ['compras', 'trocas'].includes(sub) ? sub : 'plano';
   if (p === 'financas') S.finTab = FIN_TABS.some(t => t[0] === sub) ? sub : 'resumo';
-  if (p === 'registrar' && ['nota', 'emocional', 'compra'].includes(sub)) S.reg = sub;
+  if (p === 'registrar') S.reg = ['emocional', 'compra', 'comprovante'].includes(sub) ? sub : 'nota';
+  if (p === 'caixa') S.boxTab = ['inbox', 'historico'].includes(sub) ? sub : 'fila';
   if (changed && p === 'alimentacao') S.aliRef = null;
   S.page = p;
   closeSheet();
   for (const el of $$('.page')) el.hidden = el.dataset.page !== p;
   renderNav();
   renderAreaPage();
+  if (p === 'tarefas' || saiDeTarefas) renderTasks();
   if (p === 'alimentacao') renderAlimentacao();
   if (p === 'financas' || (previousArea === 'financas' && nextArea !== previousArea)) renderFinancas();
   if (p === 'registrar') renderRegistrar();
+  if (p === 'caixa') renderCaixa();
   document.title = `${area ? AREAS[area.area].nome : PAGES.find(page => page.id === p)?.nome || 'Hoje'} · Meu Assessor`;
   if (changed) {
     window.scrollTo(0, 0);
@@ -847,15 +858,25 @@ function dialSvg(items, nm, dow) {
 
 const isChecked = g => { const o = taskOv(g); return o ? o.kind === 'feita' : g.checked; };
 const byDue = (a, b) => (a.due || '9').localeCompare(b.due || '9') || (b.prio === 'alta') - (a.prio === 'alta');
+import { organizarTarefas, primeiroPasso } from './tarefas.mjs?v=c0273d90ee1f';
+function estadoTarefa(g) {
+  if (g.nova) return { feita:false, data:'' };
+  const item = taskOv(g);
+  return item ? { feita:item.kind === 'feita', data:item.date } : { feita:g.checked, data:g.done };
+}
+
+function gruposDeTarefas() {
+  const novas = (S.ov?.novas || []).map(it => ({ nova:true, item:it, text:it.text, due:it.due, sens:it.path === RESERVADA }));
+  return organizarTarefas([...S.tasks, ...novas], ymd(now()), estadoTarefa);
+}
+
 function buckets() {
-  const d = ymd(now());
-  const open = S.tasks.filter(g => !isChecked(g));
-  const novas = (S.ov ? S.ov.novas : []).map(it => ({ nova: true, item: it, text: it.text, due: it.due }));
-  return {
-    hoje: [...novas.filter(n => n.due && n.due <= d), ...open.filter(g => g.due && g.due <= d).sort(byDue), ...S.tasks.filter(g => isChecked(g) && (g.done === d || (taskOv(g) && taskOv(g).kind === 'feita')))],
-    proximas: [...novas.filter(n => n.due && n.due > d), ...open.filter(g => g.due && g.due > d).sort(byDue)],
-    semdata: [...novas.filter(n => !n.due), ...open.filter(g => !g.due)],
-  };
+  const grupos = gruposDeTarefas(), d = ymd(now());
+  return { hoje:[...grupos.atrasadas, ...grupos.hoje, ...grupos.feitas.filter(g => estadoTarefa(g).data === d)], proximas:grupos.proximas, semdata:grupos.semdata };
+}
+
+function tarefaReservada(g) {
+  return g.sens || VEIL.has(g.area) || g.members?.some(m => VEIL.has(S.files[m.path]?.area));
 }
 function dueTxt(due) {
   const d = ymd(now());
@@ -876,60 +897,99 @@ function taskLi(g) {
   const ch = isChecked(g), o = taskOv(g);
   const meta = [];
   if (g.due && !ch) meta.push(dueTxt(g.due));
+  const conclusao = ch && estadoTarefa(g).data;
+  if (conclusao) meta.push('Concluída em ' + pymd(conclusao).toLocaleDateString('pt-BR'));
   if (g.prio === 'alta' && !ch) meta.push('<span class="prio">prioridade alta</span>');
   const seen = new Set();
   for (const m of g.members) if (!seen.has(m.path) && m.path !== 'tarefas.md') { seen.add(m.path); meta.push(srcLink(m.path)); }
   if (o) meta.push('<span class="tag">na caixa</span>');
   return `<li class="task${ch ? ' done' : ''}${o && o.pending ? ' busy' : ''}"><button class="chk" role="checkbox" aria-checked="${ch}" data-task="${h(g.key)}" aria-label="${o ? 'Desfazer' : ch ? 'Reabrir' : 'Marcar como feita'}: ${h(plain(g.text))}">${ICON.check}</button><div class="tx"><div class="t">${inline(g.text)}</div>${meta.length ? `<div class="meta">${meta.join('')}</div>` : ''}</div></li>`;
 }
-function lockRows(list) {
-  const by = {};
-  for (const g of list) (by[g.area] = by[g.area] || []).push(g);
-  return Object.entries(by).map(([a, gs]) => {
-    const path = `areas/${a}/${a}.md`;
-    return `<li><button class="lock" data-open="${h(S.files[path] ? path : gs[0].members[0].path)}">${ICON.lock}<span>${gs.length} ${gs.length > 1 ? 'tarefas' : 'tarefa'} de ${h(AREAS[a]?.nome || a)}${gs.some(g => g.due && g.due < ymd(now())) ? ', com atraso' : ''}</span></button></li>`;
-  }).join('');
+function grupoTarefas(titulo, itens, chave, expandidos, mostrar) {
+  const visiveis = itens.filter(mostrar);
+  if (!visiveis.length) return '';
+  const extras = visiveis.slice(5);
+  return `<section class="tarefa-grupo" data-grupo="${chave}"><header><h2>${titulo}</h2><span>${visiveis.length}</span></header>
+    <ul class="tasks">${visiveis.slice(0, 5).map(taskLi).join('')}</ul>
+    ${extras.length ? `<details class="tarefa-extras" data-task-lista="${chave}"${expandidos.has(chave) ? ' open' : ''}>
+      <summary>Mais ${extras.length} ${extras.length === 1 ? 'tarefa' : 'tarefas'}</summary><ul class="tasks">${extras.map(taskLi).join('')}</ul></details>` : ''}</section>`;
 }
-function listHtml(list) {
-  if (!cfg.discreet) return list.map(taskLi).join('');
-  return list.filter(g => g.nova || !g.sens).map(taskLi).join('') + lockRows(list.filter(g => !g.nova && g.sens && !isChecked(g)));
-}
+
 function renderTasks() {
-  const B = buckets();
-  if (S.tab === 'compras') S.tab = 'hoje';
-  const counts = { hoje: B.hoje.filter(g => g.nova || !isChecked(g)).length, proximas: B.proximas.length, semdata: B.semdata.length };
-  const tabs = [['hoje', 'Hoje'], ['proximas', 'Próximas'], ['semdata', 'Sem data']];
-  $('#tabs').innerHTML = tabs.map(([k, l]) => `<button role="tab" aria-selected="${S.tab === k}" data-tab="${k}">${l}<span>${counts[k]}</span></button>`).join('');
-  let html = '';
+  const grupos = gruposDeTarefas(), d = ymd(now());
+  const abas = { hoje:'Meu dia', proximas:'Próximas', semdata:'Sem prazo', feitas:'Concluídas' };
+  const mostrar = g => !cfg.discreet || S.reveal.has('#tarefas') || !tarefaReservada(g);
+  const meuDia = [...grupos.atrasadas, ...grupos.hoje];
+  const selecionadas = S.tab === 'hoje' ? meuDia : grupos[S.tab] || [];
+  const reservadas = selecionadas.filter(tarefaReservada).length;
+  const contagem = { ...grupos, hoje:meuDia };
+  $('#tasksDate').textContent = now().toLocaleDateString('pt-BR', {weekday:'long', day:'numeric', month:'long'});
+  $('#tabs').innerHTML = Object.entries(abas).map(([id,titulo]) => `<a href="#tarefas/${id}" ${S.tab === id ? 'aria-current="page"' : ''}>${titulo}<span>${contagem[id].length}</span></a>`).join('');
+  const expandidos = new Set($$('#tasks details[open]').map(el => el.dataset.taskLista));
+  const grupo = (titulo,itens,chave) => grupoTarefas(titulo,itens,chave,expandidos,mostrar);
+  let html;
   if (S.tab === 'hoje') {
-    html = B.hoje.length ? `<ul class="tasks">${listHtml(B.hoje)}</ul>` : `<p class="empty">Nada vencendo hoje. Dá uma olhada em Próximas ou Sem data.</p>`;
+    const primeiro = primeiroPasso(grupos, mostrar);
+    const prontas = grupos.feitas.filter(g => g.due === d).length, total = prontas + grupos.hoje.length;
+    const foco = primeiro ? `<div class="tarefa-foco"><h2>Próximo passo</h2><ul class="tasks">${taskLi(primeiro)}</ul></div>` : '';
+    const andamento = `<div class="tarefa-progresso"><h2>Prazos de hoje</h2>
+      ${total ? `<p><strong>${prontas}</strong> de ${total} ${total === 1 ? 'concluída' : 'concluídas'}</p>
+      <progress max="${total}" value="${prontas}" aria-label="Tarefas com prazo hoje concluídas"></progress>` : '<p>Nenhuma tarefa vence hoje.</p>'}
+      </div>`;
+    html = `<div class="tarefa-dia${foco ? '' : ' sem-foco'}">${foco}${andamento}</div>`;
+    html += grupo('Em atraso', grupos.atrasadas.filter(t => t !== primeiro),'atrasadas');
+    html += grupo('Para hoje', grupos.hoje.filter(t => t !== primeiro),'hoje');
   } else if (S.tab === 'proximas') {
-    const lim = ymd(addDays(now(), 7));
-    const a = B.proximas.filter(g => g.due <= lim), b = B.proximas.filter(g => g.due > lim);
-    html = (a.length ? `<p class="group-h">Nos próximos 7 dias</p><ul class="tasks">${listHtml(a)}</ul>` : '') + (b.length ? `<p class="group-h">Mais pra frente</p><ul class="tasks">${listHtml(b)}</ul>` : '');
-    if (!html) html = '<p class="empty">Nenhuma tarefa com data marcada pra frente.</p>';
+    const limite = ymd(addDays(now(), 7));
+    html = grupo('Nos próximos 7 dias', grupos.proximas.filter(g => g.due <= limite),'semana') +
+      grupo('Mais adiante', grupos.proximas.filter(g => g.due > limite),'adiante');
   } else if (S.tab === 'semdata') {
-    const novas = B.semdata.filter(g => g.nova);
-    if (novas.length) html += `<p class="group-h">Novas, na caixa</p><ul class="tasks">${novas.map(taskLi).join('')}</ul>`;
-    const by = new Map();
-    for (const g of B.semdata.filter(g => !g.nova)) { const p = g.members[0].path; if (!by.has(p)) by.set(p, []); by.get(p).push(g); }
-    const groups = [...by.entries()].sort((x, y) => (S.files[y[0]]?.meta.atualizado || '').localeCompare(S.files[x[0]]?.meta.atualizado || ''));
-    const locked = [];
-    for (const [p, gs] of groups) {
-      if (cfg.discreet && S.files[p]?.sens) { locked.push(...gs); continue; }
-      html += `<p class="group-h">${p === 'tarefas.md' ? 'Soltas' : srcLink(p)}</p><ul class="tasks">${gs.map(taskLi).join('')}</ul>`;
-    }
-    if (locked.length) html += `<ul class="tasks">${lockRows(locked)}</ul>`;
-    if (!html) html = '<p class="empty">Nenhuma tarefa sem data.</p>';
+    html = grupo('Sem prazo definido', grupos.semdata,'semdata');
+  } else {
+    html = grupo('Histórico de conclusões', grupos.feitas,'feitas');
+  }
+  const vazias = { proximas:'Nenhuma tarefa com prazo futuro.', semdata:'Nenhuma tarefa sem prazo.', feitas:'Nenhuma tarefa concluída.' };
+  if (!selecionadas.length && S.tab !== 'hoje') html = `<div class="tarefa-vazia">${vazias[S.tab]}</div>`;
+  if (cfg.discreet && (reservadas || S.reveal.has('#tarefas'))) {
+    const aberta = S.reveal.has('#tarefas');
+    html += `<div class="tarefa-privacidade">${ICON.lock}<span>${reservadas ? reservadas + (reservadas === 1 ? ' tarefa reservada' : ' tarefas reservadas') : 'Tarefas reservadas'}</span>
+      <button type="button" data-tarefa-privacidade aria-pressed="${aberta}">${aberta ? 'Ocultar' : 'Mostrar'}</button></div>`;
   }
   $('#tasks').innerHTML = html;
-  const form = $('#addTask');
-  if (form.dataset.mode !== 't') {
-    form.dataset.mode = 't';
-    form.innerHTML = `<input type="text" id="addTxt" placeholder="Nova tarefa" aria-label="Nova tarefa"><input type="date" id="addDue" aria-label="Prazo (opcional)"><button class="btn" type="submit">Adicionar</button>`;
-  }
-  const a = $('#tasks').closest('.sec');
-  if (a && !a.querySelector('.more-compras')) a.insertAdjacentHTML('beforeend', '<a class="more more-compras" href="#alimentacao/compras">A lista de compras agora fica em Alimentação ›</a>');
+}
+
+function vincularTarefas() {
+  const criar = $('#criarTarefa'), caixa = $('#taskFormBox'), form = $('#addTask');
+  criar.addEventListener('click', () => {
+    caixa.hidden = !caixa.hidden;
+    criar.setAttribute('aria-expanded', String(!caixa.hidden));
+    if (!caixa.hidden) $('#addTxt').focus();
+  });
+  $('#tasks').addEventListener('click', ev => {
+    if (!ev.target.closest('[data-tarefa-privacidade]')) return;
+    if (S.reveal.has('#tarefas')) S.reveal.delete('#tarefas');
+    else S.reveal.add('#tarefas');
+    renderTasks();
+    $('#tasks [data-tarefa-privacidade]')?.focus();
+  });
+  form.addEventListener('submit', async ev => {
+    ev.preventDefault();
+    const texto = oneLine($('#addTxt').value), prazo = $('#addDue').value;
+    const botao = form.querySelector('[type="submit"]');
+    if (!texto || botao.disabled) return;
+    for (const campo of form.elements) campo.disabled = true;
+    const salva = await addCaixa([`➕ Tarefa nova: ${texto}${prazo ? ' 📅 ' + prazo : ''}`], {
+      sens:$('#addPrivada').checked, msg:`nova tarefa — ${short(texto, 50)}`, ok:'Tarefa na caixa. O assessor cria no TickTick.'
+    });
+    for (const campo of form.elements) campo.disabled = false;
+    if (!salva) return;
+    form.reset(); caixa.hidden = true; criar.setAttribute('aria-expanded','false');
+    if (S.page === 'tarefas') {
+      const destino = !prazo ? 'semdata' : prazo > ymd(now()) ? 'proximas' : 'hoje';
+      location.hash = '#tarefas/' + destino;
+      criar.focus({preventScroll:true});
+    }
+  });
 }
 function cxCompraLi(it) {
   return `<li class="task${it.pending ? ' busy' : ''}"><button class="rm" data-cxdel="${h(it.path + '\n' + it.block)}" aria-label="Tirar da caixa: ${h(it.text)}" title="Tirar da caixa">${ICON.x}</button><div class="tx"><div class="t">${inline(it.text)}</div><div class="meta"><span class="tag">nova, na caixa</span></div></div></li>`;
@@ -940,7 +1000,7 @@ const KIND = { receita: '💰 Receita', transferencia: '🔄 Transferência', fe
 function cxLabel(it, compact) {
   const movimento = ['receita', 'transferencia', 'compra', 'comprovante'].includes(it.kind);
   if (movimento && cfg.discreet) return '<span class="k">Movimentação financeira</span> <span class="muted">(reservada)</span>';
-  const reserved = it.path === RESERVADA && cfg.discreet;
+  const reserved = cfg.discreet && (it.path === RESERVADA || VEIL.has(areaKey(it.areaTxt || it.area)) || (it.note && VEIL.has(S.files[it.note]?.area)));
   if (reserved) return `<span class="k">${it.kind === 'estou' ? '💭 Como estou' : it.kind === 'regula' ? '🧭 Regulação' : '🔒 Registro reservado'}</span> <span class="muted">(reservado)</span>`;
   let k = KIND[it.kind] || KIND.outro, t = it.text || '';
   if (it.kind === 'habito') { k = it.st === 'feito' ? '🔁 Fez' : it.st === 'nao' ? '🔁 Não fez' : '🔁 Cancelado'; t = `${/^\p{Extended_Pictographic}/u.test(it.text) ? '' : (AREAS[it.area]?.emoji || '') + ' '}${it.text}${it.hdate && it.hdate !== it.date ? ` (${dm(it.hdate)})` : ''}${it.motivo ? ' — ' + it.motivo : ''}`; }
@@ -960,21 +1020,36 @@ function lastOrg() {
   return c ? { when: whenTxt(new Date(c.date)), txt: c.msg.split('\n')[0].replace(/^painel: /, '') } : null;
 }
 function renderCaixa() {
-  const items = S.cx;
+  const items = S.cx, tab = S.boxTab || 'fila';
   $('#cxCount').textContent = items.length || '';
-  const lo = lastOrg();
-  $('#org').innerHTML = `<span>${items.length ? `<b>${items.length} ${items.length > 1 ? 'itens esperando' : 'item esperando'}.</b>` : '<b>Caixa vazia.</b>'} ${lo ? `Última organização: ${h(lo.when)}.` : 'O assessor ainda não organizou por aqui.'}</span><span class="acts"><button class="btn" type="button" id="copyAsk">Copiar pedido pro assessor</button><a class="btn ghost" href="https://claude.ai/new" target="_blank" rel="noopener noreferrer">Abrir o Claude</a></span>`;
-  if (!items.length) { $('#cxList').innerHTML = '<p class="empty">Nada esperando. O que você marcar ou escrever no painel aparece aqui até o assessor organizar.</p>'; return; }
-  const byDay = new Map();
-  for (const it of items.slice().reverse()) { if (!byDay.has(it.date)) byDay.set(it.date, []); byDay.get(it.date).push(it); }
-  let html = '';
-  const d = ymd(now());
-  for (const [day, its] of byDay) {
-    html += `<p class="cx-day">${day === d ? 'Hoje' : day === ymd(addDays(now(), -1)) ? 'Ontem' : dayLabel(day)}</p><ul class="cx">`;
-    html += its.map(it => `<li class="${it.pending ? 'pending' : ''}"><time>${it.time}</time><div class="body">${cxLabel(it, false)}</div>${it.pending ? '<span></span>' : `<button class="x" data-cxdel="${h(it.path + '\n' + it.block)}" aria-label="Tirar da caixa" title="Tirar da caixa (desfazer)">${ICON.x}</button>`}</li>`).join('');
-    html += '</ul>';
+  const sections = { fila: 'secCaixa', inbox: 'secInbox', historico: 'secFeed' };
+  for (const [id, section] of Object.entries(sections)) $('#' + section).hidden = id !== tab;
+  for (const a of $$('.box-tabs a')) {
+    if (a.dataset.inboxTab === tab) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
   }
-  $('#cxList').innerHTML = html;
+  const lo = lastOrg();
+  $('#org').innerHTML = `<span>${lo ? `Última organização ${h(lo.when)}` : ''}</span>${items.length ? `<div><button type="button" class="btn" id="copyAsk">Copiar pedido de organização</button><a class="desk-link" href="https://claude.ai/new" target="_blank" rel="noopener noreferrer">Abrir Claude ↗</a></div>` : ''}`;
+  if (!items.length) {
+    $('#cxList').innerHTML = `<div class="desk-empty"><span aria-hidden="true">✓</span><p>Tudo organizado por aqui.</p><a class="desk-link" href="#registrar/nota">Fazer uma captura →</a></div>`;
+    return;
+  }
+  const groups = new Map(), today = ymd(now()), yesterday = ymd(addDays(now(), -1));
+  for (let i = items.length - 1; i >= 0; i--) {
+    const it = items[i];
+    if (!groups.has(it.date)) groups.set(it.date, []);
+    groups.get(it.date).push([i, it]);
+  }
+  const container = $('#cxList');
+  const opened = new Set($$('details[data-box-day][open]',container).map(d => d.dataset.boxDay));
+  container.innerHTML = [...groups].map(([day, rows], index) => {
+    const title = day === today ? 'Hoje' : day === yesterday ? 'Ontem' : dayLabel(day);
+    const list = `<ul class="cx">${rows.map(([i,it]) => {
+      const preview = cxLabel(it, true), full = cxLabel(it, false);
+      const content = preview === full ? full : `<details class="item-text"><summary>${preview}</summary><div>${full}</div></details>`;
+      return `<li class="${it.pending ? 'pending' : ''}"><time>${h(it.time)}</time><div class="body">${content}</div>${it.pending ? '<span class="muted">Salvando…</span>' : `<button class="x" type="button" data-box-remove="${i}" aria-label="Tirar registro das ${h(it.time)} da caixa">${ICON.x}</button>`}</li>`;
+    }).join('')}</ul>`;
+    return index === 0 ? `<section class="box-day"><h3>${h(title)}</h3>${list}</section>` : `<details class="box-day" data-box-day="${h(day)}"${opened.has(day) ? ' open' : ''}><summary>${h(title)} <small>${rows.length}</small></summary>${list}</details>`;
+  }).join('');
 }
 function renderInbox() {
   const items = [...S.inbox].reverse();
@@ -1024,7 +1099,8 @@ function feedItem(c) {
   else if (ROTULOS[p]) label = ROTULOS[p];
   else if (ROTULOS[key]) label = ROTULOS[key];
   else label = pre ? '📝 ' + pre[0].toUpperCase() + pre.slice(1) : '📝 Notas';
-  if (SENS.has(key)) txt = 'registro atualizado';
+  const reservado = SENS.has(key) || (cfg.discreet && (key === 'financas' || (caseP && VEIL.has(S.files[caseP]?.area)) || (via && /compra|receita|transferência|comprovante|financ/i.test(subj))));
+  if (reservado) { txt = 'registro atualizado'; if (cfg.discreet) label = '🔒 Registro reservado'; }
   return { label, txt: txt ? txt[0].toUpperCase() + txt.slice(1) : '', via, date: c.date ? new Date(c.date) : null, sha: c.sha };
 }
 function whenTxt(d) {
@@ -1239,7 +1315,7 @@ function renderCommit() {
     const nf = S.files[f.path], title = nf ? plain(nf.title) : f.path.split('/').pop().replace(/\.md$/, '');
     const open = nf ? `<button class="btn" data-open="${h(f.path)}">Abrir a nota</button>` : '';
     html += `<section class="cm-f"><div class="cm-h"><h3>${h(title)}<span class="rp">${h(f.path)}${f.status === 'added' ? ' · nota nova' : ''}</span></h3>${open}</div>`;
-    if (nf && nf.sens && cfg.discreet && !S.reveal.has(f.path)) { html += `<div class="gate" style="padding:18px 0">${ICON.lock.replace('<svg', '<svg style="width:22px;height:22px;color:var(--ink3)"')}<p>Conteúdo de ${h(AREAS[nf.area]?.nome || 'um assunto reservado')}.</p><button class="btn" data-reveal="${h(f.path)}">Mostrar</button></div></section>`; continue; }
+    if ((nf?.sens || VEIL.has(nf?.area) || [CAIXA, RESERVADA].includes(f.path)) && cfg.discreet && !S.reveal.has(f.path)) { html += `<div class="gate" style="padding:18px 0">${ICON.lock.replace('<svg', '<svg style="width:22px;height:22px;color:var(--ink3)"')}<p>Conteúdo de ${h(AREAS[nf?.area]?.nome || 'um assunto reservado')}.</p><button class="btn" data-reveal="${h(f.path)}">Mostrar</button></div></section>`; continue; }
     if (!f.patch) { html += '<p class="muted">Mudança grande demais pra mostrar aqui. Abra a nota.</p></section>'; continue; }
     const { add, del } = cmLines(f.patch);
     if (add.length) html += `<div class="cm-add md">${cmBlock(add, f.path)}</div>`;
@@ -1261,7 +1337,7 @@ function renderDrawer() {
   const body = $('#drBody');
   const draft = $('#drNoteTxt') ? $('#drNoteTxt').value : '';
   const focused = document.activeElement && document.activeElement.id === 'drNoteTxt';
-  if (f.sens && cfg.discreet && !S.reveal.has(f.path)) {
+  if ((f.sens || VEIL.has(f.area) || f.path === CAIXA) && cfg.discreet && !S.reveal.has(f.path)) {
     body.innerHTML = `<div class="gate">${ICON.lock.replace('<svg', '<svg style="width:28px;height:28px;color:var(--ink3)"')}<p>Esta nota é de ${h(AREAS[f.area]?.nome || 'um assunto reservado')}.</p><button class="btn" data-reveal="${h(f.path)}">Mostrar a nota</button></div>`;
     return;
   }
@@ -1303,7 +1379,7 @@ function doFind() {
   }
   findList = res; findSel = 0;
   const mark = s => { let x = h(s.replace(/^\s*[-*|>]+\s*/, '').replace(/\s*\|\s*/g, '   ')); for (const t of terms) { if (t.length < 2) continue; const n = norm(x); let out = '', i = 0, k; while ((k = n.indexOf(t, i)) >= 0) { out += x.slice(i, k) + '<mark>' + x.slice(k, k + t.length) + '</mark>'; i = k + t.length; } x = out + x.slice(i); } return x; };
-  $('#findRes').innerHTML = res.length ? res.map((r, i) => `<li><button role="option" aria-selected="${i === 0}" data-find="${i}"><span class="rt">${h(plain(r.f.title))}</span><span class="rp">${h(r.f.path)}</span><div class="sn">${r.f.sens && cfg.discreet ? 'Conteúdo reservado' : mark(short(r.sn, 220))}</div></button></li>`).join('') : `<li class="empty" style="padding:14px 12px">Nada encontrado com "${h($('#findIn').value)}".</li>`;
+  $('#findRes').innerHTML = res.length ? res.map((r, i) => `<li><button role="option" aria-selected="${i === 0}" data-find="${i}"><span class="rt">${h(plain(r.f.title))}</span><span class="rp">${h(AREAS[r.f.area]?.nome || r.f.meta.tipo || 'Nota')}</span><div class="sn">${cfg.discreet && (r.f.sens || VEIL.has(r.f.area) || r.f.path === CAIXA) ? 'Conteúdo reservado' : mark(short(r.sn, 220))}</div></button></li>`).join('') : `<li class="empty" style="padding:14px 12px">Nada encontrado com "${h($('#findIn').value)}".</li>`;
 }
 function moveFind(d) {
   if (!findList.length) return;
@@ -1358,24 +1434,24 @@ function showSetup(msg) {
 function showCfg() {
   const o = $('#cfg');
   o.hidden = false;
-  o.innerHTML = `<div class="box" role="dialog" aria-label="Ajustes"><form class="form" id="cfgForm">
-    <h2>Ajustes</h2>
-    <label for="cRepo">Repositório</label><input id="cRepo" value="${h(cfg.repo)}" disabled>
-    <label for="cInt">Procurar mudanças no GitHub a cada</label><select id="cInt">${[10, 15, 30, 60].map(s => `<option value="${s}"${cfg.interval === s ? ' selected' : ''}>${s} segundos</option>`).join('')}</select>
+  o.innerHTML = `<div class="box settings-box" role="dialog" aria-modal="true" aria-labelledby="settingsTitle"><form class="form" id="cfgForm">
+    <header><h2 id="settingsTitle">Ajustes</h2><button class="ib" type="button" id="cClose" aria-label="Fechar ajustes">${ICON.x}</button></header>
     <label for="cTheme">Aparência</label><select id="cTheme"><option value="auto"${cfg.theme === 'auto' ? ' selected' : ''}>Igual ao aparelho</option><option value="light"${cfg.theme === 'light' ? ' selected' : ''}>Clara</option><option value="dark"${cfg.theme === 'dark' ? ' selected' : ''}>Escura</option></select>
-    <p class="hint">Token terminado em ${h(cfg.token.slice(-4))}. Ele fica só neste navegador.</p>
-    <div class="row"><button class="btn" type="submit">Salvar</button><button class="btn ghost" type="button" id="cClose">Fechar</button><button class="btn ghost" type="button" id="cOut" style="margin-left:auto;color:var(--alert)">Desconectar deste aparelho</button></div>
+    <label for="cInt">Intervalo de sincronização</label><select id="cInt">${[10,15,30,60].map(s => `<option value="${s}"${cfg.interval === s ? ' selected' : ''}>${s} segundos</option>`).join('')}</select>
+    <details class="capture-extra"><summary>Conexão com o GitHub</summary><label for="cRepo">Repositório conectado</label><input id="cRepo" value="${h(cfg.repo)}" disabled>
+      <p class="hint">Token terminado em ${h(cfg.token.slice(-4))}.</p><button class="btn ghost signout" type="button" id="cOut">Desconectar deste aparelho</button></details>
+    <div class="form-foot"><button class="btn" type="submit">Salvar ajustes</button></div>
   </form></div>`;
   $('#cfgForm').onsubmit = ev => { ev.preventDefault(); cfg.interval = +$('#cInt').value; cfg.theme = $('#cTheme').value; saveCfg(); applyTheme(); o.hidden = true; };
   $('#cClose').onclick = () => { o.hidden = true; };
   $('#cOut').onclick = () => {
     cfg.token = ''; cfg.branch = ''; saveCfg();
-    Blobs.clear(); LS.del(K + 'snap');
+    Blobs.clear(); LS.del(K + 'snap'); capturePanes.clear(); $('#regBody').replaceChildren();
     S.files = {}; S.head = null; S.commits = []; S.etag = null;
     o.hidden = true; showSetup();
   };
   o.onclick = ev => { if (ev.target === o) o.hidden = true; };
-  $('#cInt').focus();
+  $('#cTheme').focus();
 }
 function applyTheme() {
   const t = cfg.theme === 'auto' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : cfg.theme;
@@ -1435,16 +1511,16 @@ function itemsOn(d) {
   for (const e of S.agenda.events) if (e.date === d) items.push({ ...e, kind: 'evento', date: d });
   return items.sort((a, b) => (a.allDay ? -1 : 0) - (b.allDay ? -1 : 0) || (a.start || '').localeCompare(b.start || ''));
 }
-const todayItems = () => itemsOn(ymd(now()));
 function itemName(it) {
-  if (cfg.discreet && (SENS.has(it.area) || /🧠|🩺/.test(it.name))) return `Compromisso de ${AREAS[it.area]?.nome?.toLowerCase() || 'saúde'}`;
+  if (cfg.discreet && (VEIL.has(it.area) || sensIt(it))) return 'Compromisso reservado';
   return it.name;
 }
 const emo = it => AREAS[it.area]?.emoji || '•';
-const comEmoji = it => /^\p{Extended_Pictographic}/u.test(itemName(it)) ? h(itemName(it)) : `${emo(it)} ${h(itemName(it))}`;
+const comEmoji = it => cfg.discreet && (VEIL.has(it.area) || sensIt(it)) ? 'Compromisso reservado'
+  : /^\p{Extended_Pictographic}/u.test(it.name) ? h(it.name) : `${emo(it)} ${h(it.name)}`;
 const hArea = it => it.area || 'geral';
 const hKey = it => `${it.date}|${hArea(it)}|${kw(it.name)}|${it.allDay ? 'dia todo' : it.start}`;
-const sensIt = it => it.area === 'emocional' || /🧠|🩺|psic[oó]|psiq|terap/i.test(it.name);
+const sensIt = it => SENS.has(it.area) || /🧠|🩺|psic[oó]|psiq|terap/i.test(it.name);
 function relMin(m) {
   if (m < 1) return 'agora';
   if (m < 60) return `daqui a ${Math.round(m)} min`;
@@ -1485,67 +1561,67 @@ function weekDays() {
 function wAgenda() {
   const n = now(), hoje = ymd(n), nm = n.getHours() * 60 + n.getMinutes();
   const dias = weekDays();
-  if (!S.sel || !dias.includes(S.sel)) S.sel = dias.includes(hoje) ? hoje : dias[0];
-  const sel = S.sel;
-  const p0 = pymd(dias[0]), p6 = pymd(dias[6]);
-  const mesLab = p0.getMonth() === p6.getMonth() ? MESES[p0.getMonth()] : `${MON[p0.getMonth()]} – ${MON[p6.getMonth()]}`;
+  if (!dias.includes(S.sel)) S.sel = dias.includes(hoje) ? hoje : dias[0];
+  const sel = S.sel, data = pymd(sel);
   const strip = dias.map(d => {
-    const x = pymd(d), its = itemsOn(d);
-    const cores = [...new Set(its.filter(i => !i.allDay).map(i => areaColor(i.area)))].slice(0, 3);
-    if (!cores.length && its.length) cores.push('var(--ink3)');
-    return `<button type="button" data-day="${d}" aria-pressed="${d === sel}" class="${d === hoje ? 'today' : ''}" aria-label="${DOWL[x.getDay()]} ${x.getDate()}, ${its.length} na agenda"><span class="dw">${DOW[x.getDay()][0].toUpperCase()}</span><span class="dn">${x.getDate()}</span><span class="dots">${cores.map(c => `<i style="--c:${c}"></i>`).join('')}</span></button>`;
+    const x = pymd(d), total = itemsOn(d).length;
+    return `<button type="button" data-day="${d}" aria-pressed="${d === sel}" ${d === hoje ? 'aria-current="date"' : ''} aria-label="${DOWL[x.getDay()]}, ${x.getDate()}, ${total} na agenda">
+      <span>${DOW[x.getDay()]}</span><b>${x.getDate()}</b><i class="${total ? 'tem-evento' : ''}" aria-hidden="true"></i></button>`;
   }).join('');
-  const items = itemsOn(sel);
+  const items = itemsOn(sel), anteriores = [], proximos = [];
   S._idx = {};
-  let rows = '', placed = sel !== hoje;
-  for (const it of items) {
-    const st0 = it.allDay ? null : toMin(it.start), en = it.allDay ? null : toMin(it.end);
-    if (!placed && !it.allDay && st0 > nm) { rows += `<li class="nowline"><span>${hm(n)}</span></li>`; placed = true; }
-    const cls = sel < hoje ? 'past' : sel > hoje || it.allDay ? '' : en <= nm ? 'past' : st0 <= nm ? 'cur' : '';
-    const key = hKey(it);
-    S._idx[key] = it;
-    const hs = habitState(it);
-    const fut = !hs && (sel > hoje || (sel === hoje && !it.allDay && st0 > nm));
-    const stc = hs ? hs.st : '';
-    const pend = hs && hs.item && hs.item.pending;
-    const lab = hs ? `${itemName(it)}: ${ST_TXT[hs.st]}${hs.box ? ', na caixa' : ''}. Toque para mudar.` : `Marcar ${itemName(it)}. Toque: fiz. Segure: não fiz ou cancelado.`;
-    rows += `<li class="${cls}" style="--c:${areaColor(it.area)}"><span class="t">${it.allDay ? 'dia' : it.start}<small>${it.allDay ? 'todo' : it.end}</small></span><span class="n"><span class="sw"></span><span>${comEmoji(it)}</span></span><button type="button" class="st ${stc}${hs && hs.box ? ' box' : ''}${fut ? ' fut' : ''}${pend ? ' busy' : ''}" data-st="${h(key)}" aria-label="${h(lab)}"><i>${ST_ICON[stc] || ICON.check}</i></button>${hs && hs.motivo && hs.st !== 'feito' && !(cfg.discreet && sensIt(it)) ? `<span class="why">${ST_TXT[hs.st]} · ${h(short(hs.motivo, 70))}</span>` : ''}</li>`;
+  for (const [i, it] of items.entries()) {
+    const passado = sel < hoje || (sel === hoje && !it.allDay && toMin(it.end) <= nm);
+    const emCurso = sel === hoje && !it.allDay && toMin(it.start) <= nm && nm < toMin(it.end);
+    const privado = cfg.discreet && (VEIL.has(it.area) || sensIt(it));
+    const key = hKey(it), id = privado ? 'turno-' + sel + '-' + i : key;
+    S._idx[id] = it;
+    S._idx[key] = it; // O formulário de status usa a chave estável da caixa.
+    const hs = habitState(it), st = hs?.st || '';
+    const futuro = !hs && (sel > hoje || (sel === hoje && !it.allDay && toMin(it.start) > nm));
+    const lab = hs ? `${itemName(it)}: ${ST_TXT[st]}. Toque para mudar.` : `Marcar ${itemName(it)}. Toque para marcar como feito ou segure para ver as opções.`;
+    const motivo = !privado && hs?.motivo && st !== 'feito' ? `<small>${h(short(hs.motivo, 80))}</small>` : '';
+    const status = hs ? ST_TXT[st] : emCurso ? 'Em andamento' : '';
+    const row = `<li class="hj-event${emCurso ? ' em-curso' : ''}" style="--c:${privado ? 'var(--ink3)' : areaColor(it.area)}">
+      <span class="hj-time">${it.allDay ? 'Dia todo' : it.start}${it.allDay ? '' : `<small>${it.end}</small>`}</span>
+      <span class="hj-event-name">${h(itemName(it))}${status ? `<small>${status}</small>` : ''}${motivo}</span>
+      <button class="st ${st}${hs?.box ? ' box' : ''}${futuro ? ' fut' : ''}${hs?.item?.pending ? ' busy' : ''}" data-st="${h(id)}" aria-label="${h(lab)}"><i>${ST_ICON[st] || ICON.check}</i></button>
+    </li>`;
+    (passado && sel === hoje ? anteriores : proximos).push(row);
   }
-  if (!placed && sel === hoje && items.some(i => !i.allDay)) rows += `<li class="nowline"><span>${hm(n)}</span></li>`;
-  const x = pymd(sel);
-  const titulo = sel === hoje ? 'Hoje' : sel === ymd(addDays(n, 1)) ? 'Amanhã' : sel === ymd(addDays(n, -1)) ? 'Ontem' : `${DOWL[x.getDay()]}, ${x.getDate()}`;
-  return `<section class="w l w-agenda" id="wAgenda" aria-label="Agenda">
-    <div class="cal-h"><span class="wh"><span class="e">📅</span>Agenda <span class="muted" style="font-weight:500">· ${mesLab}</span></span><span style="margin-left:auto"></span>${S.wk || sel !== hoje ? '<button class="wbtn" type="button" data-act="hoje" style="height:32px">Hoje</button>' : ''}<button class="ib" type="button" data-wk="-1" aria-label="Semana anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg></button><button class="ib" type="button" data-wk="1" aria-label="Próxima semana"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button></div>
-    <div class="wk">${strip}</div>
-    <div class="wh" style="margin-top:6px;color:var(--ink)">${h(titulo)}<span class="x">${items.length ? items.length + (items.length > 1 ? ' na agenda' : ' na agenda') : ''}</span></div>
-    <ol class="dl">${rows || '<li><span></span><span class="muted">Nada na agenda neste dia.</span></li>'}</ol>
-    ${items.length ? '<p class="dl-foot">Toque no círculo: fiz. Segure: não fiz ou cancelado.</p>' : ''}
+  const titulo = sel === hoje ? 'Hoje' : sel === ymd(addDays(n, 1)) ? 'Amanhã' : sel === ymd(addDays(n, -1)) ? 'Ontem' : DOWL[data.getDay()];
+  return `<section id="wAgenda" class="hj-card hj-agenda" aria-labelledby="hj-agenda">
+    <header class="hj-section-head"><div><h2 id="hj-agenda">Agenda</h2><p>${MESES[data.getMonth()]} de ${data.getFullYear()}</p></div>
+    <div class="hj-week-controls">${S.wk || sel !== hoje ? '<button type="button" data-act="hoje">Hoje</button>' : ''}<button type="button" data-wk="-1" aria-label="Semana anterior">‹</button><button type="button" data-wk="1" aria-label="Próxima semana">›</button></div></header>
+    <div class="hj-week">${strip}</div>
+    <h3 class="hj-day-heading">${h(titulo)}, ${dm(sel)}</h3>
+    ${anteriores.length ? `<details class="hj-fold" data-home-fold="passados-${sel}"><summary>${anteriores.length === 1 ? '1 compromisso anterior' : anteriores.length+' compromissos anteriores'}</summary><ol class="hj-events">${anteriores.join('')}</ol></details>` : ''}
+    ${proximos.length ? `<ol class="hj-events">${proximos.join('')}</ol>` : `<p class="hj-empty">${anteriores.length ? 'Os horários de hoje terminaram.' : 'Nenhum compromisso registrado para este dia.'}</p>`}
+    ${items.length ? '<p class="hj-hint">Toque no círculo para marcar como feito. Segure para ver as outras opções.</p>' : ''}
   </section>`;
 }
 function proximaRefeicao() {
-  const P = S.plano && S.plano.dv;
-  if (!P || !P.meals.length) return null;
-  const n = now(), nm = n.getHours() * 60 + n.getMinutes();
-  const i = P.meals.findIndex(m => toMin(m.t) >= nm - 10);
-  if (i >= 0) return { meal: P.meals[i], amanha: false, mins: toMin(P.meals[i].t) - nm };
-  return { meal: P.meals[0], amanha: true, mins: 1440 - nm + toMin(P.meals[0].t) };
+  if (cfg.discreet) return null;
+  return refeicaoDoHorario(refeicoesOrdenadas(S.plano?.dv?.meals), now());
 }
 function wProximo() {
   const n = now(), d = ymd(n), nm = n.getHours() * 60 + n.getMinutes();
   const timed = itemsOn(d).filter(i => !i.allDay);
-  const cur = timed.find(i => toMin(i.start) <= nm && nm < toMin(i.end));
-  const nxt = timed.find(i => toMin(i.start) > nm);
-  const am = !nxt ? itemsOn(ymd(addDays(n, 1))).filter(i => !i.allDay)[0] : null;
-  const ref = proximaRefeicao();
-  const L = [];
-  if (cur) L.push(`<div><span class="k">Agora, até ${cur.end}</span><span class="v">${comEmoji(cur)}</span></div>`);
-  if (nxt) L.push(`<div><span class="k">Depois, ${relMin(toMin(nxt.start) - nm)}</span><span class="v"><span class="dt">${nxt.start}</span>${comEmoji(nxt)}</span></div>`);
-  else if (am) L.push(`<div><span class="k">Amanhã cedo</span><span class="v"><span class="dt">${am.start}</span>${comEmoji(am)}</span></div>`);
-  else if (!cur) L.push(`<div><span class="k">Agenda</span><span class="v">Nada mais por hoje</span></div>`);
-  if (ref) L.push(`<div><span class="k">Próxima refeição${ref.amanha ? ', amanhã' : ref.mins <= 0 ? ', agora' : ref.mins < 120 ? ', ' + relMin(ref.mins) : ''}</span><span class="v"><span class="dt">${ref.meal.t}</span>🍽️ ${h(ref.meal.nome)}</span></div>`);
-  return `<a class="w m w-prox" id="wProx" href="#inicio" data-act="agenda-hoje" aria-label="Seu dia">
-    <div class="nx"><div class="ring"><svg viewBox="0 0 360 360" role="img" aria-label="Mostrador do dia">${dialSvg(timed, nm, n.getDay())}</svg><div class="ring-c"><b>${n.getDate()}</b><span>${DOW[n.getDay()]}</span></div></div>
-    <div class="nxl">${L.join('')}</div></div></a>`;
+  const restantes = timed.filter(i => !habitState(i) && toMin(i.end) > nm);
+  const atual = restantes.find(i => toMin(i.start) <= nm);
+  const futuro = restantes.find(i => toMin(i.start) > nm);
+  const amanha = !atual && !futuro && itemsOn(ymd(addDays(n, 1))).find(i => !i.allDay && !habitState(i));
+  const slot = atual || futuro || amanha;
+  const rotulo = atual ? 'Em andamento' : 'Próximo compromisso';
+  const quando = atual ? '' : futuro ? relMin(toMin(futuro.start) - nm) : amanha ? 'Amanhã' : '';
+  return `<section class="hj-focus" id="wProx" aria-labelledby="hj-focus-title">
+    <div class="hj-focus-copy"><span class="hj-kicker"><i aria-hidden="true"></i>${rotulo}</span>
+      <h2 id="hj-focus-title">${slot ? h(itemName(slot)) : 'Sem próximo horário'}</h2>
+      <p>${slot ? `<strong>${slot.start} – ${slot.end}</strong>${quando ? `<span>${quando}</span>` : ''}` : 'Sem horários pendentes na agenda de hoje e de amanhã.'}</p></div>
+    <div class="ring hj-clock" aria-hidden="true"><svg viewBox="0 0 360 360">${dialSvg(timed, nm, n.getDay())}</svg><div class="ring-c"><b>${hm(n)}</b><span>agora</span></div></div>
+    <footer>${atual && futuro ? `<span>Depois, ${futuro.start} · ${h(short(itemName(futuro),56))}</span>` : ''}
+      <button type="button" data-act="agenda-hoje">Ver agenda de hoje <span aria-hidden="true">↓</span></button></footer>
+  </section>`;
 }
 function fichasAll() {
   const est = { id: 'estou', emoji: '💭', nome: 'Como estou', desc: 'O check-in do journal. Preencha só o que fizer sentido.', builtin: true };
@@ -1554,49 +1630,47 @@ function fichasAll() {
   return [est, ...lista];
 }
 function wEmocional() {
-  const fs = fichasAll();
-  return `<section class="w m w-emo" id="wEmo" aria-label="Saúde emocional"><span class="wh"><span class="e">🧠</span>Saúde emocional<span class="x">vai pra caixa reservada</span></span>
-    <div class="fichas">${fs.map(f => `<button type="button" data-ficha="${h(f.id)}"><b>${f.emoji}</b><span>${h(f.nome)}</span></button>`).join('')}<button type="button" class="add" data-act="ficha-nova">＋ Nova ficha</button></div></section>`;
+  return `<section class="hj-channel hj-journal" id="wEmo"><header><span class="hj-channel-icon" aria-hidden="true">💭</span><h3><a href="#area/emocional">Emocional</a></h3></header>
+    <div class="hj-actions"><button type="button" data-ficha="estou">Fazer check-in</button><a href="#registrar/emocional">Abrir fichas</a></div>
+    <details class="hj-fold" data-home-fold="fichas"><summary>Outras opções</summary><div class="hj-actions">
+      ${cfg.discreet ? '' : fichasAll().filter(f => !f.builtin).map(f => `<button type="button" data-ficha="${h(f.id)}">${h(f.nome)}</button>`).join('')}
+      <button type="button" data-act="ficha-nova">Criar ficha</button></div></details></section>`;
 }
 function wFinancas() {
-  const M = finModel();
-  let corpo;
-  if (!M) corpo = `<p class="wt">O espelho da planilha ainda não chegou. Abra Finanças para ligar a atualização.</p>`;
-  else {
-    const mes = ymd(now()).slice(0, 7);
-    const k = finKpi(M, mes), pj = M.proj.find(p => p.mes === mes);
-    corpo = `<div style="display:flex;gap:18px;align-items:flex-end;flex-wrap:wrap;margin-top:12px"><div><div class="wn sm veil">${brl0(k.total)}</div><div class="wt" style="margin-top:4px">gasto em ${MESES[+mes.slice(5) - 1]}</div></div>${pj && pj.saldo_final != null ? `<div><div class="wn sm veil" style="color:${pj.saldo_final < 0 ? 'var(--alert)' : 'var(--ink)'}">${brl0(pj.saldo_final)}</div><div class="wt" style="margin-top:4px">saldo previsto</div></div>` : ''}</div>`;
-  }
-  const pend = S.cx.filter(i => ['compra', 'comprovante', 'receita', 'transferencia'].includes(i.kind)).length;
-  return `<section class="w m w-fin" id="wFin" aria-label="Finanças"><a class="wh" href="#financas" style="text-decoration:none"><span class="e">💰</span>Finanças<span class="x">${pend ? pend + ' na caixa' : 'ver tudo ›'}</span></a>${corpo}
-    <div class="wbtns"><button type="button" class="wbtn pri" data-act="compra">＋ Compra</button><button type="button" class="wbtn" data-act="comprovante">🧾 Comprovante</button></div></section>`;
+  const mes = ymd(now()).slice(0,7), model = finModel();
+  let valor = 'Os valores estão ocultos.';
+  if (!cfg.discreet) valor = model ? `${brl(finKpi(model,mes).total)} em despesas no mês.` : 'Aguardando o espelho da planilha.';
+  return `<section class="hj-channel" id="wFin"><header><span class="hj-channel-icon" aria-hidden="true">💳</span><h3><a href="#financas">Finanças</a></h3></header>
+    <p>${h(valor)}</p><div class="hj-actions"><button type="button" data-act="compra">Registrar despesa</button><button type="button" data-act="comprovante">Comprovante</button></div></section>`;
 }
 function wRefeicao() {
-  const r = proximaRefeicao();
-  if (!r) return `<a class="w s" href="#alimentacao" id="wRef"><span class="wh"><span class="e">🍽️</span>Refeição</span><p class="wt">O plano alimentar ainda não está nas notas.</p></a>`;
-  const nomes = r.meal.itens.map(i => i.n.replace(/\s*\(opcional\)/i, '')).slice(0, 3).join(', ');
-  return `<a class="w s" href="#alimentacao" id="wRef" aria-label="Próxima refeição: ${h(r.meal.nome)} às ${r.meal.t}"><span class="wh"><span class="e">🍽️</span>${r.amanha ? 'Amanhã' : 'Próxima refeição'}</span><div class="wn">${r.meal.t}</div><p class="wt"><b>${h(r.meal.nome)}</b> · ${h(nomes)}</p></a>`;
+  const ref = cfg.discreet ? null : proximaRefeicao();
+  const hora = ref ? `<p>${ref.amanha ? 'Amanhã' : 'Próxima refeição'}, ${ref.meal.t} · ${h(ref.meal.nome)}</p>` : '';
+  return `<section class="hj-channel" id="wRef"><header><span class="hj-channel-icon" aria-hidden="true">🍽️</span><h3><a href="#alimentacao">Alimentação</a></h3></header>
+    ${hora}<div class="hj-actions"><a href="#alimentacao/plano">Ver plano</a><a id="wCompras" href="#alimentacao/compras">Lista de compras</a></div></section>`;
 }
 function wTarefas() {
-  const B = buckets(), d = ymd(now());
-  const abertas = B.hoje.filter(g => g.nova || !isChecked(g));
-  const late = abertas.filter(g => g.due && g.due < d).length;
-  const vis = abertas.filter(g => g.nova || !(cfg.discreet && g.sens));
-  const prim = vis[0];
-  return `<a class="w s" href="#tarefas" id="wTarefas" aria-label="Tarefas de hoje"><span class="wh"><span class="e">✅</span>Tarefas</span><div class="wn">${abertas.length}</div><p class="wt">${abertas.length ? `pra hoje${late ? ` · <span class="late">${late} ${late > 1 ? 'atrasadas' : 'atrasada'}</span>` : ''}${prim ? `<br><b>${h(short(plain(prim.text), 46))}</b>` : ''}` : 'Nada vencendo hoje.'}</p></a>`;
+  const pendentes = buckets().hoje.filter(g => (g.nova || !isChecked(g)) && (!cfg.discreet || !tarefaReservada(g))).sort(byDue);
+  const rows = pendentes.slice(0,3).map(g => {
+    const acao = g.nova ? `<a class="hj-pending" href="#caixa" aria-label="Ver tarefa na caixa">↗</a>` : `<button class="chk" role="checkbox" aria-checked="false" data-task="${h(g.key)}" aria-label="Concluir ${h(plain(g.text))}">${ICON.check}</button>`;
+    return `<li>${acao}<span>${h(plain(g.text))}<small>${g.due < ymd(now()) ? `Prazo ${dm(g.due)}` : 'Prazo hoje'}${g.prio === 'alta' ? ' · Prioridade alta' : ''}${g.nova ? ' · Na caixa' : ''}</small></span></li>`;
+  }).join('');
+  return `<section id="wTarefas" class="hj-card hj-prioridades">
+    <header class="hj-section-head"><h2>Prioridades</h2><a href="#tarefas">Ver tarefas <span aria-hidden="true">↗</span></a></header>
+    ${rows ? `<ul class="hj-tasks">${rows}</ul>` : '<p class="hj-empty">Nenhuma tarefa visível com prazo até hoje.</p>'}
+    ${pendentes.length > 3 ? `<a class="hj-more" href="#tarefas">Mais ${pendentes.length-3} na lista</a>` : ''}</section>`;
 }
 function wRetomar() {
-  const casos = casosEmAndamento(S.files).filter(f => !(cfg.discreet && (f.sens || VEIL.has(f.area)))).slice(0, 3);
-  const lista = casos.map(f => {
-    const abertas = S.tasks.filter(g => !isChecked(g) && g.members.some(m => m.path === f.path)).sort(byDue);
-    const detalhe = abertas.length ? abertas[0].text : pontoDeParada(f);
-    return `<button type="button" class="resume-item" data-open="${h(f.path)}"><span><strong>${h(plain(f.title))}</strong>
-      ${detalhe ? `<small>${h(short(plain(detalhe), 105))}</small>` : ''}</span><span aria-hidden="true">↗</span></button>`;
+  const casos = casosEmAndamento(S.files).filter(f => !cfg.discreet || (!f.sens && !VEIL.has(f.area)));
+  const lista = casos.slice(0,2).map(f => {
+    const abertas = S.tasks.filter(g => !isChecked(g) && (!cfg.discreet || !tarefaReservada(g)) && g.members.some(m => m.path === f.path)).sort(byDue);
+    const detalhe = abertas[0]?.text || pontoDeParada(f);
+    return `<button type="button" class="hj-resume" data-open="${h(f.path)}"><span class="hj-folder" aria-hidden="true">↳</span><span><strong>${h(plain(f.title))}</strong>
+      ${detalhe ? `<small>${h(short(plain(detalhe),110))}</small>` : ''}</span><span class="hj-resume-arrow" aria-hidden="true">›</span></button>`;
   }).join('');
-  return `<section class="memory-section" id="retomadas"><header><h2>Retomar um caso</h2><a href="#areas">Ver memória</a></header>
-    ${lista || '<p class="empty">Nenhum caso visível para retomar.</p>'}</section>`;
+  return `<section class="hj-card hj-retomar" id="retomadas"><header class="hj-section-head"><h2>Retomar um caso</h2><a href="#areas">Ver memória <span aria-hidden="true">↗</span></a></header>
+    ${lista || '<p class="hj-empty">Nenhum caso visível para retomar.</p>'}</section>`;
 }
-
 function atalhosDaMemoria() {
   const caminhos = [['documentos/documentos.md', 'Documentos'], ['eu/decisoes.md', 'Decisões'], ['eu/plano.md', 'Meu plano']];
   return caminhos.filter(([p]) => S.files[p]).map(([p, nome]) =>
@@ -1604,32 +1678,35 @@ function atalhosDaMemoria() {
 }
 
 function wCaixa() {
-  const n = S.cx.length, lo = lastOrg();
-  return `<a class="w s" href="#caixa" id="wCaixa"><span class="wh"><span class="e">📥</span>Caixa</span><div class="wn">${n}</div><p class="wt">${n ? (n > 1 ? 'esperando o assessor' : 'esperando o assessor') : 'Tudo organizado.'}${lo ? `<br>última organização ${h(lo.when)}` : ''}</p></a>`;
-}
-function wCompras() {
-  const L = listaCompras();
-  const falta = L ? L.itens.filter(i => !i.pego).length : 0;
-  const extra = S.compras.secs.reduce((n, s) => n + s.items.filter(t => !S.ov.comprado.has(norm(t.text))).length, 0);
-  return `<a class="w s" href="#alimentacao/compras" id="wCompras"><span class="wh"><span class="e">🛒</span>Compras</span><div class="wn">${falta + extra}</div><p class="wt">${L ? `do plano pra ${S.dias} ${S.dias > 1 ? 'dias' : 'dia'}${extra ? ` + ${extra} da lista` : ''}` : `${extra} na lista`}</p></a>`;
+  const visiveis = S.cx.filter(it => !cfg.discreet || (it.path !== RESERVADA && !VEIL.has(it.area) && !['compra','comprovante','receita','transferencia'].includes(it.kind)));
+  const n = visiveis.length;
+  return `<a class="hj-inbox" href="#caixa" id="wCaixa"><span><strong>Caixa de entrada</strong><small>${n ? `${n} ${n === 1 ? 'item para organizar' : 'itens para organizar'}` : 'Nenhum item visível para organizar'}</small></span><span aria-hidden="true">→</span></a>`;
 }
 function wAreas() {
-  const al = AREA_ORDER.map(a => S.files[`areas/${a}/${a}.md`]).filter(Boolean).map(f => norm(f.meta.status || ''));
-  const n = al.filter(s => s === 'alerta').length, at = al.filter(s => s === 'atencao').length;
-  const cs = Object.values(S.files).filter(f => f.path.startsWith('casos/') && !/^(fechado|resolvido|concluido|encerrado)/.test(norm(f.meta.status || ''))).length;
-  return `<a class="w s" href="#areas" id="wAreas"><span class="wh"><span class="e">🧭</span>Áreas</span><div class="wn">${n + at}</div><p class="wt">${n || at ? `${n ? `<span class="late">${n} em alerta</span>` : ''}${n && at ? ' · ' : ''}${at ? `${at} em atenção` : ''}` : 'todas bem'}${cs ? `<br>${cs} ${cs > 1 ? 'casos abertos' : 'caso aberto'}` : ''}</p></a>`;
+  const areas = AREA_ORDER.filter(a => S.files['areas/'+a+'/'+a+'.md']);
+  if (!areas.length) return '';
+  return `<details class="hj-card hj-area-list" id="wAreas" data-home-fold="areas"><summary><span>Minhas áreas</span><span aria-hidden="true">⌄</span></summary>
+    <nav aria-label="Abrir uma área">${areas.map(a => `<a href="#area/${a}"><span aria-hidden="true">${AREAS[a].emoji}</span>${h(AREAS[a].nome)}</a>`).join('')}</nav></details>`;
 }
 function renderInicio() {
   const el = $('#home');
   if (!el) return;
   const n = now(), hr = n.getHours();
-  const sauda = hr < 5 ? 'Boa noite' : hr < 12 ? 'Bom dia' : hr < 18 ? 'Boa tarde' : 'Boa noite';
+  const sauda = hr < 5 || hr >= 18 ? 'Boa noite' : hr < 12 ? 'Bom dia' : 'Boa tarde';
+  const abertos = new Set($$('details[data-home-fold][open]',el).map(section => section.dataset.homeFold));
   S.minute = hr * 60 + n.getMinutes(); S.day = ymd(n);
-  const carregando = !Object.keys(S.files).length;
-  el.innerHTML = `<div class="hello"><div><p>${DOWL[n.getDay()]}, ${n.getDate()} de ${MESES[n.getMonth()]}${carregando ? ' · carregando suas notas…' : ''}</p>
-    <h1>${sauda}${S.name ? ', ' + h(S.name) : ''}.</h1></div><button type="button" class="btn capture" data-act="nota">＋ Capturar</button></div>
-    <div class="home-focus"><div class="today-stack">${wProximo()}${wRetomar()}</div>${wAgenda()}</div>
-    <div class="home-tools">${wTarefas()}${wCaixa()}${wFinancas()}${wRefeicao()}${wCompras()}${wEmocional()}${wAreas()}</div>`;
+  const pronto = Boolean(S.head || Object.keys(S.files).length);
+  const saudacao = `<header class="hj-heading"><div><p>${DOWL[n.getDay()]}, ${n.getDate()} de ${MESES[n.getMonth()]}</p>
+    <h1>${sauda}${S.name ? ', '+h(S.name) : ''}.</h1></div><a class="hj-capture" href="#registrar/nota"><span aria-hidden="true">＋</span> Capturar</a></header>`;
+  if (!pronto) {
+    el.innerHTML = `${saudacao}<p class="hj-loading" role="status">${S.err ? 'Não foi possível carregar suas notas.' : 'Carregando suas notas…'}</p>`;
+    return;
+  }
+  el.innerHTML = `${saudacao}<div class="hj-board">${wProximo()}${wAgenda()}${wTarefas()}${wRetomar()}</div>
+    <section class="hj-tools"><header class="hj-section-head"><h2>Acessos rápidos</h2></header>
+      <div class="hj-channels">${wFinancas()}${wRefeicao()}${wEmocional()}</div>
+      <div class="hj-links">${wCaixa()}${wAreas()}</div></section>`;
+  for (const section of $$('details[data-home-fold]',el)) section.open = abertos.has(section.dataset.homeFold);
 }
 
 /* ─────────────── folha (bottom sheet) ─────────────── */
@@ -1678,7 +1755,7 @@ function syncStatusForm(f) {
 function sheetMais() {
   const n = S.cx.length;
   openSheet('Mais', `<ul class="menu">
-    <li><a href="#registrar" data-close><span class="e">📝</span>Registrar</a></li>
+    <li><a href="#registrar" data-close><span class="e">📝</span>Capturar</a></li>
     <li><a href="#caixa" data-close><span class="e">📥</span>Caixa${n ? `<span class="badge">${n}</span>` : ''}</a></li>
     <li><a href="#alimentacao" data-close><span class="e">🥗</span>Alimentação</a></li>
     <li><button type="button" data-act="buscar"><span class="e">🔎</span>Buscar nas notas</button></li>
@@ -1691,10 +1768,12 @@ function sheetMais() {
 const picked = (f, k) => f.querySelector(`[data-pick="${k}"][aria-checked="true"]`)?.dataset.v || '';
 const pressed = (f, k) => $$(`[data-pick="${k}"][aria-pressed="true"]`, f).map(b => b.dataset.v);
 function formNota(area = 'geral') {
-  return `<form class="f2" data-form="nota" autocomplete="off">
-    <div class="field"><span class="lbl">Sobre o quê</span><div class="chips" role="radiogroup" aria-label="Área">${NOTA_AREAS.map(([k, l]) => `<button type="button" role="radio" data-pick="area" data-v="${k}" aria-checked="${area === k}">${l}</button>`).join('')}</div></div>
-    <div class="field"><label>O que você quer anotar</label><textarea name="txt" placeholder="Ex.: o Paulo pediu pra apresentar a pesquisa na quinta às 10h." enterkeyhint="send"></textarea></div>
-    <div class="form-foot"><button class="btn big" type="submit">Guardar na caixa</button><p class="hint">Vai pra caixa. O assessor organiza quando você chamar.</p></div>
+  return `<form class="f2 quick-note" data-form="nota" autocomplete="off">
+    <label class="compose-title">O que você quer guardar?
+      <textarea name="txt" required rows="5" placeholder="Uma ideia, algo para lembrar, uma conversa…" aria-label="Texto da nota"></textarea></label>
+    <div class="compose-bottom"><label class="mini-select"><span>Área</span>
+      <select name="areaNota" aria-label="Área da nota">${NOTA_AREAS.map(([k]) => `<option value="${k}"${k === area ? ' selected' : ''}>${h(AREAS[k]?.nome || 'Geral')}</option>`).join('')}</select>
+      </label><button class="btn big" type="submit">Guardar nota</button></div>
   </form>`;
 }
 const rangeField = (name, label) => `<div class="field"><label>${h(label)}</label><div class="range"><input type="range" name="${name}" min="0" max="10" step="1" value="5" data-range><output>5</output></div><p class="hint" style="margin-top:4px" data-rh>Toque na barra para marcar.</p></div>`;
@@ -1703,17 +1782,18 @@ const emoField = (name, label) => `<div class="field"><span class="lbl">${h(labe
 function formFicha(fi) {
   let corpo;
   if (fi.id === 'estou') {
-    corpo = humorField('humor', 'Humor agora') + emoField('emo', 'O que está sentindo') + rangeField('intens', 'Intensidade') +
-      `<div class="field"><label>O que provocou</label><input type="text" name="gatilho" placeholder="Ex.: casa bagunçada quando cheguei"></div>
-       <div class="field"><label>O que ajudou</label><input type="text" name="ajudou" placeholder="Ex.: saí do quarto e respirei"></div>
-       <div class="field"><label>Despeja aqui</label><textarea name="livre" placeholder="Como foi o dia, do jeito que vier."></textarea></div>`;
+    corpo = humorField('humor', 'Como você está agora?') +
+      `<label class="field"><span>Nas suas palavras</span><textarea name="livre" placeholder="O que marcou o seu dia?"></textarea></label>
+       <details class="capture-extra"><summary>Emoções e contexto</summary>${emoField('emo', 'O que você sentiu')}${rangeField('intens', 'Intensidade')}
+       <label class="field"><span>O que provocou</span><input type="text" name="gatilho"></label>
+       <label class="field"><span>O que ajudou</span><input type="text" name="ajudou"></label></details>`;
   } else {
     corpo = fi.campos.map((c, i) => c.tipo === 'escala' ? rangeField('c' + i, c.q) : c.tipo === 'humor' ? humorField('c' + i, c.q) : c.tipo === 'emocoes' ? emoField('c' + i, c.q)
       : `<div class="q"><label><span>${i + 1}</span>${h(c.q)}</label><textarea name="c${i}"></textarea></div>`).join('');
   }
   return `<form class="f2" data-form="ficha" data-id="${h(fi.id)}" autocomplete="off">
-    ${fi.desc ? `<p class="hint" style="margin-top:0">${h(fi.desc)}</p>` : ''}${corpo}
-    <div class="form-foot"><button class="btn big" type="submit">Guardar na caixa</button>${!fi.builtin && !fi.semArquivo ? `<button class="btn ghost big" type="button" data-act="ficha-editar" data-id="${h(fi.id)}">Editar ficha</button>` : ''}<p class="hint">Fica reservado: só aparece com o olho aberto.</p></div>
+    ${!fi.builtin && fi.desc ? `<p class="hint">${h(fi.desc)}</p>` : ''}${corpo}
+    <div class="form-foot"><button class="btn big" type="submit">Guardar na caixa</button>${!fi.builtin && !fi.semArquivo ? `<button class="btn ghost big" type="button" data-act="ficha-editar" data-id="${h(fi.id)}">Editar ficha</button>` : ''}<p class="hint">Vai para a caixa reservada.</p></div>
   </form>`;
 }
 const TIPOS_CAMPO = [['texto', 'Texto'], ['escala', 'Escala 0 a 10'], ['humor', 'Humor 1 a 5'], ['emocoes', 'Emoções']];
@@ -1736,16 +1816,26 @@ function formCompra(soComprovante) {
   const opcoes = cadastrados.length ? cadastrados : CARTOES;
   const ultimo = LS.get(K + 'cartao', '');
   const ct = opcoes.includes(ultimo) ? ultimo : opcoes[0];
-  return `<form class="f2" data-form="compra" autocomplete="off">
-    ${soComprovante ? '<p class="hint" style="margin-top:0">Manda o print ou o PDF. Se quiser, escreva o que foi e o valor; senão, o assessor lê do comprovante.</p>' : ''}
-    <div class="field"><label>O que foi</label><input type="text" name="oque" placeholder="Ex.: mercado, Uber, farmácia" enterkeyhint="next"></div>
-    <div class="field"><label>Valor</label><div class="money"><span>R$</span><input name="valor" inputmode="decimal" placeholder="0,00" aria-label="Valor em reais"></div></div>
-    <div class="field"><span class="lbl">Como pagou</span><div class="chips" role="radiogroup" aria-label="Como pagou">${PAGTOS.map(p => `<button type="button" role="radio" data-pick="pg" data-v="${p}" aria-checked="${pg === p}">${p === 'Alimentação' ? 'Cartão alimentação' : p}</button>`).join('')}</div><p class="small-note" data-va ${pg === 'Alimentação' ? '' : 'hidden'}>Cartão da empresa: não sai do seu saldo.</p></div>
-    <div class="field" data-cartoes ${pg === 'Crédito' ? '' : 'hidden'}><span class="lbl">Cartão</span><div class="chips" role="radiogroup" aria-label="Cartão">${opcoes.map(c => `<button type="button" role="radio" data-pick="cartao" data-v="${h(c)}" aria-checked="${ct === c}">${h(c)}</button>`).join('')}</div></div>
-    <div class="field"><label>Quando</label><input type="date" name="data" value="${ymd(now())}" max="${ymd(now())}"></div>
-    <div class="field"><span class="lbl">Comprovante</span><div class="file"><label><input type="file" name="arq" accept="image/*,application/pdf">📷 ${soComprovante ? 'Escolher o print ou PDF' : 'Anexar print (opcional)'}</label><div class="prev" data-prev></div></div></div>
-    <div class="form-foot"><button class="btn big" type="submit">Guardar na caixa</button><p class="hint">Vai pra caixa. O assessor lança na planilha quando você chamar.</p></div>
+  const campos = `<div class="purchase-basics">
+    <label class="field"><span>Valor</span><span class="money"><span>R$</span><input name="valor" inputmode="decimal" placeholder="0,00" aria-label="Valor em reais"></span></label>
+    <label class="field"><span>O que foi</span><input type="text" name="oque" placeholder="Ex.: padaria" enterkeyhint="next"></label></div>`;
+  const arquivo = `<div class="file capture-file"><label><input type="file" name="arq" accept="image/*,application/pdf"${soComprovante ? ' required' : ''}>
+      <span class="attach-plus" aria-hidden="true">＋</span><span>${soComprovante ? 'Escolher comprovante' : 'Anexar comprovante'}<small>Imagem ou PDF</small></span></label><div class="prev" data-prev></div></div>`;
+  return `<form class="f2 receipt-form" data-form="compra" autocomplete="off">
+    ${soComprovante ? arquivo + '<details class="capture-extra"><summary>Adicionar valor e descrição</summary>' + campos + '</details>' : campos}
+    <details class="capture-extra pay-options"><summary>Pagamento e data <span data-pay-label>${h(pg)} · Hoje</span></summary>
+      <div class="field"><span class="lbl">Forma de pagamento</span><div class="chips" role="radiogroup" aria-label="Como pagou">${PAGTOS.map(p => `<button type="button" role="radio" data-pick="pg" data-v="${p}" aria-checked="${pg === p}">${p === 'Alimentação' ? 'Cartão alimentação' : p}</button>`).join('')}</div><p class="small-note" data-va ${pg === 'Alimentação' ? '' : 'hidden'}>Benefício da empresa.</p></div>
+      <div class="field" data-cartoes ${pg === 'Crédito' ? '' : 'hidden'}><span class="lbl">Cartão</span><div class="chips" role="radiogroup" aria-label="Cartão">${opcoes.map(c => `<button type="button" role="radio" data-pick="cartao" data-v="${h(c)}" aria-checked="${ct === c}">${h(c)}</button>`).join('')}</div></div>
+      <label class="field"><span>Data do gasto</span><input type="date" name="data" value="${ymd(now())}" max="${ymd(now())}"></label></details>
+    ${soComprovante ? '' : `<details class="capture-extra"><summary>Comprovante opcional</summary>${arquivo}</details>`}
+    <div class="form-foot"><button class="btn big" type="submit">${soComprovante ? 'Guardar comprovante' : 'Guardar gasto'}</button></div>
   </form>`;
+}
+function resumoPagamento(f) {
+  const label = f.querySelector('[data-pay-label]');
+  if (!label) return;
+  const pg = picked(f, 'pg') || 'Crédito', dia = f.elements.data.value;
+  label.textContent = pg + ' · ' + (!dia || dia === ymd(now()) ? 'Hoje' : dm(dia));
 }
 const parseValor = valorCapturado;
 const blobB64 = b => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1]); r.onerror = () => rej(erro('arquivo')); r.readAsDataURL(b); });
@@ -1765,7 +1855,7 @@ function uploadComprovante(file, rotulo) {
     const b64 = await blobB64(blob);
     const n = now();
     const slug = norm(rotulo || 'comprovante').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 30) || 'comprovante';
-    const path = `painel/comprovantes/${ymd(n)}-${pad(n.getHours())}${pad(n.getMinutes())}${pad(n.getSeconds())}-${slug}.${ext}`;
+    const path = `painel/comprovantes/${ymd(n)}-${pad(n.getHours())}${pad(n.getMinutes())}${pad(n.getSeconds())}-${slug}-${crypto.randomUUID().slice(0, 8)}.${ext}`;
     S.pending++; setLive();
     try {
       const r = await gh(`/repos/${cfg.repo}/contents/${repoPath(path)}`, { method: 'PUT', body: { message: 'painel: comprovante enviado\n\nvia painel', content: b64, branch: cfg.branch } });
@@ -1777,34 +1867,64 @@ function uploadComprovante(file, rotulo) {
   queue = job.catch(() => { });
   return job;
 }
-async function submitCompra(f) {
+// O rascunho continua disponível na aba enquanto a gravação estiver em andamento.
+async function concluirCaptura(f, gravar) {
+  if (f.dataset.saving) return;
+  f.dataset.saving = '1';
+  const btn = f.querySelector('button[type=submit]'), original = btn.textContent;
+  const inSheet = Boolean(f.closest('#sheet'));
+  btn.disabled = true; btn.textContent = 'Guardando…';
+  f.inert = true; f.setAttribute('aria-busy', 'true');
+  let ok = false;
+  try {
+    ok = await gravar();
+  } catch (e) {
+    if (e.code === 'grande') toast('O arquivo ultrapassou 8 MB. Escolha uma imagem menor.', { err:true });
+    else toastErr(e, 'Não foi possível guardar');
+  } finally {
+    delete f.dataset.saving;
+    f.inert = false; f.removeAttribute('aria-busy');
+    btn.disabled = false; btn.textContent = original;
+  }
+  if (!ok) return;
+  if (inSheet) {
+    if (f.closest('#sheet')) closeSheet();
+    return;
+  }
+  if (f.dataset.form === 'nota') {
+    f.elements.txt.value = '';
+  } else {
+    // Recria somente a captura enviada. Outras modalidades podem ter um rascunho.
+    for (const [id, pane] of capturePanes) if (pane.contains(f)) capturePanes.delete(id);
+    renderRegistrar();
+  }
+}
+
+const arquivosCapturados = new WeakMap();
+function submitCompra(f) {
   const oque = oneLine(f.oque.value), valor = parseValor(f.valor.value);
   const pg = picked(f, 'pg') || 'Crédito', ct = pg === 'Crédito' ? picked(f, 'cartao') : '';
-  const data = f.data.value || ymd(now()), arq = f.arq.files && f.arq.files[0];
-  if (Number.isNaN(valor)) { toast('O valor ficou estranho. Escreva só o número, tipo 32,50.'); f.valor.focus(); return; }
-  if (!arq && (!oque || valor == null)) { toast('Escreva o que foi e o valor, ou anexe o comprovante.'); (oque ? f.valor : f.oque).focus(); return; }
+  const data = f.data.value || ymd(now()), arq = f.arq.files?.[0];
+  if (Number.isNaN(valor)) { f.valor.closest('details')?.setAttribute('open',''); toast('Confira o valor em reais.'); f.valor.focus(); return; }
+  if (!arq && (!oque || valor == null)) { toast('Preencha a descrição e o valor ou anexe um comprovante.'); (oque ? f.valor : f.oque).focus(); return; }
   LS.set(K + 'pg', pg); if (ct) LS.set(K + 'cartao', ct);
-  const btn = f.querySelector('button[type=submit]');
-  let caminho = '';
-  if (arq) {
-    btn.disabled = true; btn.textContent = 'Mandando o comprovante…';
-    try { caminho = await uploadComprovante(arq, oque); }
-    catch (e) { btn.disabled = false; btn.textContent = 'Guardar na caixa'; if (e.code === 'grande') toast('O arquivo passou de 8 MB. Mande um print menor.', { err: true }); else toastErr(e, 'Não mandei o comprovante'); return; }
-  }
-  const hoje = ymd(now());
-  let l;
-  if (oque || valor != null) {
-    l = `💳 Compra: ${oque || 'sem descrição'}${valor != null ? ' — ' + brl(valor) : ''} · ${pg === 'Alimentação' ? 'cartão alimentação (benefício da empresa, não sai do saldo)' : pg}${ct ? ' ' + ct : ''}`;
-    if (data !== hoje) l += ` · em ${data}`;
-    if (caminho) l += ` · comprovante: ${caminho}`;
-  } else l = `🧾 Comprovante: ${caminho} · ${pg === 'Alimentação' ? 'cartão alimentação (benefício da empresa, não sai do saldo)' : pg}${ct ? ' ' + ct : ''}${data !== hoje ? ` · de ${dm(data)}` : ''}`;
-  addCaixa([l], { msg: oque ? `compra — ${short(oque, 40)}` : 'comprovante', ok: 'Na caixa. O assessor lança na planilha.' });
-  if (f.closest('#sheet')) closeSheet();
-  else { f.reset(); f.data.value = hoje; $('[data-prev]', f).innerHTML = ''; btn.disabled = false; btn.textContent = 'Guardar na caixa'; }
+  return concluirCaptura(f, async () => {
+    let caminho = '';
+    if (arq) {
+      caminho = arquivosCapturados.get(arq) || await uploadComprovante(arq, oque);
+      arquivosCapturados.set(arq, caminho);
+    }
+    const hoje = ymd(now()), pagamento = pg === 'Alimentação' ? 'cartão alimentação (benefício da empresa, não sai do saldo)' : pg;
+    const linha = oque || valor != null
+      ? `💳 Compra: ${oque || 'sem descrição'}${valor != null ? ' — ' + brl(valor) : ''} · ${pagamento}${ct ? ' ' + ct : ''}${data !== hoje ? ' · em ' + data : ''}${caminho ? ' · comprovante: ' + caminho : ''}`
+      : `🧾 Comprovante: ${caminho} · ${pagamento}${ct ? ' ' + ct : ''}${data !== hoje ? ' · de ' + dm(data) : ''}`;
+    return addCaixa([linha], { msg: 'registro financeiro', ok: 'Guardado na caixa para lançar na planilha.' });
+  });
 }
 function submitFicha(f) {
   const fi = fichasAll().find(x => x.id === f.dataset.id);
   if (!fi) return;
+  let lines;
   if (fi.id === 'estou') {
     const emos = [...pressed(f, 'emo'), ...(f.emo_outra.value.trim() ? [f.emo_outra.value.trim()] : [])];
     const parts = [];
@@ -1816,7 +1936,7 @@ function submitFicha(f) {
     if (f.ajudou.value.trim()) parts.push(`ajudou: ${oneLine(f.ajudou.value)}`);
     const livre = f.livre.value.trim();
     if (!parts.length && !livre) { toast('Preencha pelo menos uma coisa.'); return; }
-    addCaixa([`💭 Como estou: ${parts.join(' · ') || '(só texto)'}`, ...livre.split(/\n+/).map(l => '> ' + l)], { sens: true, ok: 'Guardado na caixa reservada.' });
+    lines = [`💭 Como estou: ${parts.join(' · ') || '(só texto)'}`, ...livre.split(/\n+/).filter(Boolean).map(l => '> ' + l)];
   } else {
     const ans = [];
     fi.campos.forEach((c, i) => {
@@ -1828,10 +1948,9 @@ function submitFicha(f) {
       if (v) ans.push(`${i + 1}. ${short(c.q, 60)} → ${oneLine(v)}`);
     });
     if (!ans.length) { toast('Responda pelo menos um campo.'); return; }
-    addCaixa([`🧭 ${fi.nome}:`, ...ans], { sens: true, ok: 'Guardado na caixa reservada.' });
+    lines = [`🧭 ${fi.nome}:`, ...ans];
   }
-  if (f.closest('#sheet')) closeSheet();
-  else { const id = f.dataset.id; const holder = f.parentElement; holder.dataset.sig = ''; renderRegistrar(); }
+  return concluirCaptura(f, () => addCaixa(lines, { sens:true, ok:'Guardado na caixa reservada.' }));
 }
 /* fichas: lidas de painel/fichas.md; o painel cria, edita e apaga ali */
 function parseFichas(f) {
@@ -1881,41 +2000,55 @@ function salvarFicha(f) {
   if (!campos.length) { toast('Escreva pelo menos um campo.'); return; }
   const set = { emoji, nome, desc: oneLine(f.desc.value), campos };
   const id = f.dataset.id;
-  write(FICHAS, base => fichasTexto(base, { set, id }), 'emocional: fichas do painel', { onOk() { toast(id ? 'Ficha atualizada.' : 'Ficha criada. Já aparece no widget.'); } });
+  write(FICHAS, base => fichasTexto(base, { set, id }), 'emocional: fichas do painel', { onOk() { if (id) capturePanes.delete('ficha-' + id); toast(id ? 'Ficha atualizada.' : 'Ficha criada.'); } });
   closeSheet();
 }
 function apagarFicha(id) {
-  write(FICHAS, base => { if (base == null) throw erro('sumiu'); return fichasTexto(base, { del: id }); }, 'emocional: fichas do painel', { onOk() { toast('Ficha apagada.'); } });
+  write(FICHAS, base => { if (base == null) throw erro('sumiu'); return fichasTexto(base, { del: id }); }, 'emocional: fichas do painel', { onOk() { capturePanes.delete('ficha-' + id); toast('Ficha apagada.'); } });
   closeSheet();
 }
 
 /* ─────────────── Registrar ─────────────── */
+const capturePanes = new Map();
 function renderRegistrar() {
-  for (const b of $$('#regTabs button')) b.setAttribute('aria-selected', String(b.dataset.reg === S.reg));
+  for (const a of $$('#regTabs a')) {
+    if (a.dataset.mode === S.reg) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+  }
   const body = $('#regBody');
   const fs = fichasAll();
-  if (!fs.some(x => x.id === S.regFicha)) S.regFicha = 'estou';
-  const sig = S.reg + '|' + (S.reg === 'emocional' ? S.regFicha + '|' + JSON.stringify(fs.find(x => x.id === S.regFicha)) + fs.map(x => x.id).join(',') : '');
-  if (body.dataset.sig !== sig) {
-    body.dataset.sig = sig;
-    if (S.reg === 'nota') body.innerHTML = `<h2>Anotação</h2><p class="hint">Sobre o trabalho, a casa, dinheiro, estudo, o que for. Ele entende e põe no lugar certo.</p>${formNota(S.notaArea)}`;
-    else if (S.reg === 'compra') body.innerHTML = `<h2>Compra</h2><p class="hint">Anota na hora, sem abrir conversa. Pode ser só o print do comprovante.</p>${formCompra(false)}`;
-    else {
-      const fi = fs.find(x => x.id === S.regFicha);
-      body.innerHTML = `<h2>Saúde emocional</h2><p class="hint">Escolha a ficha. A psicóloga passou algo novo? Crie uma ficha.</p>
-        <div class="fichas" style="margin-bottom:6px">${fs.map(x => `<button type="button" data-regficha="${h(x.id)}" aria-pressed="${x.id === S.regFicha}" style="${x.id === S.regFicha ? 'background:var(--ink);color:var(--on-ink);border-color:var(--ink)' : ''}"><b>${x.emoji}</b><span>${h(x.nome)}</span></button>`).join('')}<button type="button" class="add" data-act="ficha-nova">＋ Nova ficha</button></div>
-        <h3 style="color:var(--ink);font-size:17px;margin-top:18px">${fi.emoji} ${h(fi.nome)}</h3>${formFicha(fi)}`;
+  const fi = fs.find(x => x.id === S.regFicha) || fs[0];
+  const key = S.reg === 'emocional' ? 'ficha-' + fi.id : S.reg;
+  let pane = capturePanes.get(key);
+  if (!pane) {
+    pane = document.createElement('div');
+    capturePanes.set(key, pane);
+    if (S.reg === 'nota') pane.innerHTML = formNota(S.notaArea);
+    else if (S.reg === 'emocional') {
+      pane.innerHTML = `<div class="capture-form-head"><h2>Check-in emocional</h2><span class="reserved-label">${ICON.lock} Reservado</span></div>
+        <label class="mini-select"><span>Ficha</span><select data-ficha-escolha aria-label="Escolher ficha"></select></label>
+        <div class="checkin-fields">${formFicha(fi)}</div>
+        <button type="button" class="desk-link" data-act="ficha-nova">＋ Criar uma ficha</button>`;
+    } else {
+      const receipt = S.reg === 'comprovante';
+      pane.innerHTML = `<h2 class="capture-form-title">${receipt ? 'Guardar comprovante' : 'Registrar gasto'}</h2>${formCompra(receipt)}`;
     }
   }
-  const d = ymd(now());
-  const todays = S.cx.filter(it => it.date === d).slice().reverse();
+  if (S.reg === 'emocional') {
+    const select = pane.querySelector('[data-ficha-escolha]');
+    const options = fs.map(x => `<option value="${h(x.id)}"${x.id === fi.id ? ' selected' : ''}>${h(x.nome)}</option>`).join('');
+    if (select.dataset.options !== options) { select.innerHTML = options; select.dataset.options = options; }
+    select.value = fi.id;
+  }
+  if (body.firstElementChild !== pane) body.replaceChildren(pane);
+  body.dataset.mode = S.reg;
+  const todays = S.cx.filter(it => it.date === ymd(now())).slice().reverse();
   $('#regCount').textContent = todays.length || '';
-  $('#regLog').innerHTML = todays.length ? todays.slice(0, 12).map(it => `<li><time>${it.time}</time><span>${cxLabel(it, true)}</span></li>`).join('') : '<li><span></span><span class="muted">Nada ainda hoje.</span></li>';
+  $('#regLog').innerHTML = todays.length ? todays.slice(0, 3).map(it => `<li><time>${h(it.time)}</time><span>${cxLabel(it, true)}</span></li>`).join('') : '<li class="capture-empty">Suas capturas de hoje aparecem aqui.</li>';
 }
 
 /* ─────────────── Finanças (o conteúdo do "Meus gastos", lendo o espelho da planilha) ─────────────── */
-import { brl, brl0, c2, addM, dim, pnum, valorCapturado, calcularFinancas, orcamentoDoMes, filtrarLancamentos } from './financas.mjs?v=1ae1b9e24bec';
-import { lancamentosRealizados, graficoLancamentos } from './financas-visao.mjs?v=1ae1b9e24bec';
+import { brl, brl0, c2, addM, dim, pnum, valorCapturado, calcularFinancas, orcamentoDoMes, filtrarLancamentos } from './financas.mjs?v=c0273d90ee1f';
+import { lancamentosRealizados, graficoLancamentos } from './financas-visao.mjs?v=c0273d90ee1f';
 const FCAT = { 'Moradia': ['🏠', '#7B61FF'], 'Mercado': ['🛒', '#22B07D'], 'Alimentação fora': ['🍔', '#FF8A3D'], 'Transporte': ['🚗', '#3D8BFF'], 'Saúde': ['💊', '#FF5C7A'], 'Educação': ['📚', '#A35CF7'], 'Família': ['👨‍👩‍👧', '#F2B705'], 'Bebê': ['🍼', '#38BDF8'], 'Lazer': ['🎉', '#E05CD0'], 'Assinaturas': ['📺', '#5B6BF5'], 'Contas fixas': ['💡', '#F59E0B'], 'Revenda': ['📦', '#A0785A'], 'Outros': ['🛍️', '#8E949C'], 'Uber e 99': ['🚕', '#3D8BFF'], 'Delivery': ['🛵', '#FF8A3D'], 'Comer fora': ['🍔', '#FF5C7A'], 'Compras avulsas (Outros)': ['🛍️', '#8E949C'], 'Receita': ['💰', '#22B07D'], 'Conta': ['🧾', '#F59E0B'], 'Fatura': ['💳', '#7C3AED'], 'Pix e boleto': ['⚡', '#3D8BFF'] };
 const fic = n => FCAT[n] || ['•', '#8E949C'];
 const CARTAO_COR = { 'Nubank': 'linear-gradient(135deg,#6A06B0,#A855F7)', 'Mercado Pago': 'linear-gradient(135deg,#0077C8,#22C1F5)', 'Bradesco Amazon': 'linear-gradient(135deg,#A30825,#F0435F)', 'XP': 'linear-gradient(135deg,#1f2937,#4B5563)' };
@@ -2387,27 +2520,40 @@ function listaCompras() {
   });
   return { itens, dias };
 }
-const TIPO_EMOJI = { 'carnes e ovos': '🥩', 'laticinios': '🧀', 'legumes e verduras': '🥦', 'frutas': '🍎', 'arroz, paes e cereais': '🍚', 'feijao': '🫘', 'castanhas e sementes': '🥜', 'bebidas': '☕', 'oleos': '🫒', 'suplementos e outros': '💊' };
-const REF_CURTO = { 'ao acordar': 'Acordar', 'cafe da manha': 'Café', 'lanche da manha': 'Lanche', 'almoco': 'Almoço', 'depois do almoco': 'Fruta', 'lanche da tarde': 'Lanche', 'jantar': 'Jantar', 'depois do jantar': 'Fruta' };
 const nb = t => String(t || '').replace(/(\d)\s+(g|ml|kg|L|latas?)\b/g, '$1\u00a0$2');
-const refCurto = n => REF_CURTO[norm(n)] || n.split(' ')[0];
 const QUEM = { diovane: ['Diovane', 'd'], michele: ['Michele', 'm'], ambos: ['Os dois', 'a'] };
 function renderAlimentacao() {
   const el = $('#ali');
   if (!el) return;
-  $('#aliTabs').innerHTML = [['plano', 'Refeições'], ['trocas', 'Trocas'], ['compras', 'Compras']].map(([k, l]) => `<button role="tab" type="button" data-alitab="${k}" aria-selected="${S.aliTab === k}">${l}</button>`).join('');
+  const visible = !cfg.discreet || S.reveal.has('#alimentacao');
+  $('#aliOcultar').hidden = !cfg.discreet || !visible;
+  const labels = [['plano','Refeições'],['trocas','Substituições'],['compras','Compras']];
+  $('#aliTabs').innerHTML = labels.map(([key,label]) => `<a href="#alimentacao/${key}" ${S.aliTab === key ? 'aria-current="page"':''}>${label}</a>`).join('');
+  const context = [S.aliTab, S.pessoa, S.aliRef, S.trocaP, visible].join('/');
+  const same = el.dataset.context === context;
+  const keep = same ? $$('[data-keep]',el).map(input => [input.dataset.keep,input.value,document.activeElement === input,input.selectionStart]) : [];
+  const opened = same ? new Map($$('details[data-stay]',el).map(item=>[item.dataset.stay,item.open])) : new Map();
   const P = S.plano || {};
-  const keep = $$('input[data-keep]', el).map(i => [i.dataset.keep, i.value, document.activeElement === i]);
-  el.innerHTML = S.aliTab === 'compras' ? aliCompras() : S.aliTab === 'trocas' ? aliTrocas(P) : aliPlano(P);
-  for (const [k, v, foc] of keep) { const i = el.querySelector(`input[data-keep="${k}"]`); if (i) { i.value = v; if (foc) i.focus(); } }
-  const sel = el.querySelector('.rstrip [aria-selected="true"]');
-  if (sel) { const st = sel.parentElement; st.scrollLeft = sel.offsetLeft - (st.clientWidth - sel.offsetWidth) / 2; }
+  if (!visible && S.aliTab !== 'compras') {
+    el.innerHTML = `<section class="area-gate">${ICON.lock}<h2>Planos alimentares reservados</h2><p>O modo discreto está ativo.</p><button type="button" class="btn" data-act="ali-privacidade">Mostrar planos</button></section>`;
+  } else {
+    el.innerHTML = S.aliTab === 'compras' ? aliCompras() : S.aliTab === 'trocas' ? aliTrocas(P) : aliPlano(P);
+  }
+  el.dataset.context = context;
+  for (const item of $$('details[data-stay]',el)) if (opened.has(item.dataset.stay)) item.open = opened.get(item.dataset.stay);
+  for (const [key,value,focused,pos] of keep) {
+    const input = el.querySelector(`[data-keep="${CSS.escape(key)}"]`);
+    if (!input) continue;
+    input.value = value;
+    if (focused) {
+      input.focus({preventScroll:true});
+      if (pos != null) input.setSelectionRange(pos,pos);
+    }
+  }
 }
 function quemSeg(atual, opcoes, attr) {
   return `<div class="quem" role="group" aria-label="De quem é o plano">${opcoes.map(k => `<button type="button" class="q-${QUEM[k][1]}" ${attr}="${k}" aria-pressed="${atual === k}"><i></i>${QUEM[k][0]}</button>`).join('')}</div>`;
 }
-function nextIdx(meals) { const n = now(), nm = n.getHours() * 60 + n.getMinutes(); return meals.findIndex(m => toMin(m.t) >= nm - 10); }
-const mealDo = (meals, nome) => meals.find(x => norm(x.nome) === norm(nome));
 /* a refeição inteira trocada: as do plano do Diovane e as opções de jantar da Michele */
 function trocasDaRefeicao(P, m, quem) {
   const out = [], nm = norm(m.nome);
@@ -2429,80 +2575,109 @@ function itemLinha(it, pl, quem) {
   const alts = it.alts || [];
   const fim = quem === 'diovane' && pl.grupoDe[it.n] ? `<button type="button" class="alt-lista" data-trocagrupo="${h(pl.grupoDe[it.n])}" data-tp="diovane"><span>Ver a lista toda: <b>${h(pl.grupoDe[it.n])}</b></span><span>›</span></button>` : '';
   const linha = `<span class="fn">${h(it.n)}</span><span class="fq">${h(nb(it.q))}</span>`;
-  if (!alts.length) return `<li><div class="fl">${linha}<span class="fx"></span></div></li>`;
-  return `<li><details><summary class="fl">${linha}<span class="fx" aria-label="${alts.length} trocas">${alts.length}</span></summary><div class="alts">${alts.map(a => altBtn(a, it, pl, quem)).join('')}${fim}</div></details></li>`;
+  if (!alts.length && !fim) return `<li><div class="fl">${linha}<span class="fx"></span></div></li>`;
+  return `<li><details><summary class="fl">${linha}<span class="fx" aria-label="Ver substituições">Trocas <i aria-hidden="true">⌄</i></span></summary><div class="alts">${alts.map(a => altBtn(a, it, pl, quem)).join('')}${fim}</div></details></li>`;
+}
+function refeicoesDaPessoa(P, quem) {
+  if (quem === 'diovane') return P.dv?.meals;
+  if (quem === 'michele') return P.mi?.meals;
+  return P.casal?.juntos;
+}
+function chaveRefeicao(horario) {
+  return `${horario.index}-${horario.amanha ? 'amanha' : horario.mins > 0 ? 'proxima' : 'agora'}`;
 }
 function aliPlano(P) {
-  const quem = QUEM[S.pessoa] ? S.pessoa : 'ambos';
-  const pl = quem === 'michele' ? P.mi : quem === 'diovane' ? P.dv : null;
-  const meals = quem === 'ambos' ? ((P.casal && P.casal.juntos) || []) : (pl && pl.meals) || [];
-  let html = quemSeg(quem, ['ambos', 'diovane', 'michele'], 'data-pessoa');
-  if (!meals.length) return html + `<p class="empty">${quem === 'ambos' ? 'As refeições dos dois ainda não estão nas notas.' : `O plano ${quem === 'michele' ? 'da Michele' : 'do Diovane'} ainda não está nas notas.`}</p>`;
-  const ni = nextIdx(meals);
-  let si = S.aliRef ? meals.findIndex(m => m.t === S.aliRef) : -1;
-  if (si < 0 && S.aliRef) si = meals.findIndex(m => m.t >= S.aliRef);
-  if (si < 0) si = ni >= 0 ? ni : 0;
-  const m = meals[si];
-  html += `<div class="rstrip" role="tablist" aria-label="Refeições do dia">${meals.map((x, i) => `<button type="button" role="tab" data-ref="${x.t}" aria-selected="${i === si}" class="${i === ni ? 'nx' : ''}${ni >= 0 && i < ni ? ' past' : ''}"><b>${x.t}</b><span>${h(refCurto(x.nome))}</span></button>`).join('')}</div>`;
-  const etiqueta = i => i === ni ? '<span class="pill">próxima</span>' : ni < 0 && i === 0 ? '<span class="pill">amanhã</span>' : '';
-  let corpo;
+  const quem = Object.hasOwn(QUEM,S.pessoa) ? S.pessoa : 'ambos';
+  const pl = quem === 'michele' ? P.mi : P.dv;
+  const meals = refeicoesOrdenadas(refeicoesDaPessoa(P,quem));
+  const selector = `<div class="ali-person"><span>Plano alimentar</span>${quemSeg(quem,['ambos','diovane','michele'],'data-pessoa')}</div>`;
+  if (!meals.length) return selector + `<p class="ali-nodata">As refeições ${quem === 'ambos' ? 'dos dois' : quem === 'michele' ? 'da Michele' : 'do Diovane'} vão aparecer aqui quando o plano estiver nas notas.</p>`;
+  const horario = refeicaoDoHorario(meals,now());
+  const ref = S.aliRef?.split('|');
+  let si = ref ? meals.findIndex((x,i) => x.t === ref[0] && i === +ref[1]) : -1;
+  if (si < 0 && ref) si = meals.findIndex(x => x.t === ref[0]);
+  if (si < 0) si = horario.index;
+  const meal = meals[si];
+  const when = horario.amanha ? 'Primeira de amanhã' : horario.mins > 0 ? 'Próxima refeição' : 'Refeição de agora';
+  const label = si === horario.index ? when : 'Refeição selecionada';
+  const choose = i => `${meals[i].t}|${i}`;
+  const stepper = meals.length > 1 ? `<nav class="ali-steps" aria-label="Percorrer refeições">
+    ${si > 0 ? `<button type="button" data-ref="${choose(si-1)}">← ${h(meals[si-1].nome)}</button>` : '<span></span>'}
+    ${si + 1 < meals.length ? `<button type="button" data-ref="${choose(si+1)}">${h(meals[si+1].nome)} →</button>` : ''}</nav>` : '';
+  const main = `<header class="ali-meal-cover" data-meal-key="${chaveRefeicao(horario)}"><div><p>${label}</p><h2 id="aliMealTitle" tabindex="-1">${h(meal.nome)}</h2></div><time>${h(meal.t)}</time></header>`;
+  const timetable = `<details class="ali-card ali-clock" data-stay="horarios"${matchMedia('(min-width: 861px)').matches ? ' open' : ''}><summary><span>Horários do plano</span><small>${meals.length} refeições</small></summary>
+    <div class="ali-slots">${meals.map((m,i) => `<button type="button" data-ref="${choose(i)}" aria-pressed="${si === i}"><time>${h(m.t)}</time><span>${h(m.nome)}</span>${i === horario.index ? '<i aria-label="Horário em destaque">●</i>':''}</button>`).join('')}</div>
+    ${S.aliRef ? `<button type="button" class="ali-reset" data-ref="agora">Voltar ao horário de agora</button>`:''}</details>`;
+  let portion;
   if (quem === 'ambos') {
-    const q = s => s.t ? `${h(nb(s.t))}${s.troca ? ' <em>troca</em>' : ''}` : '<span class="nada">—</span>';
-    const linhas = [
-      ...m.itens.map(it => ({ n: it.n, d: it.d, m: it.m, obs: it.obs })),
-      ...m.soD.map(([n, x]) => ({ n, d: { t: x }, m: { t: '' }, obs: '' })),
-      ...m.soM.map(([n, x]) => ({ n, d: { t: '' }, m: { t: x }, obs: '' })),
-    ];
-    corpo = `<div class="duo-h" aria-hidden="true"><span></span><span class="q-d"><i></i>Diovane</span><span class="q-m"><i></i>Michele</span></div><ul class="duo-l">${linhas.map(l => `<li><span class="fn">${h(l.n)}</span><span class="qd" data-l="Diovane">${q(l.d)}</span><span class="qm" data-l="Michele">${q(l.m)}</span>${l.obs ? `<span class="ob">${h(l.obs)}</span>` : ''}</li>`).join('')}</ul>`;
-  } else corpo = `<ul class="ritems">${m.itens.map(it => itemLinha(it, pl, quem)).join('')}</ul>`;
-  const tr = trocasDaRefeicao(P, m, quem);
-  const rodape = tr.length ? `<div class="swaps"><p class="sw-h">Trocar a refeição toda</p>${tr.map(s => `<details class="swap"><summary><i class="dot q-${s.q}"></i><span>${h(s.nome)}</span>${quem === 'ambos' ? `<small>${s.q === 'd' ? 'Diovane' : 'Michele'}</small>` : ''}</summary><div class="md">${s.html}</div></details>`).join('')}</div>` : '';
-  const meta = quem === 'diovane' && m.meta ? `<p class="rmeta">${h(m.meta)}</p>` : '';
-  html += `<section class="rcard${si === ni ? ' agora' : ''}" aria-live="polite"><header><span class="rt">${m.t}</span><div><h2>${h(m.nome)} ${etiqueta(si)}</h2>${meta}</div></header>${corpo}${rodape}</section>`;
-  const ant = meals[si - 1], prox = meals[si + 1];
-  html += `<nav class="rnav" aria-label="Outras refeições">${ant ? `<button type="button" data-ref="${ant.t}">‹ ${h(ant.nome)}</button>` : '<span></span>'}${prox ? `<button type="button" data-ref="${prox.t}">${h(prox.nome)} ›</button>` : '<span></span>'}</nav>`;
-  if (quem === 'ambos') html += '<p class="hint rfoot">Cozinhe uma vez e sirva cada prato com a quantidade do seu plano. <b>troca</b> é uma substituição que a nutricionista já liberou.</p>';
-  else {
-    if (pl.intro) html += `<p class="hint rfoot">${inline(pl.intro)}</p>`;
-    for (const ex of pl.extras) if (!/^jantar/.test(norm(ex.titulo))) html += `<details class="swap rfoot-d"><summary><span>${inline(ex.titulo)}</span></summary><div class="md">${md(ex.linhas.join('\n'), quem === 'michele' ? PLANO_M : PLANO_D)}</div></details>`;
+    const lines = [...meal.itens,...meal.soD.map(([n,t]) => ({n,d:{t},m:{}})),...meal.soM.map(([n,t]) => ({n,d:{},m:{t}}))];
+    const amount = (person, item) => `<div class="ali-quantity"><dt>${person}</dt><dd>${item.t ? h(nb(item.t)) : '—'}${item.troca ? ' <small>troca</small>':''}</dd></div>`;
+    portion = `<ul class="ali-plates">${lines.map(it => `<li><strong>${h(it.n)}</strong><dl>${amount('Diovane',it.d)}${amount('Michele',it.m)}</dl>${it.obs ? `<p>${h(it.obs)}</p>`:''}</li>`).join('')}</ul>`;
+  } else {
+    portion = `<ul class="ritems">${meal.itens.map(it=>itemLinha(it,pl,quem)).join('')}</ul>`;
   }
-  return html;
+  const swaps = trocasDaRefeicao(P,meal,quem);
+  const alternatives = swaps.length ? `<details class="ali-card ali-disclosure" data-stay="opcoes-${si}"><summary>Outras opções para esta refeição <small>${swaps.length}</small></summary>
+    ${swaps.map(s=>`<details class="swap"><summary><span>${h(s.nome)}</span>${quem === 'ambos' ? `<small>${s.q === 'd' ? 'Diovane':'Michele'}</small>`:''}</summary><div class="md">${s.html}</div></details>`).join('')}</details>`:'';
+  const path = quem === 'ambos' ? CASAL : quem === 'michele' ? PLANO_M : PLANO_D;
+  const foot = quem !== 'ambos' && pl ? `${pl.intro ? `<p>${inline(pl.intro)}</p>` : ''}${pl.extras.filter(ex=>!/^jantar/.test(norm(ex.titulo))).map(ex=>`<details class="swap"><summary>${inline(ex.titulo)}</summary><div class="md">${md(ex.linhas.join('\n'),path)}</div></details>`).join('')}` : '';
+  return `${selector}<div class="ali-meal-grid">${main}${timetable}
+    <div class="ali-dish"><section class="ali-card"><h3>${quem === 'ambos' ? 'Porções de cada um' : 'No prato'}</h3>${portion}${meal.meta && quem !== 'ambos' ? `<details class="ali-nutrients"><summary>Informações nutricionais</summary><p>${h(meal.meta)}</p></details>`:''}</section>
+    ${stepper}${alternatives}<details class="ali-card ali-disclosure" data-stay="nota"><summary>Plano por escrito</summary>${foot}<button class="ali-link" type="button" data-open="${h(path)}">Ler a nota completa ↗</button></details></div></div>`;
 }
 function aliTrocas(P) {
   const quem = S.trocaP === 'michele' ? 'michele' : 'diovane', mi = quem === 'michele';
-  let html = quemSeg(quem, ['diovane', 'michele'], 'data-trocap');
-  const grupos = mi ? P.subsMi : P.dv && P.dv.grupos;
-  if (!grupos || !grupos.length) return html + '<p class="empty">A lista de trocas ainda não está nas notas.</p>';
-  const q = norm(S.trocaQ || '');
-  const lista = grupos.map(g => ({ ...g, itens: q ? g.itens.filter(i => norm(i.n).includes(q)) : g.itens })).filter(g => g.itens.length || !q);
-  html += `<div class="add tq"><input type="search" data-keep="trocaq" data-trocaq placeholder="Procurar alimento (ex.: queijo, batata)" value="${h(S.trocaQ || '')}" aria-label="Procurar alimento"></div>
-    <p class="hint" style="margin:0 0 8px">${mi ? 'Lista da Sarah Maia: cada item é uma porção. Troque dentro do mesmo grupo; "2 porções" é o dobro.' : 'Lista da Isabelle Vilaça: cada item já vem na quantidade do plano. Troque dentro do mesmo grupo.'}</p>`;
-  html += lista.map(g => `<details class="tg" data-grp="${h(g.nome)}"${q || S.trocaOpen === g.nome ? ' open' : ''}><summary><span class="tgn">${h(g.nome)}</span><span class="tgc">${g.itens.length}</span></summary>${mi ? '' : `<p class="tgr">no lugar de ${h(g.ref)}</p>`}<ul>${g.itens.map(i => `<li><span>${h(i.n)}</span><span>${h(nb(i.q))}</span></li>`).join('')}</ul></details>`).join('') || '<p class="empty">Nada com esse nome nesta lista.</p>';
-  return html;
+  const groups = (mi ? P.subsMi : P.dv?.grupos) || [];
+  const q = norm(S.trocaQ).trim();
+  const result = groups.map(g => ({...g,itens: q && !norm(g.nome).includes(q) ? g.itens.filter(i=>norm(i.n).includes(q)) : g.itens})).filter(g=>g.itens.length);
+  const path = mi ? SUBS_M : PLANO_D;
+  const controls = `<div class="ali-person"><span>Lista de substituições</span>${quemSeg(quem,['diovane','michele'],'data-trocap')}</div>`;
+  if (!groups.length) return controls + '<p class="ali-nodata">A lista de substituições ainda não está nas notas.</p>';
+  return `${controls}<div class="ali-search"><label for="aliBusca">Buscar nas substituições</label><input id="aliBusca" type="search" data-keep="trocaq" data-trocaq placeholder="Alimento ou grupo" value="${h(S.trocaQ)}"></div>
+    <div class="ali-subhead"><h2>Grupos de alimentos</h2><p>${mi ? 'Cada opção equivale a uma porção do grupo.' : 'Cada opção já traz a quantidade prevista no plano.'}</p></div>
+    <div class="ali-groups">${result.map(g=>`<details class="tg" data-grp="${h(g.nome)}"${q || S.trocaOpen === g.nome ? ' open':''}><summary><span class="tgn">${h(g.nome)}</span><span class="tgc">${g.itens.length} ${g.itens.length === 1 ? 'opção':'opções'}</span></summary>
+      ${!mi && g.ref ? `<p class="tgr">No lugar de ${h(g.ref)}</p>`:''}<ul>${g.itens.map(i=>`<li><span>${h(i.n)}</span><span>${h(nb(i.q))}</span></li>`).join('')}</ul></details>`).join('') || '<p class="ali-nodata">Nenhum alimento ou grupo encontrado.</p>'}</div>
+    <button type="button" class="ali-link" data-open="${path}">Abrir lista original ↗</button>`;
+}
+function comprasDoPlano(L) {
+  const feitos = L.itens.filter(it=>it.pego).length;
+  const grupos = new Map();
+  for (const it of L.itens) {
+    if (!grupos.has(it.tipo)) grupos.set(it.tipo,[]);
+    grupos.get(it.tipo).push(it);
+  }
+  const open = [...grupos.keys()].find(key=>grupos.get(key).some(it=>!it.pego));
+  const item = it => {
+    const byPerson = [it.d && `Diovane ${fmtN(it.d)}`,it.m && `Michele ${fmtN(it.m)}`].filter(Boolean).join(' · ');
+    const daily = (!cfg.discreet || S.reveal.has('#alimentacao')) && byPerson && it.u !== 'av' ? `${h(byPerson)}${it.u === 'un' ? '' : ' '+h(it.u)} por dia`:'';
+    return `<li class="task${it.pego ? ' done':''}${it.box?.pending ? ' busy':''}"><button type="button" class="chk" role="checkbox" aria-checked="${it.pego}" data-pego="${h(it.key)}" aria-label="${it.pego ? 'Comprado' : 'Peguei'}: ${h(it.n)}">${ICON.check}</button>
+      <div class="tx"><div class="t"><b>${h(it.n)}</b><span>${h(it.u === 'av' && cfg.discreet && !S.reveal.has('#alimentacao') ? 'à vontade' : it.qtd)}</span></div>${daily || it.sub || it.box ? `<div class="q2">${daily}${it.sub ? ` · No lugar, ${h(it.sub)}`:''}${it.box ? ' <span class="tag">na caixa</span>':''}</div>`:''}</div></li>`;
+  };
+  return `<section class="ali-basket"><div><p>Compras do plano</p><h2>${L.itens.length-feitos} <span>${L.itens.length-feitos === 1 ? 'item para pegar':'itens para pegar'}</span></h2><label for="aliProg">${feitos} de ${L.itens.length} no carrinho</label>
+    <progress id="aliProg" max="${L.itens.length}" value="${feitos}"></progress></div>
+    <div class="ali-days"><span>Comprar para</span><div class="days" role="group" aria-label="Dias de refeições">${[1,3,7,15].map(d=>`<button type="button" data-dias="${d}" aria-pressed="${d===S.dias}">${d} ${d===1 ? 'dia':'dias'}</button>`).join('')}</div></div></section>
+    <div class="ali-subhead"><h2>Lista por setor</h2><p>Quantidades somadas dos dois planos para ${S.dias} ${S.dias===1?'dia':'dias'}.</p></div>
+    <div class="ali-shop-groups">${[...grupos].map(([key,itens])=>`<details class="ali-card ali-disclosure" data-stay="setor-${h(key)}"${key===open ? ' open':''}><summary>${h(key)}<small>${itens.filter(it=>it.pego).length}/${itens.length} pegos</small></summary><ul class="tasks shop">${itens.map(item).join('')}</ul></details>`).join('')}</div>
+    <details class="ali-card ali-disclosure" data-stay="peguei-outro"><summary>Peguei outro alimento</summary><form class="ali-form" data-form="outro" autocomplete="off">
+      <label>Alimento<input type="text" data-keep="outro" name="txt" placeholder="O que você pegou?"></label>
+      <label>No lugar de<select data-keep="substitui" name="lugar"><option value="">Nenhum item específico</option>${L.itens.map(it=>`<option value="${h(it.n)}">${h(it.n)}</option>`).join('')}</select></label>
+      <button class="btn" type="submit">Marcar como comprado</button></form></details>`;
 }
 function aliCompras() {
   const L = listaCompras();
-  let html = '';
-  if (!L) html += '<p class="empty">A lista do plano ainda não está nas notas.</p>';
-  else {
-    const feitos = L.itens.filter(i => i.pego).length;
-    html += `<div class="days" role="group" aria-label="Comprar para quantos dias"><span>Comprar pra</span>${[1, 3, 7, 15].map(d => `<button type="button" data-dias="${d}" aria-pressed="${S.dias === d}">${d}</button>`).join('')}<span style="margin-left:4px">${S.dias > 1 ? 'dias' : 'dia'}</span></div>
-      <div class="prog"><span>${feitos} de ${L.itens.length} pegos</span><div class="bar"><i style="width:${100 * feitos / Math.max(1, L.itens.length)}%;background:var(--ok)"></i></div></div>
-      <p class="hint" style="margin:2px 0 0">Um alimento por item, juntando os dois planos (sem as trocas). Peso do alimento pronto, como no plano. Marque o que pegou: vai pra caixa.</p>`;
-    const tipos = [];
-    for (const it of L.itens) { let t = tipos.find(x => x.nome === it.tipo); if (!t) tipos.push(t = { nome: it.tipo, itens: [] }); t.itens.push(it); }
-    html += tipos.map(t => `<p class="group-h">${TIPO_EMOJI[norm(t.nome)] || '🛒'} ${h(t.nome)}</p><ul class="tasks shop">${t.itens.map(it => `<li class="task${it.pego ? ' done' : ''}${it.box && it.box.pending ? ' busy' : ''}"><button class="chk" role="checkbox" aria-checked="${it.pego}" data-pego="${h(it.key)}" aria-label="${it.pego ? 'Desfazer' : 'Peguei'}: ${h(it.n)}">${ICON.check}</button><div class="tx"><div class="t"><b>${h(it.n)}</b> · ${h(it.qtd)}</div><div class="q2">${it.u === 'av' ? '' : `por dia: ${it.d ? `Diovane ${fmtN(it.d)}` : ''}${it.d && it.m ? ' · ' : ''}${it.m ? `Michele ${fmtN(it.m)}` : ''}${it.u === 'un' ? '' : ' ' + it.u}`}${it.sub ? ` · <span class="sw2">pegou ${h(it.sub)}</span>` : ''}${it.box ? ' <span class="tag">na caixa</span>' : ''}</div></div></li>`).join('')}</ul>`).join('');
-    html += `<form class="add" data-form="outro" autocomplete="off"><input type="text" data-keep="outro" name="txt" placeholder="Peguei outra coisa (ex.: morango congelado)" aria-label="O que você pegou"><select name="lugar" aria-label="No lugar de"><option value="">no lugar de…</option>${L.itens.map(i => `<option value="${h(i.n)}">${h(i.n)}</option>`).join('')}</select><button class="btn" type="submit">Peguei</button></form>`;
-  }
   const secs = S.compras.secs;
-  const extras = secs.map(s => ({ ...s, extra: S.ov.comprar.filter(it => norm(it.sec) === norm(s.name)) })).filter(s => s.items.length || s.extra.length);
-  const orphan = S.ov.comprar.filter(it => !secs.some(s => norm(s.name) === norm(it.sec)));
-  html += `<h2 style="margin-top:30px">Outras coisas da lista</h2><p class="hint">Casa, farmácia, bebê e o que não é do plano.</p>`;
-  html += extras.map(s => `<p class="group-h">${h(s.name)}</p><ul class="tasks">${s.items.map(t => { const o = S.ov.comprado.get(norm(t.text)); return `<li class="task${o ? ' done' : ''}${o && o.pending ? ' busy' : ''}"><button class="chk" role="checkbox" aria-checked="${!!o}" data-compra="${h(t.raw)}" aria-label="${o ? 'Desfazer' : 'Comprado'}: ${h(t.text)}">${ICON.check}</button><div class="tx"><div class="t">${inline(t.text)}</div>${o ? '<div class="meta"><span class="tag">na caixa</span></div>' : ''}</div></li>`; }).join('')}${s.extra.map(cxCompraLi).join('')}</ul>`).join('') || (orphan.length ? '' : '<p class="empty">Nada na lista.</p>');
-  if (orphan.length) html += `<p class="group-h">Na caixa</p><ul class="tasks">${orphan.map(cxCompraLi).join('')}</ul>`;
-  const heads = S.compras.heads.length ? S.compras.heads : ['Mercado', 'Feira', 'Farmácia', 'Casa', 'Bebê', 'Outro'];
-  html += `<form class="add" data-form="addcompra" autocomplete="off"><input type="text" data-keep="addcompra" name="txt" placeholder="Adicionar à lista" aria-label="Item de compra"><select name="sec" aria-label="Seção">${heads.map(x => `<option${x === 'Casa' ? ' selected' : ''}>${h(x)}</option>`).join('')}</select><button class="btn" type="submit">Adicionar</button></form>`;
-  return html;
+  const extra = secs.map(s=>({...s,pendentes:S.ov.comprar.filter(it=>norm(it.sec) === norm(s.name))})).filter(s=>s.items.length || s.pendentes.length);
+  const orphan = S.ov.comprar.filter(it=>!secs.some(s=>norm(s.name) === norm(it.sec)));
+  const heads = S.compras.heads.length ? S.compras.heads : ['Mercado','Feira','Farmácia','Casa','Bebê','Outro'];
+  return `${L ? comprasDoPlano(L) : '<p class="ali-nodata">A lista de compras do plano ainda não está nas notas.</p>'}
+    <section class="ali-card ali-other"><h2>Outras compras</h2>${extra.map(s=>`<h3>${h(s.name)}</h3><ul class="tasks">${s.items.map(t=>{
+      const checked = S.ov.comprado.get(norm(t.text));
+      return `<li class="task${checked ? ' done':''}${checked?.pending ? ' busy':''}"><button type="button" class="chk" role="checkbox" aria-checked="${!!checked}" data-compra="${h(t.raw)}" aria-label="${checked ? 'Desfazer':'Comprado'}: ${h(t.text)}">${ICON.check}</button><div class="tx"><div class="t">${inline(t.text)}</div>${checked ? '<small>Na caixa</small>':''}</div></li>`;
+    }).join('')}${s.pendentes.map(cxCompraLi).join('')}</ul>`).join('')}${orphan.length ? `<h3>Na caixa</h3><ul class="tasks">${orphan.map(cxCompraLi).join('')}</ul>`:''}
+    ${extra.length || orphan.length ? '':'<p>A lista da casa está vazia.</p>'}
+    <form class="ali-form" data-form="addcompra" autocomplete="off"><label>Adicionar à lista<input type="text" data-keep="addcompra" name="txt" placeholder="Nome do item"></label>
+      <label>Seção<select name="sec" data-keep="sec">${heads.map(x=>`<option${x==='Casa'?' selected':''}>${h(x)}</option>`).join('')}</select></label>
+      <button class="btn" type="submit">Adicionar</button></form></section>`;
 }
 function clickPego(key) {
   const L = listaCompras(); if (!L) return;
@@ -2519,9 +2694,10 @@ function copiar(txt, ok) {
 }
 function bind() {
   document.addEventListener('click', ev => {
-    const t = ev.target.closest('[data-commit],[data-open],[data-task],[data-compra],[data-cxdel],[data-tab],[data-mdt],[data-reveal],[data-find],[data-reg],[data-mood],[data-emo],#copyAsk,[data-act],[data-st],[data-day],[data-wk],[data-pick],[data-ficha],[data-regficha],[data-fmes],[data-ftab],[data-fo],[data-fcart],[data-fvenc],[data-fdia],[data-fcat],[data-alitab],[data-pessoa],[data-dias],[data-pego],[data-trocagrupo],[data-ref],[data-trocap],[data-close],[data-reveal-area],[data-ocultar-area],[data-area-captura],[data-anotar-nota]');
+    const t = ev.target.closest('[data-commit],[data-open],[data-task],[data-compra],[data-cxdel],[data-tab],[data-mdt],[data-reveal],[data-find],[data-reg],[data-mood],[data-emo],#copyAsk,[data-act],[data-st],[data-day],[data-wk],[data-pick],[data-ficha],[data-regficha],[data-fmes],[data-ftab],[data-fo],[data-fcart],[data-fvenc],[data-fdia],[data-fcat],[data-alitab],[data-pessoa],[data-dias],[data-pego],[data-trocagrupo],[data-ref],[data-trocap],[data-close],[data-reveal-area],[data-ocultar-area],[data-area-captura],[data-anotar-nota],[data-box-remove]');
     if (!t) return;
     const d = t.dataset;
+    if (d.boxRemove !== undefined) { const it = S.cx[Number(d.boxRemove)]; if (it && !it.pending) delCaixa(it, 'Registro retirado da caixa.'); return; }
     if (t.id === 'copyAsk') { copiar('oi assessor, organiza a caixa do painel', 'Copiado. Cole no Claude: "oi assessor, organiza a caixa do painel"'); return; }
     const privacyArea = d.revealArea || d.ocultarArea;
     if (privacyArea && AREA_ORDER.includes(privacyArea)) {
@@ -2546,7 +2722,7 @@ function bind() {
       const f = t.closest('form');
       if (f && f.dataset.form === 'status') syncStatusForm(f);
       if (f && f.dataset.form === 'compra' && d.pick === 'pg') { f.querySelector('[data-cartoes]').hidden = d.v !== 'Crédito'; f.querySelector('[data-va]').hidden = d.v !== 'Alimentação'; }
-      if (f && f.dataset.form === 'nota' && d.pick === 'area' && f.closest('#regBody')) S.notaArea = d.v;
+      if (f?.dataset.form === 'compra' && d.pick === 'pg') resumoPagamento(f);
       return;
     }
     if (d.st) {
@@ -2563,6 +2739,10 @@ function bind() {
     if (d.wk) { S.wk += +d.wk; S.sel = null; renderInicio(); return; }
     if (d.ficha) { const fi = fichasAll().find(x => x.id === d.ficha); if (fi) openSheet(`${fi.emoji} ${fi.nome}`, formFicha(fi)); return; }
     if (d.regficha) { S.regFicha = d.regficha; renderRegistrar(); return; }
+    if (d.act === 'ali-privacidade') {
+      if (S.reveal.has('#alimentacao')) S.reveal.delete('#alimentacao'); else S.reveal.add('#alimentacao');
+      renderAlimentacao(); return;
+    }
     if (d.act) {
       const a = d.act;
       if (a === 'receita' || a === 'transferencia') { openSheet(a === 'receita' ? 'Nova receita' : 'Transferir entre contas', formMovimento(a), { focus: 'input[name=valor]' }); return; }
@@ -2589,7 +2769,6 @@ function bind() {
     if (d.task) { clickTask(d.task); return; }
     if (d.compra) { const t2 = S.files[COMPRAS]?.tasks.find(x => x.raw === d.compra); if (t2) clickCompra(t2); return; }
     if (d.cxdel) { const it = S.cx.find(i => i.path + '\n' + i.block === d.cxdel); if (it) delCaixa(it, 'Tirei da caixa.'); return; }
-    if (d.tab) { S.tab = d.tab; renderTasks(); $(`[data-tab="${d.tab}"]`)?.focus(); return; }
     if (d.mdt) {
       if (S.tasks.some(x => x.key === d.mdt)) clickTask(d.mdt);
       else if (d.mdpath === COMPRAS) { const t2 = S.files[COMPRAS]?.tasks.find(x => x.raw === d.mdraw); if (t2) clickCompra(t2); }
@@ -2597,7 +2776,7 @@ function bind() {
     }
     if (d.reveal) { S.reveal.add(d.reveal); renderDrawer(); return; }
     if (d.find) { const r = findList[+d.find]; if (r) { closeFind(); openNote(r.f.path); } return; }
-    if (d.reg) { S.reg = d.reg; renderRegistrar(); return; }
+    if (d.reg) { location.hash = '#registrar/' + d.reg; return; }
     if (d.fmes) { const M = finModel(); if (M && M.meses[+d.fmes]) { S.finMes = M.meses[+d.fmes]; S.finOpen = {}; S.finDia = null; S.finCat = null; renderFinancas(); } return; }
     if (d.ftab) { S.finTab = d.ftab; history.replaceState(null, '', '#financas/' + d.ftab); renderFinancas(); return; }
     if (d.fo) { S.finOpen[d.fo] = !S.finOpen[d.fo]; renderFinancas(); return; }
@@ -2605,9 +2784,13 @@ function bind() {
     if (d.fvenc) { S.finMes = d.fvenc.slice(0, 7); S.finOpen = {}; renderFinancas(); return; }
     if (d.fdia) { S.finDia = d.fdia; renderFinancas(); return; }
     if (d.fcat) { S.finCat = S.finCat === d.fcat ? null : d.fcat; renderFinancas(); return; }
-    if (d.alitab) { S.aliTab = d.alitab; history.replaceState(null, '', '#alimentacao/' + d.alitab); renderAlimentacao(); return; }
     if (d.pessoa) { S.pessoa = d.pessoa; LS.set(K + 'pessoa2', d.pessoa); renderAlimentacao(); return; }
-    if (d.ref) { S.aliRef = d.ref; renderAlimentacao(); return; }
+    if (d.ref) {
+      S.aliRef = d.ref === 'agora' ? null : d.ref;
+      renderAlimentacao();
+      $('#aliMealTitle')?.focus({preventScroll:true});
+      return;
+    }
     if (d.trocap) { S.trocaP = d.trocap; S.trocaOpen = null; LS.set(K + 'trocap', d.trocap); renderAlimentacao(); return; }
     if (d.dias) { S.dias = +d.dias; LS.set(K + 'dias', S.dias); renderAlimentacao(); renderInicio(); return; }
     if (d.pego) { clickPego(d.pego); return; }
@@ -2635,6 +2818,9 @@ function bind() {
   });
   document.addEventListener('change', ev => {
     const t = ev.target;
+    if (t.matches('[name=areaNota]') && t.closest('#regBody')) S.notaArea = t.value;
+    if (t.matches('[data-ficha-escolha]')) { S.regFicha = t.value; renderRegistrar(); }
+    if (t.matches('form[data-form=compra] input[type=date]')) resumoPagamento(t.form);
     if (t.matches('input[type=file][name=arq]')) {
       const box = t.closest('form').querySelector('[data-prev]'), file = t.files && t.files[0];
       if (!file) { box.innerHTML = ''; return; }
@@ -2648,7 +2834,7 @@ function bind() {
     const f = ev.target;
     const kind = f.dataset.form;
     if (kind) ev.preventDefault();
-    if (kind === 'nota') { if (saveNota(f.txt.value, picked(f, 'area') || 'geral')) { f.txt.value = ''; if (f.closest('#sheet')) closeSheet(); } return; }
+    if (kind === 'nota') { concluirCaptura(f, () => saveNota(f.elements.txt.value, f.elements.areaNota.value)); return; }
     if (kind === 'status') { const it = sheetCtx && sheetCtx.item; if (it) setHabit(it, picked(f, 'st') || 'nao', f.motivo.value); closeSheet(); return; }
     if (kind === 'ficha') { submitFicha(f); return; }
     if (kind === 'ficha-ed') { salvarFicha(f); return; }
@@ -2672,13 +2858,7 @@ function bind() {
     const t = ev.target;
     if (ev.key === 'Enter' && !ev.shiftKey && !ev.isComposing && t.matches && t.matches('form[data-form="nota"] textarea') && t.closest('#sheet')) { ev.preventDefault(); t.form.requestSubmit(); }
   });
-  $('#addTask').addEventListener('submit', ev => {
-    ev.preventDefault();
-    const txt = oneLine($('#addTxt').value); if (!txt) return;
-    const due = $('#addDue').value || '';
-    addCaixa([`➕ Tarefa nova: ${txt}${due ? ' 📅 ' + due : ''}`], { msg: `nova tarefa — ${short(txt, 50)}`, ok: 'Tarefa na caixa. O assessor cria no TickTick.' });
-    $('#addDue').value = ''; $('#addTxt').value = '';
-  });
+  vincularTarefas();
   $('#eye').onclick = () => { cfg.discreet = !cfg.discreet; saveCfg(); S.reveal.clear(); render(); };
   $('#openCfg').onclick = showCfg;
   $('#openFind').onclick = openFind;
@@ -2714,8 +2894,7 @@ function saveNota(v, area) {
   if (!v) return false;
   const lines = v.split(/\n+/);
   const nome = area === 'geral' ? 'Geral' : AREAS[area]?.nome || area;
-  addCaixa([`📝 Anotação (${nome}): ${lines[0]}`, ...lines.slice(1)], { sens: SENS.has(area), msg: `anotação (${nome.toLowerCase()})`, ok: 'Guardado na caixa.' });
-  return true;
+  return addCaixa([`📝 Anotação (${nome}): ${lines[0]}`, ...lines.slice(1)], { sens: SENS.has(area), msg: `anotação (${nome.toLowerCase()})`, ok: 'Nota guardada na caixa.' });
 }
 function addCompraBox(txt, sec) { addCaixa([`🛒 Comprar (${sec}): ${txt}`], { msg: `comprar — ${short(txt, 50)}`, ok: 'Na caixa. O assessor põe na lista.' }); }
 
@@ -2724,7 +2903,15 @@ function tick() {
   if ($('#app').hidden) return;
   const m = n.getHours() * 60 + n.getMinutes();
   if (ymd(n) !== S.day) { S.sel = null; render(); }
-  else if (m !== S.minute) { renderInicio(); renderFeed(); }
+  else if (m !== S.minute) {
+    renderInicio(); renderFeed();
+    if (S.page === 'alimentacao' && S.aliTab === 'plano' && !S.aliRef) {
+      const marker = $('#ali [data-meal-key]');
+      const meals = refeicoesOrdenadas(refeicoesDaPessoa(S.plano || {}, S.pessoa));
+      const next = refeicaoDoHorario(meals, n);
+      if (marker && next && marker.dataset.mealKey !== chaveRefeicao(next)) renderAlimentacao();
+    }
+  }
   setLive();
   if (!cfg.token || S.syncing || document.visibilityState !== 'visible') return;
   let wait = cfg.interval * 1000;

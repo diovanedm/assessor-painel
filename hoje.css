@@ -1,0 +1,131 @@
+#home {
+  --hj-space:clamp(18px,2vw,28px);
+  --hj-green:#174c40;
+  width:100%;
+  max-width:1190px;
+  margin:0 auto;
+  gap:clamp(22px,3vw,35px);
+}
+.hj-heading,.hj-section-head,.hj-week-controls,.hj-capture,.hj-kicker,.hj-actions,.hj-inbox,.hj-focus footer,.hj-channel header {
+  display:flex;
+  align-items:center;
+}
+.hj-heading,.hj-section-head,.hj-inbox { justify-content:space-between; gap:12px; }
+.hj-heading p { color:var(--ink2); margin:0 0 5px; }
+.hj-heading p::first-letter,.hj-section-head p::first-letter,.hj-day-heading::first-letter { text-transform:uppercase; }
+.hj-heading h1 { margin:0; font-size:clamp(32px,3.6vw,53px); line-height:1.04; letter-spacing:-.055em; }
+.hj-capture { flex:none; gap:5px; min-height:45px; padding:0 18px; background:var(--ink); color:var(--on-ink); text-decoration:none; border-radius:99px; font-weight:650; }
+.hj-capture span { font-size:20px; }
+.hj-board { display:grid; grid-template-columns:minmax(0,1.04fr) minmax(0,1fr); grid-template-areas:"focus agenda" "prioridades agenda" "retomar retomar"; align-items:start; gap:16px; }
+.hj-card,.hj-channel,.hj-inbox { min-width:0; padding:var(--hj-space); border:1px solid var(--line2); border-radius:22px; background:var(--panel); }
+.hj-section-head { margin:0 0 17px; }
+.hj-section-head h2 { font-size:clamp(20px,1.7vw,25px); line-height:1.16; letter-spacing:-.045em; }
+.hj-section-head p { color:var(--ink2); font-size:13px; margin:3px 0 0; }
+.hj-section-head a,.hj-more { color:var(--signal); text-decoration:none; font-size:13px; font-weight:650; }
+.hj-focus {
+  grid-area:focus;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) clamp(85px,10vw,145px);
+  align-items:center;
+  gap:14px;
+  min-width:0;
+  padding:var(--hj-space);
+  border-radius:24px;
+  background:linear-gradient(120deg,#123d34,var(--hj-green) 65%,#276147);
+  color:#f9fff6;
+}
+.hj-kicker { gap:8px; font-size:13px; font-weight:650; letter-spacing:.012em; color:#d7efce; }
+.hj-kicker i { width:8px; height:8px; background:#c8e993; border-radius:50%; }
+.hj-focus h2 { margin:15px 0 11px; font-size:clamp(24px,2.35vw,34px); line-height:1.12; letter-spacing:-.045em; overflow-wrap:anywhere; }
+.hj-focus-copy p { display:flex; flex-wrap:wrap; align-items:baseline; gap:1px 10px; margin:0; font-size:13px; line-height:1.5; color:#cde6d9; }
+.hj-focus-copy p strong { font-size:17px; font-weight:600; color:#fff; }
+.hj-focus footer { grid-column:1/-1; justify-content:space-between; flex-wrap:wrap; min-height:35px; gap:4px 12px; border-top:1px solid #ffffff35; padding-top:9px; }
+.hj-focus footer>span { font-size:13px; color:#dbeddf; }
+.hj-focus footer button { min-height:36px; display:flex; align-items:center; gap:12px; font-weight:650; font-size:14px; }
+.hj-clock { width:100%; --ink:#d6f5cb; --ink2:#d5e9db; --ink3:#90b4a0; --line:#55816d; --signal:#d4f89d; }
+.hj-clock .ring-c b { color:white; font:650 clamp(17px,2vw,26px)/1 var(--f-ui); letter-spacing:-.05em; }
+.hj-clock .ring-c span { margin-top:3px; color:#d4e4dd; }
+.hj-agenda { grid-area:agenda; scroll-margin-top:84px; }
+.hj-agenda .hj-section-head { flex-wrap:wrap; }
+.hj-week-controls { gap:4px; }
+.hj-week-controls button { min-width:38px; height:38px; padding:0 8px; border-radius:99px; background:var(--bg); color:var(--ink2); font-size:20px; line-height:1; }
+.hj-week-controls [data-act] { font-size:13px; }
+.hj-week { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:4px; margin:0 0 21px; }
+.hj-week button { min-width:0; padding:7px 1px 6px; display:grid; justify-items:center; gap:1px; border-radius:14px; color:var(--ink2); }
+.hj-week button span { font-size:11px; text-transform:capitalize; }
+.hj-week button b { font-size:18px; color:var(--ink); letter-spacing:-.04em; }
+.hj-week button i { width:4px; height:4px; border-radius:50%; }
+.hj-week .tem-evento { background:currentColor; }
+.hj-week [aria-current=date] { box-shadow:inset 0 0 0 1px var(--line); }
+.hj-week [aria-pressed=true] { color:var(--signal); background:var(--signal-soft); box-shadow:none; }
+.hj-week [aria-pressed=true] b { color:var(--signal); }
+.hj-day-heading { margin:0; padding:0 0 8px; color:var(--ink2); font-size:14px; font-weight:650; }
+.hj-events,.hj-tasks { margin:0; padding:0; list-style:none; }
+.hj-event { display:grid; grid-template-columns:49px minmax(0,1fr) 42px; align-items:center; gap:7px; min-height:56px; border-top:1px solid var(--line2); padding:6px 0; }
+.hj-time { font-size:14px; font-weight:650; }
+.hj-time small,.hj-event-name small,.hj-tasks small { display:block; font-size:12px; color:var(--ink2); font-weight:450; }
+.hj-event-name { border-left:3px solid var(--c); padding-left:9px; overflow-wrap:anywhere; font-size:14px; line-height:1.4; font-weight:550; }
+.hj-event.em-curso .hj-event-name small { color:var(--signal); }
+.hj-event .st { width:42px; height:44px; }
+.hj-hint { margin:10px 0 0; font-size:12px; color:var(--ink2); }
+.hj-fold summary { cursor:pointer; padding:11px 0; color:var(--signal); font-size:13px; font-weight:600; }
+.hj-prioridades { grid-area:prioridades; }
+.hj-tasks li { display:grid; grid-template-columns:32px 1fr; gap:7px; align-items:center; border-top:1px solid var(--line2); min-height:49px; padding:7px 0; overflow-wrap:anywhere; }
+.hj-tasks li:first-child { border:0; padding-top:0; }
+.hj-tasks .chk,.hj-pending { width:30px; height:30px; margin:0; }
+.hj-pending { display:grid; place-items:center; border-radius:50%; text-decoration:none; color:var(--signal); background:var(--signal-soft); }
+.hj-more { display:inline-block; padding-top:8px; }
+.hj-empty,.hj-loading { color:var(--ink2); margin:10px 0 3px; line-height:1.55; }
+.hj-retomar { grid-area:retomar; }
+.hj-resume { width:100%; min-width:0; border-top:1px solid var(--line2); padding:12px 0; display:grid; grid-template-columns:34px minmax(0,1fr) 18px; gap:10px; align-items:center; text-align:left; }
+.hj-resume:last-child { padding-bottom:0; }
+.hj-resume strong { font-size:15px; }
+.hj-resume small { display:block; color:var(--ink2); line-height:1.5; }
+.hj-folder { display:grid; place-items:center; border-radius:11px; height:34px; color:var(--signal); background:var(--signal-soft); font-size:18px; }
+.hj-resume-arrow { text-align:right; color:var(--ink3); font-size:23px; }
+.hj-channels,.hj-links { display:grid; gap:14px; }
+.hj-channels { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.hj-channel { display:flex; flex-direction:column; align-items:flex-start; gap:10px; }
+.hj-channel header { gap:10px; }
+.hj-channel-icon { display:grid; place-items:center; width:35px; height:35px; border-radius:12px; font-size:18px; background:var(--bg); }
+.hj-channel h3 { margin:0; color:var(--ink); font-size:18px; letter-spacing:-.035em; }
+.hj-channel h3 a { display:inline-flex; align-items:center; gap:8px; text-decoration:none; }
+.hj-channel h3 a::after { content:'›'; color:var(--ink3); }
+.hj-channel p { margin:0; font-size:14px; color:var(--ink2); }
+.hj-actions { flex-wrap:wrap; gap:5px 12px; }
+.hj-actions a,.hj-actions button { display:inline-flex; align-items:center; min-height:38px; padding:0; color:var(--signal); font-size:13px; font-weight:650; text-decoration:none; }
+.hj-channel .hj-fold { width:100%; border-top:1px solid var(--line2); }
+.hj-links { grid-template-columns:1fr 1fr; align-items:start; margin-top:14px; }
+.hj-inbox { text-decoration:none; }
+.hj-inbox strong,.hj-area-list summary { font-size:16px; font-weight:650; }
+.hj-inbox small { display:block; color:var(--ink2); font-size:13px; margin-top:2px; }
+.hj-inbox>span:last-child { color:var(--signal); }
+.hj-area-list summary { display:flex; justify-content:space-between; align-items:center; cursor:pointer; list-style:none; min-height:32px; }
+.hj-area-list summary::-webkit-details-marker { display:none; }
+.hj-area-list nav { display:grid; grid-template-columns:repeat(auto-fit,minmax(127px,1fr)); gap:6px; margin-top:15px; }
+.hj-area-list nav a { min-height:42px; padding:8px; display:flex; gap:6px; align-items:center; font-size:13px; text-decoration:none; background:var(--bg); border-radius:9px; }
+@media (hover:hover) {
+  .hj-section-head a:hover,.hj-actions :is(a,button):hover,.hj-resume:hover strong,.hj-channel h3 a:hover,.hj-focus footer button:hover { text-decoration:underline; }
+  .hj-week button:hover { background:var(--signal-soft); }
+}
+@media(max-width:860px) {
+  .hj-board { grid-template-columns:minmax(0,1fr); grid-template-areas:"focus" "prioridades" "agenda" "retomar"; }
+  .hj-focus { grid-template-columns:minmax(0,1fr) clamp(86px,18vw,121px); }
+  .hj-actions a,.hj-actions button,.hj-week-controls button { min-height:44px; }
+}
+@media(max-width:680px) {
+  .hj-heading { align-items:center; gap:8px; }
+  .hj-heading h1 { font-size:clamp(29px,7.8vw,39px); overflow-wrap:anywhere; }
+  .hj-heading p { font-size:13px; }
+  .hj-capture { padding:0 13px; font-size:14px; }
+  .hj-channels { grid-template-columns:1fr; gap:10px; }
+  .hj-links { grid-template-columns:1fr; gap:10px; }
+  .hj-channel { gap:3px; }
+  .hj-focus { gap:10px; }
+  .hj-focus h2 { margin:12px 0 7px; }
+}
+@media(max-width:360px) {
+  .hj-week { gap:0; }
+  .hj-week-controls button { min-width:35px; }
+  .hj-week button span { font-size:10px; }
+}

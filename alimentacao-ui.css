@@ -1,0 +1,103 @@
+.ali {
+  --food-ink:#664422;
+  --food-tint:#faf1de;
+  --food-chip:#ecdcba;
+  width:100%;max-width:1120px;margin:0 auto;
+}
+[data-theme="dark"] .ali {--food-ink:#f0d2a3;--food-tint:#342c23;--food-chip:#504131}
+.ali-title,.ali-person,.ali-subhead { display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap }
+.ali-title h1 {margin:0;color:var(--ink);font:550 clamp(36px,4.7vw,56px)/1.13 var(--f-ui);letter-spacing:-.055em}
+.ali-tabs {display:flex;gap:5px;width:fit-content;max-width:100%;border-radius:15px;background:var(--panel);padding:5px;border:1px solid var(--line2);margin:20px 0 24px}
+.ali-tabs a {display:grid;place-items:center;text-decoration:none;text-align:center;padding:10px 16px;min-height:44px;font-weight:600;color:var(--ink2);border-radius:11px}
+.ali-tabs [aria-current="page"] {background:var(--ink);color:var(--on-ink)}
+#ali {display:grid;gap:20px}
+.ali-person {justify-content:flex-start;gap:8px 16px}
+.ali-person > span,.ali-search label,.ali-days>span,.ali-form label {font-size:13px;font-weight:650;color:var(--ink2)}
+.ali .quem {margin:0;border:1px solid var(--line2);padding:3px;background:var(--panel)}
+.ali .quem button {min-height:42px;padding-inline:14px}
+.ali .quem button[aria-pressed="true"] {background:var(--food-tint);color:var(--food-ink);box-shadow:none}
+.ali-meal-grid {display:grid;grid-template-columns:minmax(0,1.55fr) minmax(240px,.85fr);grid-template-areas:'cover clock' 'dish clock';gap:18px;align-items:start}
+.ali-meal-cover,.ali-basket {display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;border-radius:24px;padding:clamp(22px,3vw,36px);background:var(--food-tint);border:1px solid var(--food-chip);color:var(--food-ink)}
+.ali-meal-cover {grid-area:cover}
+.ali-meal-cover p,.ali-basket p {margin:0 0 7px;font-size:14px;font-weight:550}
+.ali-meal-cover h2,.ali-basket h2 {color:var(--food-ink);margin:0;line-height:1.06;letter-spacing:-.055em;font-size:clamp(29px,3.2vw,46px);font-weight:600}
+.ali-meal-cover time {padding:10px 14px;background:var(--food-chip);border-radius:14px;font-size:clamp(21px,2.4vw,32px);font-weight:650;letter-spacing:-.04em}
+.ali-dish {grid-area:dish;display:grid;gap:16px;min-width:0}
+.ali-card,.ali-groups .tg,.ali-nodata {min-width:0;border:1px solid var(--line2);border-radius:19px;background:var(--panel);padding:clamp(16px,2.3vw,26px);box-shadow:var(--shadow)}
+.ali-card h3,.ali-card h2,.ali-subhead h2 {margin:0 0 14px;color:var(--ink);font-size:19px;font-weight:650;letter-spacing:-.035em}
+.ali-card summary {cursor:pointer}
+.ali-disclosure>summary,.ali-clock>summary {display:flex;align-items:center;gap:10px;min-height:44px;list-style:none;color:var(--ink);font-size:16px;font-weight:630}
+.ali-disclosure>summary::after,.ali-clock>summary::after {content:'⌄';margin-inline-start:auto;color:var(--ink2);align-self:center}
+.ali-disclosure[open]>summary::after,.ali-clock[open]>summary::after {transform:rotate(180deg)}
+.ali-disclosure>summary::-webkit-details-marker,.ali-clock>summary::-webkit-details-marker {display:none}
+.ali-disclosure>summary small,.ali-clock>summary small {color:var(--ink2);font-size:12px;font-weight:500}
+.ali-clock {grid-area:clock}
+.ali-slots {margin-top:10px;display:grid;gap:5px}
+.ali-slots button {display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;min-height:46px;padding:9px 11px;text-align:left;color:var(--ink2);border-radius:9px}
+.ali-slots button:hover {background:var(--bg)}
+.ali-slots [aria-pressed="true"] {background:var(--food-tint);color:var(--food-ink);font-weight:640}
+.ali-slots time {font-weight:650}
+.ali-slots i {font-style:normal;font-size:9px;color:var(--food-ink)}
+.ali-link,.ali-reset,.ali-nutrients summary {min-height:44px;align-content:center;color:var(--signal);font-weight:600;font-size:14px;text-align:left}
+.ali-steps {display:flex;align-items:center;justify-content:space-between;gap:12px}
+.ali-steps button {min-height:44px;padding:4px 8px;text-align:left;color:var(--ink2);font-size:14px;font-weight:550}
+.ali-steps button:last-child {text-align:right}
+.ali-plates,.ali-plates dl {list-style:none;padding:0;margin:0}
+.ali-plates li {padding:14px 0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);gap:5px 14px;border-top:1px solid var(--line2)}
+.ali-plates dl {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.ali-plates dt {font-size:11px;color:var(--ink2)}
+.ali-plates dd {margin:3px 0 0;font-size:14px;overflow-wrap:anywhere}
+.ali-plates small {font-size:11px;color:var(--signal)}
+.ali-plates p {grid-column:1/-1;margin:3px 0 0;font-size:13px;color:var(--ink2)}
+.ali .fl {min-height:55px;gap:5px 12px}
+.ali .fl .fx {width:auto;padding:2px 6px}
+.ali .fl .fx i {font-style:normal}
+.ali .alt-lista {min-height:44px;align-items:center}
+.ali .ritems,.ali .alts {overflow-wrap:anywhere}
+.ali .rmeta,.ali-nutrients p,.ali-nodata,.ali-other > p {color:var(--ink2);font-size:14px}
+.ali-nutrients {border-top:1px solid var(--line2)}
+.ali .swap {border-top:1px solid var(--line2);margin:5px 0 0}
+.ali .swap summary {min-height:44px}
+.ali-search {display:grid;gap:7px}
+.ali-search input,.ali-form input,.ali-form select {min-width:0;width:100%;min-height:44px;padding:9px 12px;border:1px solid var(--line);border-radius:11px;color:var(--ink);background:var(--raise);font:inherit}
+.ali-subhead {justify-content:start;align-items:baseline;gap:4px 16px}
+.ali-subhead h2,.ali-subhead p {margin:0}
+.ali-subhead p {color:var(--ink2);font-size:14px}
+.ali-groups,.ali-shop-groups {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}
+.ali-groups .tg {padding:6px 16px}
+.ali-groups .tg ul {columns:auto}
+.ali-groups .tg li {min-height:34px;align-items:baseline}
+.ali-groups .tg>summary {min-height:48px}
+.ali-basket h2 span {font-size:.55em;letter-spacing:-.02em}
+.ali-basket label {display:block;margin-top:13px;font-size:13px}
+.ali-basket progress {display:block;width:min(260px,100%);height:8px;margin-top:6px;accent-color:var(--food-ink)}
+.ali-days>span {display:block;margin-bottom:6px;color:var(--food-ink)}
+.ali .days {margin:0;gap:5px}
+.ali .days button {height:42px;font-weight:550}
+.ali-shop-groups .ali-card {padding-block:8px}
+.ali .shop .tx .t {display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.ali .shop .q2 {overflow-wrap:anywhere}
+.ali-form {display:grid;grid-template-columns:minmax(100px,1.2fr) minmax(110px,1fr) auto;align-items:end;gap:12px;margin-top:12px}
+.ali-form label {display:grid;gap:5px;font-weight:550}
+.ali-form .btn {min-height:44px}
+.ali .chk {min-height:44px;min-width:44px;display:inline-grid;place-items:center;border-radius:12px}
+@media(max-width:860px) {
+  .ali-meal-grid {grid-template-columns:1fr;grid-template-areas:'cover' 'clock' 'dish';gap:12px}
+  .ali-clock {padding-block:8px}
+}
+@media(max-width:650px) {
+  #ali {gap:16px}
+  .ali-title h1 {font-size:34px}
+  .ali-tabs {width:100%;margin:14px 0 18px}
+  .ali-tabs a {flex:1;padding:7px 4px;font-size:14px;min-width:0}
+  .ali-person {align-items:flex-start;flex-direction:column}
+  .ali .quem {width:100%}
+  .ali .quem button {flex:1;justify-content:center;min-width:0;padding-inline:4px}
+  .ali-groups,.ali-shop-groups {grid-template-columns:1fr}
+  .ali-form {grid-template-columns:minmax(0,1fr)}
+  .ali-meal-cover,.ali-basket {padding:20px;gap:12px}
+  .ali-meal-cover time {padding:8px 11px}
+  .ali-plates li {grid-template-columns:1fr}
+  .ali-plates dt {font-size:12px}
+  .ali .shop .task {gap:8px}
+}
