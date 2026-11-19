@@ -75,12 +75,38 @@
 .ali .days {margin:0;gap:5px}
 .ali .days button {height:42px;font-weight:550}
 .ali-shop-groups .ali-card {padding-block:8px}
-.ali .shop .tx .t {display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
-.ali .shop .q2 {overflow-wrap:anywhere}
+.ali .task {
+  grid-template-columns:44px minmax(0,1fr);
+  align-items:center;
+  gap:8px;
+  padding-block:8px;
+}
+.ali .task:last-child {border-bottom:0}
+.ali .task .chk {
+  position:relative;
+  width:44px;
+  height:44px;
+  margin:0;
+  border:0;
+  border-radius:10px;
+  background:none;
+}
+.ali .task .chk::before {
+  content:'';
+  position:absolute;
+  inset:11px;
+  border:1.6px solid var(--ink3);
+  border-radius:6px;
+}
+.ali .task .chk:hover::before {border-color:var(--ink)}
+.ali .task.done .chk::before {background:var(--ink);border-color:var(--ink)}
+.ali .task .chk svg {position:relative}
+.ali .shop .tx .t {display:flex;align-items:baseline;gap:3px 12px;flex-wrap:wrap}
+.ali .shop .tx .t span {margin-inline-start:auto;text-align:end;font-variant-numeric:tabular-nums}
+.ali .shop .q2 {overflow-wrap:anywhere;color:var(--ink2)}
 .ali-form {display:grid;grid-template-columns:minmax(100px,1.2fr) minmax(110px,1fr) auto;align-items:end;gap:12px;margin-top:12px}
 .ali-form label {display:grid;gap:5px;font-weight:550}
 .ali-form .btn {min-height:44px}
-.ali .chk {min-height:44px;min-width:44px;display:inline-grid;place-items:center;border-radius:12px}
 @media(max-width:860px) {
   .ali-meal-grid {grid-template-columns:1fr;grid-template-areas:'cover' 'clock' 'dish';gap:12px}
   .ali-clock {padding-block:8px}
@@ -99,5 +125,4 @@
   .ali-meal-cover time {padding:8px 11px}
   .ali-plates li {grid-template-columns:1fr}
   .ali-plates dt {font-size:12px}
-  .ali .shop .task {gap:8px}
 }
