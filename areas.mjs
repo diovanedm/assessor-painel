@@ -1,4 +1,4 @@
-import { norm, pad, pymd, ymd } from './datas.mjs?v=21ba6c13873e';
+import { norm, pad, pymd, ymd } from './datas.mjs?v=9960afc3a6dd';
 
 /* Tópicos fixos de toda área, na ordem do sumário. `re` acha as seções (## …) das notas
    que alimentam o tópico; os tópicos sem `re` são montados pelo painel. */

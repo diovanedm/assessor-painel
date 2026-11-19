@@ -1,14 +1,14 @@
 /* ─────────────── utilidades ─────────────── */
-import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDaNota, linkDeRegistro, metasDaTabela, notaSolta, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=21ba6c13873e';
-import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=21ba6c13873e';
-import { visaoBemEstar } from './bem-estar.mjs?v=21ba6c13873e';
-import { casosEmAndamento, pontoDeParada } from './memoria.mjs?v=21ba6c13873e';
-import { linhasCaptura, lerCaptura, tipoAnexo, extAudio } from './captura.mjs?v=21ba6c13873e';
+import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDaNota, linkDeRegistro, metasDaTabela, notaSolta, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=9960afc3a6dd';
+import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=9960afc3a6dd';
+import { visaoBemEstar } from './bem-estar.mjs?v=9960afc3a6dd';
+import { casosEmAndamento, pontoDeParada } from './memoria.mjs?v=9960afc3a6dd';
+import { linhasCaptura, lerCaptura, tipoAnexo, extAudio } from './captura.mjs?v=9960afc3a6dd';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const h = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=21ba6c13873e';
+import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=9960afc3a6dd';
 const DOW = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 const DOWL = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
 const MON = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
@@ -796,6 +796,7 @@ function route() {
   S.notaPath = solta ? solta.path : null;
   if (changed && S.open) closeNote();
   const previousArea = S.areaRoute?.area || (S.page === 'financas' ? 'financas' : null);
+  const mesmaArea = changed && p === 'area' && S.page === 'area' && S.areaRoute?.area === area?.area;
   const nextArea = area?.area || (p === 'financas' ? 'financas' : null);
   if (previousArea && previousArea !== nextArea) S.reveal.delete(`#area/${previousArea}`);
   S.areaRoute = area;
@@ -828,7 +829,12 @@ function route() {
   const notaAberta = S.files[area?.path || S.notaPath];
   document.title = `${notaAberta ? plain(notaAberta.title) : area ? AREAS[area.area].nome : PAGES.find(page => page.id === p)?.nome || 'Hoje'} · Meu Assessor`;
   if (changed) {
-    window.scrollTo(0, 0);
+    // Dentro da mesma área: só sobe até o começo do conteúdo se ele ficou acima da tela.
+    const main = mesmaArea && $('#areaPage .area-main');
+    if (main) {
+      const topo = Math.max(0, main.getBoundingClientRect().top + scrollY - (($('.top')?.offsetHeight || 0) + 12));
+      if (scrollY > topo) window.scrollTo(0, topo);
+    } else window.scrollTo(0, 0);
     if (p === 'area' || p === 'nota') $(`#${p === 'nota' ? 'notaPage' : 'areaPage'} ${area?.vista === 'nota' || p === 'nota' ? '.reading-note h2' : 'h1'}`)?.focus({ preventScroll: true });
   }
 }
@@ -869,7 +875,7 @@ function dialSvg(items, nm, dow) {
 
 const isChecked = g => { const o = taskOv(g); return o ? o.kind === 'feita' : g.checked; };
 const byDue = (a, b) => (a.due || '9').localeCompare(b.due || '9') || (b.prio === 'alta') - (a.prio === 'alta');
-import { organizarTarefas, primeiroPasso } from './tarefas.mjs?v=21ba6c13873e';
+import { organizarTarefas, primeiroPasso } from './tarefas.mjs?v=9960afc3a6dd';
 function estadoTarefa(g) {
   if (g.nova) return { feita:false, data:'' };
   const item = taskOv(g);
@@ -1266,38 +1272,40 @@ function topicosDaArea(C) {
   return { n, secoes, decisoesFora, docs, padroes, pessoas: [...pessoas].map(p => S.files[p]).filter(Boolean), metasSec, esperando, compromissos, fixos, custos, custosAntes, links, temFin: !!M };
 }
 
+const SM_CARET = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+// Sumário no estilo do Notion: Resumo e Tarefas sempre à vista; o resto dentro de "Ver mais".
+const SM_FIXOS = new Set(['resumo', 'tarefas']);
 function sumarioDaArea(C, T, vista) {
   const { area } = C;
   // caso ou pessoa aberto dentro da área acende "Pessoas e casos"; nota da área acende "Notas da área"
   const atual = vista.vista !== 'nota' ? vista.vista : /^(casos|pessoas)\//.test(vista.path || '') ? 'pessoas' : null;
   const item = t => {
     const vazio = t.id !== 'resumo' && !T.n[t.id];
-    return `<li><a href="${linkTopico(area, t.id)}"${atual === t.id ? ' aria-current="page"' : ''}${vazio ? ' class="vazio"' : ''}><span class="sm-ic" aria-hidden="true">${t.emoji}</span><span class="sm-nome">${t.curto || t.nome}</span>${!vazio && t.id !== 'resumo' ? `<span class="sm-n">${T.n[t.id]}</span>` : ''}</a></li>`;
+    return `<li><a class="sm-row${vazio ? ' vazio' : ''}" href="${linkTopico(area, t.id)}"${atual === t.id ? ' aria-current="page"' : ''}><span class="sm-ic" aria-hidden="true">${t.emoji}</span><span class="sm-nome">${t.curto || t.nome}</span>${!vazio && t.id !== 'resumo' ? `<span class="sm-n">${T.n[t.id]}</span>` : ''}</a></li>`;
   };
   const meses = new Map();
   for (const d of C.dias) { const k = d.date.slice(0, 7); if (!meses.has(k)) meses.set(k, []); meses.get(k).push(d); }
   const mesAtual = (vista.dia || C.dias[0]?.date || C.hoje).slice(0, 7);
-  const dias = [...meses.entries()].map(([k, ds]) => `<details class="sm-mes"${k === mesAtual ? ' open' : ''} data-section="mes-${k}"><summary>${MESES[+k.slice(5) - 1]} ${k.slice(0, 4)} <span class="sm-n">${ds.length}</span></summary>
-    <ul class="sm-dias">${ds.map(d => `<li><a href="#area/${area}/dia/${d.date}"${vista.dia === d.date ? ' aria-current="page"' : ''}><span>${dayLabel(d.date)}</span><span class="sm-n">${itensDoDia(d)}</span></a></li>`).join('')}</ul></details>`).join('');
-  const notas = [C.principal ? `<li><a href="${linkDeNota(area)}"${vista.path === C.principal.path ? ' aria-current="page"' : ''}>Nota principal</a></li>` : '',
-    ...C.apoio.map(f => `<li><a href="${h(linkDeRegistro(f.path))}"${vista.path === f.path ? ' aria-current="page"' : ''}>${h(plain(f.title))}</a></li>`)].join('');
-  const grupos = TOPICOS.map(t => ({ ...t, html: item(t) }));
-  grupos.push({ id: 'dias', nome: 'Registros diários', html: `<li><div class="sm-sec"><a href="#area/${area}/dias"${atual === 'dias' ? ' aria-current="page"' : ''}>📅 Registros diários</a><span class="sm-n">${C.dias.length || ''}</span></div>
-    ${dias || '<p class="sm-vazio">Nenhum dia registrado ainda.</p>'}</li>` });
-  if (notas) grupos.push({ id: 'notas', nome: 'Notas da área', html: `<li><div class="sm-sec"><span>📚 Notas da área</span></div><ul class="sm-notas">${notas}</ul></li>` });
-  const chave = 'sumario-visivel-' + area;
-  const escolha = LS.get(chave, {});
-  const visivel = g => escolha?.[g.id] ?? !g.mais;
-  const lista = grupos => grupos.map(g => g.html).join('');
-  const mais = grupos.filter(g => !visivel(g));
-  const totalMais = mais.reduce((total, g) => total + (T.n[g.id] || 0), 0);
-  const grupoAtual = vista.vista === 'nota' ? atual || 'notas' : vista.dia ? 'dias' : atual;
+  const dias = [...meses.entries()].map(([k, ds]) => `<li><details class="sm-tg sm-mes"${k === mesAtual && vista.dia ? ' open' : ''} data-section="mes-${k}"><summary class="sm-row"><span class="sm-caret">${SM_CARET}</span><span class="sm-nome">${MESES[+k.slice(5) - 1]} ${k.slice(0, 4)}</span><span class="sm-n">${ds.length}</span></summary>
+    <ul class="sm-sub">${ds.map(d => `<li><a class="sm-row" href="#area/${area}/dia/${d.date}"${vista.dia === d.date ? ' aria-current="page"' : ''}><span class="sm-nome">${dayLabel(d.date)}</span><span class="sm-n">${itensDoDia(d)}</span></a></li>`).join('')}</ul></details></li>`).join('');
+  const notas = [C.principal ? `<li><a class="sm-row" href="${linkDeNota(area)}"${vista.path === C.principal.path ? ' aria-current="page"' : ''}><span class="sm-ic" aria-hidden="true">📄</span><span class="sm-nome">Nota principal</span></a></li>` : '',
+    ...C.apoio.map(f => `<li><a class="sm-row" href="${h(linkDeRegistro(f.path))}"${vista.path === f.path ? ' aria-current="page"' : ''}><span class="sm-ic" aria-hidden="true">📄</span><span class="sm-nome">${h(plain(f.title))}</span></a></li>`)].join('');
+  const emDias = atual === 'dias' || !!vista.dia;
+  const emNotas = vista.vista === 'nota' && !atual;
+  const fixos = TOPICOS.filter(t => SM_FIXOS.has(t.id));
+  const resto = TOPICOS.filter(t => !SM_FIXOS.has(t.id));
+  const totalMais = resto.reduce((total, t) => total + (T.n[t.id] || 0), 0);
+  const dentro = resto.some(t => t.id === atual) || emDias || emNotas;
+  const abertoMais = dentro || LS.get('sm-mais-' + area, false);
+  const blocoDias = `<li><details class="sm-tg" data-section="sm-dias"${emDias ? ' open' : ''}><summary class="sm-row${atual === 'dias' ? ' sm-atual' : ''}"><span class="sm-caret">${SM_CARET}</span><span class="sm-ic" aria-hidden="true">📅</span><span class="sm-nome">Registros diários</span><span class="sm-n">${C.dias.length || ''}</span></summary>
+    <ul class="sm-sub"><li><a class="sm-row" href="#area/${area}/dias"${atual === 'dias' ? ' aria-current="page"' : ''}><span class="sm-nome">Todos os dias</span></a></li>${dias || '<li class="sm-vazio">Nenhum dia registrado ainda.</li>'}</ul></details></li>`;
+  const blocoNotas = notas ? `<li><details class="sm-tg" data-section="sm-notas"${emNotas ? ' open' : ''}><summary class="sm-row"><span class="sm-caret">${SM_CARET}</span><span class="sm-ic" aria-hidden="true">📚</span><span class="sm-nome">Notas da área</span><span class="sm-n">${C.apoio.length + (C.principal ? 1 : 0)}</span></summary><ul class="sm-sub">${notas}</ul></details></li>` : '';
   return `<nav class="sumario" id="areaSumario" aria-label="Sumário de ${h(AREAS[area].nome)}">
-    <div class="sm-topo"><span>Sumário</span><button type="button" class="ib sm-fechar" data-sumario="fechar" aria-label="Fechar sumário">${ICON.x}</button></div>
-    <details class="sm-escolha" data-section="sm-escolha"><summary>Personalizar sumário</summary>
-      <fieldset><legend>Mostrar direto no sumário</legend>${grupos.map(g => `<label><input type="checkbox" data-sm-grupo="${g.id}" data-sm-chave="${chave}"${visivel(g) ? ' checked' : ''}>${g.curto || g.nome}</label>`).join('')}</fieldset></details>
-    <ul class="sm-topicos">${lista(grupos.filter(visivel))}
-    ${mais.length ? `<li><details class="sm-mais" data-section="sm-mais"${mais.some(g => g.id === grupoAtual) ? ' open' : ''}><summary><span class="sm-ic" aria-hidden="true">＋</span><span class="sm-nome">Ver mais</span>${totalMais ? `<span class="sm-n">${totalMais}</span>` : ''}</summary><ul>${lista(mais)}</ul></details></li>` : ''}</ul>
+    <div class="sm-topo"><span>${h(AREAS[area].nome)}</span><button type="button" class="ib sm-fechar" data-sumario="fechar" aria-label="Fechar sumário">${ICON.x}</button></div>
+    <ul class="sm-lista">${fixos.map(item).join('')}
+      <li><details class="sm-tg sm-mais" data-section="sm-mais" data-sm-area="${area}"${abertoMais ? ' open' : ''}><summary class="sm-row"><span class="sm-caret">${SM_CARET}</span><span class="sm-nome">Ver mais</span>${totalMais ? `<span class="sm-n">${totalMais}</span>` : ''}</summary>
+        <ul class="sm-sub sm-sub-mais">${resto.map(item).join('')}${blocoDias}${blocoNotas}</ul></details></li>
+    </ul>
   </nav>`;
 }
 
@@ -1552,7 +1560,10 @@ function renderAreaPage() {
   el.classList.toggle('sumario-on', !!S.sumario && !gate);
   if (same && markup === lastAreaMarkup) return;
   lastAreaMarkup = markup;
+  const smScroll = $('.area-sumario-col', el)?.scrollTop || 0;
   el.innerHTML = markup;
+  const smCol = $('.area-sumario-col', el);
+  if (smCol) smCol.scrollTop = smScroll;
   for (const node of $$('details', el)) if (openDetails.has(detailKey(node))) node.open = openDetails.get(detailKey(node));
 }
 function sumario(abrir) {
@@ -2506,8 +2517,8 @@ function enviarCaptura(f) {
 }
 
 /* ─────────────── Finanças (o conteúdo do "Meus gastos", lendo o espelho da planilha) ─────────────── */
-import { brl, brl0, c2, addM, dim, pnum, valorCapturado, calcularFinancas, orcamentoDoMes, filtrarLancamentos } from './financas.mjs?v=21ba6c13873e';
-import { lancamentosRealizados, graficoLancamentos } from './financas-visao.mjs?v=21ba6c13873e';
+import { brl, brl0, c2, addM, dim, pnum, valorCapturado, calcularFinancas, orcamentoDoMes, filtrarLancamentos } from './financas.mjs?v=9960afc3a6dd';
+import { lancamentosRealizados, graficoLancamentos } from './financas-visao.mjs?v=9960afc3a6dd';
 const FCAT = { 'Moradia': ['🏠', '#7B61FF'], 'Mercado': ['🛒', '#22B07D'], 'Alimentação fora': ['🍔', '#FF8A3D'], 'Transporte': ['🚗', '#3D8BFF'], 'Saúde': ['💊', '#FF5C7A'], 'Educação': ['📚', '#A35CF7'], 'Família': ['👨‍👩‍👧', '#F2B705'], 'Bebê': ['🍼', '#38BDF8'], 'Lazer': ['🎉', '#E05CD0'], 'Assinaturas': ['📺', '#5B6BF5'], 'Contas fixas': ['💡', '#F59E0B'], 'Revenda': ['📦', '#A0785A'], 'Outros': ['🛍️', '#8E949C'], 'Uber e 99': ['🚕', '#3D8BFF'], 'Delivery': ['🛵', '#FF8A3D'], 'Comer fora': ['🍔', '#FF5C7A'], 'Compras avulsas (Outros)': ['🛍️', '#8E949C'], 'Receita': ['💰', '#22B07D'], 'Conta': ['🧾', '#F59E0B'], 'Fatura': ['💳', '#7C3AED'], 'Pix e boleto': ['⚡', '#3D8BFF'] };
 const fic = n => FCAT[n] || ['•', '#8E949C'];
 const CARTAO_COR = { 'Nubank': 'linear-gradient(135deg,#6A06B0,#A855F7)', 'Mercado Pago': 'linear-gradient(135deg,#0077C8,#22C1F5)', 'Bradesco Amazon': 'linear-gradient(135deg,#A30825,#F0435F)', 'XP': 'linear-gradient(135deg,#1f2937,#4B5563)' };
@@ -3279,13 +3290,6 @@ function bind() {
   });
   document.addEventListener('change', ev => {
     const t = ev.target;
-    if (t.matches('[data-sm-grupo]')) {
-      const { smChave, smGrupo } = t.dataset;
-      LS.set(smChave, { ...LS.get(smChave, {}), [smGrupo]: t.checked });
-      renderAreaPage();
-      $(`[data-sm-grupo="${smGrupo}"]`)?.focus({ preventScroll: true });
-      return;
-    }
     if (t.matches('[name=areaNota]') && t.closest('#regBody')) S.notaArea = t.value;
     if (t.matches('[data-ficha-escolha]')) { S.regFicha = t.value; renderRegistrar(); }
     if (t.matches('form[data-form=compra] input[type=date]')) resumoPagamento(t.form);
@@ -3327,6 +3331,8 @@ function bind() {
     if (ev.key === 'Enter' && !ev.shiftKey && !ev.isComposing && t.matches && t.matches('form[data-form="nota"] textarea') && t.closest('#sheet')) { ev.preventDefault(); t.form.requestSubmit(); }
     if (ev.key === 'Enter' && !ev.shiftKey && !ev.isComposing && t.matches && t.matches('form[data-form="captura"] textarea') && matchMedia('(pointer: fine)').matches) { ev.preventDefault(); t.form.requestSubmit(); }
   });
+  // "Ver mais" do sumário lembra se ele abriu ou fechou (só quando é ele quem clica)
+  document.addEventListener('click', ev => { const sm = ev.target.closest?.('details[data-sm-area] > summary'); if (sm) LS.set('sm-mais-' + sm.parentElement.dataset.smArea, !sm.parentElement.open); }, true);
   vincularTarefas();
   $('#eye').onclick = () => { cfg.discreet = !cfg.discreet; saveCfg(); S.reveal.clear(); render(); };
   $('#openCfg').onclick = showCfg;
