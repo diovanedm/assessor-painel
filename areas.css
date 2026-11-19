@@ -291,3 +291,10 @@
 .area-nota .secao-fonte { min-height: 0; padding: 0; font-size: 13px; }
 .custo-total { margin: 10px 0 6px; font: 650 26px/1.2 var(--f-ui); letter-spacing: -.03em; }
 .custo-total small { display: block; margin-top: 4px; font: 400 13.5px/1.4 var(--f-ui); letter-spacing: 0; color: var(--ink2); }
+
+.sm-escolha { margin: 0 8px 8px; font-size: 14px; color: var(--ink2); }
+.sm-escolha summary { padding: 8px 0; cursor: pointer; font-weight: 600; }
+.sm-escolha fieldset { margin: 4px 0; padding: 6px 10px; border: 1px solid var(--line2); border-radius: 10px; }
+.sm-escolha legend { font-size: 12px; }
+.sm-escolha label { display: flex; gap: 8px; align-items: center; min-height: 36px; cursor: pointer; }
+.sm-escolha input { width: 16px; height: 16px; flex: none; accent-color: var(--area-accent); }

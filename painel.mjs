@@ -1,13 +1,13 @@
 /* ─────────────── utilidades ─────────────── */
-import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDeRegistro, metasDaTabela, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=0bfb3e9d96d4';
-import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=0bfb3e9d96d4';
-import { visaoBemEstar } from './bem-estar.mjs?v=0bfb3e9d96d4';
-import { casosEmAndamento, pontoDeParada } from './memoria.mjs?v=0bfb3e9d96d4';
+import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDeRegistro, metasDaTabela, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=3815c98edb71';
+import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=3815c98edb71';
+import { visaoBemEstar } from './bem-estar.mjs?v=3815c98edb71';
+import { casosEmAndamento, pontoDeParada } from './memoria.mjs?v=3815c98edb71';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const h = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=0bfb3e9d96d4';
+import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=3815c98edb71';
 const DOW = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 const DOWL = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
 const MON = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
@@ -860,7 +860,7 @@ function dialSvg(items, nm, dow) {
 
 const isChecked = g => { const o = taskOv(g); return o ? o.kind === 'feita' : g.checked; };
 const byDue = (a, b) => (a.due || '9').localeCompare(b.due || '9') || (b.prio === 'alta') - (a.prio === 'alta');
-import { organizarTarefas, primeiroPasso } from './tarefas.mjs?v=0bfb3e9d96d4';
+import { organizarTarefas, primeiroPasso } from './tarefas.mjs?v=3815c98edb71';
 function estadoTarefa(g) {
   if (g.nova) return { feita:false, data:'' };
   const item = taskOv(g);
@@ -1257,9 +1257,6 @@ function sumarioDaArea(C, T, vista) {
     const vazio = t.id !== 'resumo' && !T.n[t.id];
     return `<li><a href="${linkTopico(area, t.id)}"${atual === t.id ? ' aria-current="page"' : ''}${vazio ? ' class="vazio"' : ''}><span class="sm-ic" aria-hidden="true">${t.emoji}</span><span class="sm-nome">${t.curto || t.nome}</span>${!vazio && t.id !== 'resumo' ? `<span class="sm-n">${T.n[t.id]}</span>` : ''}</a></li>`;
   };
-  const mais = TOPICOS.filter(t => t.mais);
-  const topicos = TOPICOS.filter(t => !t.mais).map(item).join('')
-    + `<li><details class="sm-mais" data-section="sm-mais"${mais.some(t => t.id === atual) ? ' open' : ''}><summary><span class="sm-ic" aria-hidden="true">＋</span><span class="sm-nome">Ver mais</span>${mais.some(t => T.n[t.id]) ? `<span class="sm-n">${mais.reduce((n, t) => n + (T.n[t.id] || 0), 0)}</span>` : ''}</summary><ul>${mais.map(item).join('')}</ul></details></li>`;
   const meses = new Map();
   for (const d of C.dias) { const k = d.date.slice(0, 7); if (!meses.has(k)) meses.set(k, []); meses.get(k).push(d); }
   const mesAtual = (vista.dia || C.dias[0]?.date || C.hoje).slice(0, 7);
@@ -1267,12 +1264,23 @@ function sumarioDaArea(C, T, vista) {
     <ul class="sm-dias">${ds.map(d => `<li><a href="#area/${area}/dia/${d.date}"${vista.dia === d.date ? ' aria-current="page"' : ''}><span>${dayLabel(d.date)}</span><span class="sm-n">${itensDoDia(d)}</span></a></li>`).join('')}</ul></details>`).join('');
   const notas = [C.principal ? `<li><a href="${linkDeNota(area)}"${vista.path === C.principal.path ? ' aria-current="page"' : ''}>Nota principal</a></li>` : '',
     ...C.apoio.map(f => `<li><a href="${h(linkDeRegistro(f.path))}"${vista.path === f.path ? ' aria-current="page"' : ''}>${h(plain(f.title))}</a></li>`)].join('');
+  const grupos = TOPICOS.map(t => ({ ...t, html: item(t) }));
+  grupos.push({ id: 'dias', nome: 'Registros diários', html: `<li><div class="sm-sec"><a href="#area/${area}/dias"${atual === 'dias' ? ' aria-current="page"' : ''}>📅 Registros diários</a><span class="sm-n">${C.dias.length || ''}</span></div>
+    ${dias || '<p class="sm-vazio">Nenhum dia registrado ainda.</p>'}</li>` });
+  if (notas) grupos.push({ id: 'notas', nome: 'Notas da área', html: `<li><div class="sm-sec"><span>📚 Notas da área</span></div><ul class="sm-notas">${notas}</ul></li>` });
+  const chave = 'sumario-visivel-' + area;
+  const escolha = LS.get(chave, {});
+  const visivel = g => escolha?.[g.id] ?? !g.mais;
+  const lista = grupos => grupos.map(g => g.html).join('');
+  const mais = grupos.filter(g => !visivel(g));
+  const totalMais = mais.reduce((total, g) => total + (T.n[g.id] || 0), 0);
+  const grupoAtual = vista.vista === 'nota' ? 'notas' : vista.dia ? 'dias' : atual;
   return `<nav class="sumario" id="areaSumario" aria-label="Sumário de ${h(AREAS[area].nome)}">
     <div class="sm-topo"><span>Sumário</span><button type="button" class="ib sm-fechar" data-sumario="fechar" aria-label="Fechar sumário">${ICON.x}</button></div>
-    <ul class="sm-topicos">${topicos}</ul>
-    <div class="sm-sec"><a href="#area/${area}/dias"${atual === 'dias' ? ' aria-current="page"' : ''}>📅 Registros diários</a><span class="sm-n">${C.dias.length || ''}</span></div>
-    ${dias || '<p class="sm-vazio">Nenhum dia registrado ainda.</p>'}
-    ${notas ? `<div class="sm-sec"><span>📚 Notas da área</span></div><ul class="sm-notas">${notas}</ul>` : ''}
+    <details class="sm-escolha" data-section="sm-escolha"><summary>Personalizar sumário</summary>
+      <fieldset><legend>Mostrar direto no sumário</legend>${grupos.map(g => `<label><input type="checkbox" data-sm-grupo="${g.id}" data-sm-chave="${chave}"${visivel(g) ? ' checked' : ''}>${g.curto || g.nome}</label>`).join('')}</fieldset></details>
+    <ul class="sm-topicos">${lista(grupos.filter(visivel))}
+    ${mais.length ? `<li><details class="sm-mais" data-section="sm-mais"${mais.some(g => g.id === grupoAtual) ? ' open' : ''}><summary><span class="sm-ic" aria-hidden="true">＋</span><span class="sm-nome">Ver mais</span>${totalMais ? `<span class="sm-n">${totalMais}</span>` : ''}</summary><ul>${lista(mais)}</ul></details></li>` : ''}</ul>
   </nav>`;
 }
 
@@ -2309,8 +2317,8 @@ function renderRegistrar() {
 }
 
 /* ─────────────── Finanças (o conteúdo do "Meus gastos", lendo o espelho da planilha) ─────────────── */
-import { brl, brl0, c2, addM, dim, pnum, valorCapturado, calcularFinancas, orcamentoDoMes, filtrarLancamentos } from './financas.mjs?v=0bfb3e9d96d4';
-import { lancamentosRealizados, graficoLancamentos } from './financas-visao.mjs?v=0bfb3e9d96d4';
+import { brl, brl0, c2, addM, dim, pnum, valorCapturado, calcularFinancas, orcamentoDoMes, filtrarLancamentos } from './financas.mjs?v=3815c98edb71';
+import { lancamentosRealizados, graficoLancamentos } from './financas-visao.mjs?v=3815c98edb71';
 const FCAT = { 'Moradia': ['🏠', '#7B61FF'], 'Mercado': ['🛒', '#22B07D'], 'Alimentação fora': ['🍔', '#FF8A3D'], 'Transporte': ['🚗', '#3D8BFF'], 'Saúde': ['💊', '#FF5C7A'], 'Educação': ['📚', '#A35CF7'], 'Família': ['👨‍👩‍👧', '#F2B705'], 'Bebê': ['🍼', '#38BDF8'], 'Lazer': ['🎉', '#E05CD0'], 'Assinaturas': ['📺', '#5B6BF5'], 'Contas fixas': ['💡', '#F59E0B'], 'Revenda': ['📦', '#A0785A'], 'Outros': ['🛍️', '#8E949C'], 'Uber e 99': ['🚕', '#3D8BFF'], 'Delivery': ['🛵', '#FF8A3D'], 'Comer fora': ['🍔', '#FF5C7A'], 'Compras avulsas (Outros)': ['🛍️', '#8E949C'], 'Receita': ['💰', '#22B07D'], 'Conta': ['🧾', '#F59E0B'], 'Fatura': ['💳', '#7C3AED'], 'Pix e boleto': ['⚡', '#3D8BFF'] };
 const fic = n => FCAT[n] || ['•', '#8E949C'];
 const CARTAO_COR = { 'Nubank': 'linear-gradient(135deg,#6A06B0,#A855F7)', 'Mercado Pago': 'linear-gradient(135deg,#0077C8,#22C1F5)', 'Bradesco Amazon': 'linear-gradient(135deg,#A30825,#F0435F)', 'XP': 'linear-gradient(135deg,#1f2937,#4B5563)' };
@@ -3081,6 +3089,13 @@ function bind() {
   });
   document.addEventListener('change', ev => {
     const t = ev.target;
+    if (t.matches('[data-sm-grupo]')) {
+      const { smChave, smGrupo } = t.dataset;
+      LS.set(smChave, { ...LS.get(smChave, {}), [smGrupo]: t.checked });
+      renderAreaPage();
+      $(`[data-sm-grupo="${smGrupo}"]`)?.focus({ preventScroll: true });
+      return;
+    }
     if (t.matches('[name=areaNota]') && t.closest('#regBody')) S.notaArea = t.value;
     if (t.matches('[data-ficha-escolha]')) { S.regFicha = t.value; renderRegistrar(); }
     if (t.matches('form[data-form=compra] input[type=date]')) resumoPagamento(t.form);
