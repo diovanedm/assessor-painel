@@ -1,13 +1,14 @@
 /* ─────────────── utilidades ─────────────── */
-import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDaNota, linkDeRegistro, metasDaTabela, notaSolta, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=4141e3c50571';
-import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=4141e3c50571';
-import { visaoBemEstar } from './bem-estar.mjs?v=4141e3c50571';
-import { casosEmAndamento, pontoDeParada } from './memoria.mjs?v=4141e3c50571';
+import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDaNota, linkDeRegistro, metasDaTabela, notaSolta, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=21ba6c13873e';
+import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=21ba6c13873e';
+import { visaoBemEstar } from './bem-estar.mjs?v=21ba6c13873e';
+import { casosEmAndamento, pontoDeParada } from './memoria.mjs?v=21ba6c13873e';
+import { linhasCaptura, lerCaptura, tipoAnexo, extAudio } from './captura.mjs?v=21ba6c13873e';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const h = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=4141e3c50571';
+import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=21ba6c13873e';
 const DOW = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 const DOWL = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
 const MON = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
@@ -339,6 +340,7 @@ function classify(head) {
   }
   if ((m = b.match(/^💰 Receita: (.+)$/))) return { kind: 'receita', text: m[1] };
   if ((m = b.match(/^🔄 Transferência: (.+)$/))) return { kind: 'transferencia', text: m[1] };
+  if ((m = b.match(/^💬 Captura: (.+)$/))) return { kind: 'captura', text: m[1] };
   if ((m = b.match(/^💳 Compra: (.+)$/))) return { kind: 'compra', text: m[1] };
   if ((m = b.match(/^🧾 Comprovante: (.+)$/))) return { kind: 'comprovante', text: m[1] };
   if ((m = b.match(/^📝 Anotação \(([^)]+)\):\s?(.*)$/))) return { kind: 'nota', areaTxt: m[1], text: m[2], note };
@@ -809,7 +811,7 @@ function route() {
   }
   if (p === 'alimentacao') S.aliTab = ['compras', 'trocas'].includes(sub) ? sub : 'plano';
   if (p === 'financas') S.finTab = FIN_TABS.some(t => t[0] === sub) ? sub : 'resumo';
-  if (p === 'registrar') S.reg = ['emocional', 'compra', 'comprovante'].includes(sub) ? sub : 'nota';
+  if (p === 'registrar') S.reg = 'captura';
   if (p === 'caixa') S.boxTab = ['inbox', 'historico'].includes(sub) ? sub : 'fila';
   if (changed && p === 'alimentacao') S.aliRef = null;
   S.page = p;
@@ -867,7 +869,7 @@ function dialSvg(items, nm, dow) {
 
 const isChecked = g => { const o = taskOv(g); return o ? o.kind === 'feita' : g.checked; };
 const byDue = (a, b) => (a.due || '9').localeCompare(b.due || '9') || (b.prio === 'alta') - (a.prio === 'alta');
-import { organizarTarefas, primeiroPasso } from './tarefas.mjs?v=4141e3c50571';
+import { organizarTarefas, primeiroPasso } from './tarefas.mjs?v=21ba6c13873e';
 function estadoTarefa(g) {
   if (g.nova) return { feita:false, data:'' };
   const item = taskOv(g);
@@ -1005,11 +1007,12 @@ function cxCompraLi(it) {
 }
 
 /* Caixa */
-const KIND = { receita: '💰 Receita', transferencia: '🔄 Transferência', feita: '✅ Tarefa feita', reaberta: '↩️ Tarefa reaberta', nova: '➕ Tarefa nova', comprado: '🛒 Comprado', comprar: '🛒 Comprar', nota: '📝 Anotação', estou: '💭 Como estou', regula: '🧭 Regulação', compra: '💳 Compra', comprovante: '🧾 Comprovante', outro: '📌 Item' };
+const KIND = { receita: '💰 Receita', transferencia: '🔄 Transferência', feita: '✅ Tarefa feita', reaberta: '↩️ Tarefa reaberta', nova: '➕ Tarefa nova', comprado: '🛒 Comprado', comprar: '🛒 Comprar', nota: '📝 Anotação', estou: '💭 Como estou', regula: '🧭 Regulação', compra: '💳 Compra', comprovante: '🧾 Comprovante', captura: '💬 Captura', outro: '📌 Item' };
 function cxLabel(it, compact) {
   const movimento = ['receita', 'transferencia', 'compra', 'comprovante'].includes(it.kind);
   if (movimento && cfg.discreet) return '<span class="k">Movimentação financeira</span> <span class="muted">(reservada)</span>';
   const reserved = cfg.discreet && (it.path === RESERVADA || VEIL.has(areaKey(it.areaTxt || it.area)) || (it.note && VEIL.has(S.files[it.note]?.area)));
+  if (it.kind === 'captura' && cfg.discreet) return '<span class="k">💬 Captura</span> <span class="muted">(reservada)</span>';
   if (reserved) return `<span class="k">${it.kind === 'estou' ? '💭 Como estou' : it.kind === 'regula' ? '🧭 Regulação' : '🔒 Registro reservado'}</span> <span class="muted">(reservado)</span>`;
   let k = KIND[it.kind] || KIND.outro, t = it.text || '';
   if (it.kind === 'habito') { k = it.st === 'feito' ? '🔁 Fez' : it.st === 'nao' ? '🔁 Não fez' : '🔁 Cancelado'; t = `${/^\p{Extended_Pictographic}/u.test(it.text) ? '' : (AREAS[it.area]?.emoji || '') + ' '}${it.text}${it.hdate && it.hdate !== it.date ? ` (${dm(it.hdate)})` : ''}${it.motivo ? ' — ' + it.motivo : ''}`; }
@@ -1018,6 +1021,12 @@ function cxLabel(it, compact) {
   if (it.kind === 'comprar') k = `🛒 Comprar (${it.sec})`;
   if (it.kind === 'regula') { k = '🧭 ' + (it.text || 'Regulação'); t = ''; }
   if (it.kind === 'estou') { k = '💭 Como estou'; }
+  if (it.kind === 'captura') {
+    const c = lerCaptura(it.text, it.cont);
+    const marcas = c.anexos.map(a => a.tipo === 'áudio' ? '🎙️ áudio' : a.tipo === 'foto' ? '📷 foto' : '📎 ' + a.tipo).join(' · ');
+    const corpo = compact ? short(c.texto.replace(/\n/g, ' '), 70) : c.texto;
+    return `<span class="k">💬</span> <span class="cap-t">${h(corpo)}</span>${marcas ? ` <span class="muted">${h(marcas)}</span>` : ''}`;
+  }
   const extra = [];
   if (it.due) extra.push(dueTxt(it.due));
   if (it.note && S.files[it.note]) extra.push(srcLink(it.note));
@@ -1928,7 +1937,7 @@ function fichasAll() {
 }
 function wEmocional() {
   return `<section class="hj-channel hj-journal" id="wEmo"><header><span class="hj-channel-icon" aria-hidden="true">💭</span><h3><a href="#area/emocional">Emocional</a></h3></header>
-    <div class="hj-actions"><button type="button" data-ficha="estou">Fazer check-in</button><a href="#registrar/emocional">Abrir fichas</a></div>
+    <div class="hj-actions"><button type="button" data-ficha="estou">Fazer check-in</button></div>
     <details class="hj-fold" data-home-fold="fichas"><summary>Outras opções</summary><div class="hj-actions">
       ${cfg.discreet ? '' : fichasAll().filter(f => !f.builtin).map(f => `<button type="button" data-ficha="${h(f.id)}">${h(f.nome)}</button>`).join('')}
       <button type="button" data-act="ficha-nova">Criar ficha</button></div></details></section>`;
@@ -2144,18 +2153,18 @@ async function shrinkImage(file) {
   c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
   return await new Promise((res, rej) => c.toBlob(b => b ? res(b) : rej(new Error('canvas')), 'image/jpeg', 0.82));
 }
-function uploadComprovante(file, rotulo) {
+function uploadComprovante(file, rotulo, { pasta = 'painel/comprovantes', max = 8e6, ext: extDado, msg = 'painel: comprovante enviado' } = {}) {
   const job = queue.then(async () => {
-    let blob = file, ext = ((file.name || '').match(/\.(\w{2,5})$/) || [])[1]?.toLowerCase() || (file.type === 'application/pdf' ? 'pdf' : 'jpg');
+    let blob = file, ext = extDado || ((file.name || '').match(/\.(\w{2,5})$/) || [])[1]?.toLowerCase() || (file.type === 'application/pdf' ? 'pdf' : 'jpg');
     if (/^image\//.test(file.type)) { try { blob = await shrinkImage(file); ext = 'jpg'; } catch { } }
-    if (blob.size > 8e6) throw erro('grande');
+    if (blob.size > max) throw erro('grande');
     const b64 = await blobB64(blob);
     const n = now();
     const slug = norm(rotulo || 'comprovante').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 30) || 'comprovante';
-    const path = `painel/comprovantes/${ymd(n)}-${pad(n.getHours())}${pad(n.getMinutes())}${pad(n.getSeconds())}-${slug}-${crypto.randomUUID().slice(0, 8)}.${ext}`;
+    const path = `${pasta}/${ymd(n)}-${pad(n.getHours())}${pad(n.getMinutes())}${pad(n.getSeconds())}-${slug}-${crypto.randomUUID().slice(0, 8)}.${ext}`;
     S.pending++; setLive();
     try {
-      const r = await gh(`/repos/${cfg.repo}/contents/${repoPath(path)}`, { method: 'PUT', body: { message: 'painel: comprovante enviado\n\nvia painel', content: b64, branch: cfg.branch } });
+      const r = await gh(`/repos/${cfg.repo}/contents/${repoPath(path)}`, { method: 'PUT', body: { message: msg + '\n\nvia painel', content: b64, branch: cfg.branch } });
       if (!r.ok) throw erro(r.status === 403 || r.status === 404 ? 'perm' : 'http', 'put ' + r.status);
       S.ours.add(r.json.commit.sha);
       return path;
@@ -2176,7 +2185,7 @@ async function concluirCaptura(f, gravar) {
   try {
     ok = await gravar();
   } catch (e) {
-    if (e.code === 'grande') toast('O arquivo ultrapassou 8 MB. Escolha uma imagem menor.', { err:true });
+    if (e.code === 'grande') toast(f.dataset.form === 'captura' ? 'Um anexo ficou grande demais (foto até 8 MB, áudio até 20 MB).' : 'O arquivo ultrapassou 8 MB. Escolha uma imagem menor.', { err:true });
     else toastErr(e, 'Não foi possível guardar');
   } finally {
     delete f.dataset.saving;
@@ -2188,7 +2197,9 @@ async function concluirCaptura(f, gravar) {
     if (f.closest('#sheet')) closeSheet();
     return;
   }
-  if (f.dataset.form === 'nota') {
+  if (f.dataset.form === 'captura') {
+    limparCaptura(f);
+  } else if (f.dataset.form === 'nota') {
     f.elements.txt.value = '';
   } else {
     // Recria somente a captura enviada. Outras modalidades podem ter um rascunho.
@@ -2305,47 +2316,198 @@ function apagarFicha(id) {
   closeSheet();
 }
 
-/* ─────────────── Registrar ─────────────── */
-const capturePanes = new Map();
+/* ─────────────── Capturar: uma caixa só, como numa conversa ─────────────── */
+// Texto, fotos e áudio vão juntos para a caixa como "💬 Captura"; o assessor decide o que é.
+const capturePanes = new Map(); // ainda usado pelas fichas (folha)
+const capAnexos = []; // { id, file, tipo, url, caminho }
+let gravacao = null;
+const CAP_ICON = {
+  clip: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m20.5 11.5-8.3 8.3a5 5 0 0 1-7.1-7.1l8.6-8.6a3.4 3.4 0 0 1 4.8 4.8l-8.6 8.6a1.7 1.7 0 0 1-2.4-2.4l7.9-7.9"/></svg>',
+  mic: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg>',
+  send: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5m-6 6 6-6 6 6"/></svg>',
+  stop: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="2" fill="currentColor"/></svg>',
+  trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4.5h6V7m-8.5 0 1 13h9l1-13"/></svg>',
+};
+function formCaptura() {
+  return `<form class="chat-composer" data-form="captura" autocomplete="off">
+    <div class="chat-attachments" data-anexos hidden></div>
+    <div class="chat-row">
+      <label class="chat-ib chat-clip" title="Anexar foto ou arquivo"><input type="file" name="anexo" accept="image/*,application/pdf" multiple aria-label="Anexar foto ou arquivo">${CAP_ICON.clip}</label>
+      <textarea name="txt" rows="1" placeholder="Escreva qualquer coisa…" aria-label="O que você quer guardar"></textarea>
+      <div class="chat-recording" data-gravando hidden><span class="rec-dot" aria-hidden="true"></span><span data-tempo>0:00</span>
+        <button type="button" class="chat-ib" data-cap="cancelar" aria-label="Descartar o áudio" title="Descartar">${CAP_ICON.trash}</button>
+        <button type="button" class="chat-ib rec-stop" data-cap="parar" aria-label="Parar e anexar o áudio" title="Parar">${CAP_ICON.stop}</button></div>
+      <button type="button" class="chat-ib chat-mic" data-cap="gravar" aria-label="Gravar áudio" title="Gravar áudio">${CAP_ICON.mic}</button>
+      <button type="submit" class="chat-send" aria-label="Enviar" title="Enviar">${CAP_ICON.send}</button>
+    </div>
+  </form>`;
+}
 function renderRegistrar() {
-  for (const a of $$('#regTabs a')) {
-    if (a.dataset.mode === S.reg) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
-  }
   const body = $('#regBody');
-  const fs = fichasAll();
-  const fi = fs.find(x => x.id === S.regFicha) || fs[0];
-  const key = S.reg === 'emocional' ? 'ficha-' + fi.id : S.reg;
-  let pane = capturePanes.get(key);
-  if (!pane) {
-    pane = document.createElement('div');
-    capturePanes.set(key, pane);
-    if (S.reg === 'nota') pane.innerHTML = formNota(S.notaArea);
-    else if (S.reg === 'emocional') {
-      pane.innerHTML = `<div class="capture-form-head"><h2>Check-in emocional</h2><span class="reserved-label">${ICON.lock} Reservado</span></div>
-        <label class="mini-select"><span>Ficha</span><select data-ficha-escolha aria-label="Escolher ficha"></select></label>
-        <div class="checkin-fields">${formFicha(fi)}</div>
-        <button type="button" class="desk-link" data-act="ficha-nova">＋ Criar uma ficha</button>`;
-    } else {
-      const receipt = S.reg === 'comprovante';
-      pane.innerHTML = `<h2 class="capture-form-title">${receipt ? 'Guardar comprovante' : 'Registrar gasto'}</h2>${formCompra(receipt)}`;
+  let f = body.querySelector('form[data-form=captura]');
+  if (!f) { body.innerHTML = formCaptura(); f = body.firstElementChild; ligarCaptura(f); }
+  renderConversa();
+}
+function renderConversa() {
+  const log = $('#regLog');
+  if (!log) return;
+  const hoje = S.cx.filter(it => it.date === ymd(now()));
+  const html = hoje.length
+    ? hoje.map(it => `<li class="chat-msg${it.kind === 'captura' ? ' chat-livre' : ''}${it.pending ? ' busy' : ''}"><div class="bubble">${cxLabel(it, false)}</div><time>${h(it.time)}${it.pending ? ' · enviando…' : ''}</time></li>`).join('')
+    : '<li class="chat-empty">Escreva do jeito que vier: um gasto, uma ideia, como você está, um print. O assessor organiza.</li>';
+  if (log.innerHTML === html) return;
+  const cresceu = log.children.length < hoje.length;
+  log.innerHTML = html;
+  if (cresceu && S.page === 'registrar') log.lastElementChild?.scrollIntoView({ block: 'nearest' });
+}
+function ligarCaptura(f) {
+  const ta = f.elements.txt;
+  ta.addEventListener('input', () => ajustarCaptura(f));
+  f.elements.anexo.addEventListener('change', () => {
+    for (const file of f.elements.anexo.files) addAnexo(f, file);
+    f.elements.anexo.value = '';
+  });
+  ta.addEventListener('paste', ev => {
+    const fs = [...(ev.clipboardData?.files || [])];
+    if (fs.length) { ev.preventDefault(); fs.forEach(x => addAnexo(f, x)); }
+  });
+  f.addEventListener('click', ev => {
+    const b = ev.target.closest('[data-cap]');
+    if (!b) return;
+    const a = b.dataset.cap;
+    if (a === 'gravar') iniciarGravacao(f);
+    else if (a === 'parar') pararGravacao(f, true);
+    else if (a === 'cancelar') pararGravacao(f, false);
+    else if (a === 'tirar') tirarAnexo(f, b.dataset.id);
+  });
+  ajustarCaptura(f);
+}
+function ajustarCaptura(f) {
+  const ta = f.elements.txt;
+  ta.style.height = 'auto';
+  ta.style.height = Math.min(ta.scrollHeight, 220) + 'px';
+  f.classList.toggle('tem-conteudo', Boolean(ta.value.trim() || capAnexos.length));
+}
+function addAnexo(f, file) {
+  const tipo = tipoAnexo(file.type);
+  if (!['foto', 'pdf', 'áudio'].includes(tipo)) { toast('Dá pra anexar foto, PDF ou áudio.'); return; }
+  capAnexos.push({ id: crypto.randomUUID().slice(0, 8), file, tipo, url: URL.createObjectURL(file) });
+  renderAnexos(f);
+}
+function tirarAnexo(f, id) {
+  const i = capAnexos.findIndex(a => a.id === id);
+  if (i < 0) return;
+  URL.revokeObjectURL(capAnexos[i].url);
+  capAnexos.splice(i, 1);
+  renderAnexos(f);
+}
+function renderAnexos(f) {
+  const box = f.querySelector('[data-anexos]');
+  box.hidden = !capAnexos.length;
+  box.innerHTML = capAnexos.map(a => {
+    const prev = a.tipo === 'foto' ? `<img src="${a.url}" alt="Foto anexada">`
+      : a.tipo === 'áudio' ? `<audio controls src="${a.url}" aria-label="Áudio gravado"></audio>`
+      : `<span class="chat-file">📄 ${h(short(a.file.name || 'arquivo.pdf', 26))}</span>`;
+    return `<div class="chat-att chat-att-${a.tipo === 'áudio' ? 'audio' : a.tipo}">${prev}<button type="button" class="chat-att-x" data-cap="tirar" data-id="${a.id}" aria-label="Tirar este anexo">${ICON.x}</button></div>`;
+  }).join('');
+  ajustarCaptura(f);
+}
+function limparCaptura(f) {
+  for (const a of capAnexos) URL.revokeObjectURL(a.url);
+  capAnexos.length = 0;
+  f.elements.txt.value = '';
+  renderAnexos(f);
+  f.elements.txt.focus({ preventScroll: true });
+}
+async function iniciarGravacao(f) {
+  if (gravacao) return;
+  if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') { toast('Este navegador não grava áudio. Use o microfone do teclado para ditar.'); return; }
+  let stream;
+  try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
+  catch { toast('Não consegui usar o microfone. Libere o acesso nas permissões do navegador.', { err: true }); return; }
+  const mime = ['audio/mp4', 'audio/webm;codecs=opus', 'audio/webm'].find(t => MediaRecorder.isTypeSupported?.(t)) || '';
+  let rec;
+  try { rec = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined); }
+  catch { stream.getTracks().forEach(t => t.stop()); toast('Não consegui gravar neste navegador.', { err: true }); return; }
+  const g = gravacao = { rec, stream, chunks: [], inicio: Date.now(), guardar: true, base: f.elements.txt.value, parando: false, fala: null };
+  rec.ondataavailable = e => { if (e.data && e.data.size) g.chunks.push(e.data); };
+  rec.onstop = () => {
+    stream.getTracks().forEach(t => t.stop());
+    clearInterval(g.timer);
+    if (g.guardar && g.chunks.length) {
+      const tipo = rec.mimeType || g.chunks[0].type || 'audio/webm';
+      const blob = new Blob(g.chunks, { type: tipo });
+      addAnexo(f, new File([blob], 'audio.' + extAudio(tipo), { type: tipo }));
     }
+    if (gravacao === g) gravacao = null;
+    mostrarGravacao(f, false);
+  };
+  rec.start(1000);
+  const tempo = f.querySelector('[data-tempo]');
+  tempo.textContent = '0:00';
+  g.timer = setInterval(() => {
+    const s = Math.floor((Date.now() - g.inicio) / 1000);
+    tempo.textContent = `${Math.floor(s / 60)}:${pad(s % 60)}`;
+    if (s >= 600) pararGravacao(f, true);
+  }, 500);
+  // Transcrição ao vivo, quando o navegador oferece: o texto aparece na caixa e o áudio vai junto.
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (SR) {
+    try {
+      const fala = new SR();
+      fala.lang = 'pt-BR'; fala.continuous = true; fala.interimResults = true;
+      let final = '';
+      fala.onresult = ev => {
+        let parcial = '';
+        for (let i = ev.resultIndex; i < ev.results.length; i++) {
+          const r = ev.results[i];
+          if (r.isFinal) final += r[0].transcript.trim() + ' '; else parcial += r[0].transcript;
+        }
+        const ta = f.elements.txt;
+        ta.value = (g.base.trim() ? g.base.trim() + ' ' : '') + (final + parcial).trim();
+        ajustarCaptura(f);
+      };
+      fala.onerror = () => { };
+      fala.onend = () => { if (gravacao === g && !g.parando) { try { fala.start(); } catch { } } };
+      fala.start();
+      g.fala = fala;
+    } catch { }
   }
-  if (S.reg === 'emocional') {
-    const select = pane.querySelector('[data-ficha-escolha]');
-    const options = fs.map(x => `<option value="${h(x.id)}"${x.id === fi.id ? ' selected' : ''}>${h(x.nome)}</option>`).join('');
-    if (select.dataset.options !== options) { select.innerHTML = options; select.dataset.options = options; }
-    select.value = fi.id;
-  }
-  if (body.firstElementChild !== pane) body.replaceChildren(pane);
-  body.dataset.mode = S.reg;
-  const todays = S.cx.filter(it => it.date === ymd(now())).slice().reverse();
-  $('#regCount').textContent = todays.length || '';
-  $('#regLog').innerHTML = todays.length ? todays.slice(0, 3).map(it => `<li><time>${h(it.time)}</time><span>${cxLabel(it, true)}</span></li>`).join('') : '<li class="capture-empty">Suas capturas de hoje aparecem aqui.</li>';
+  mostrarGravacao(f, true);
+}
+function pararGravacao(f, guardar) {
+  const g = gravacao;
+  if (!g || g.parando) return;
+  g.parando = true; g.guardar = guardar;
+  try { g.fala?.stop(); } catch { }
+  if (!guardar) { f.elements.txt.value = g.base; ajustarCaptura(f); }
+  try { g.rec.state !== 'inactive' ? g.rec.stop() : g.rec.onstop(); } catch { g.rec.onstop(); }
+}
+function mostrarGravacao(f, on) {
+  f.classList.toggle('gravando', on);
+  f.querySelector('[data-gravando]').hidden = !on;
+  f.querySelector('.chat-mic').hidden = on;
+}
+function enviarCaptura(f) {
+  if (gravacao) { toast('Pare a gravação antes de enviar.'); return; }
+  const texto = f.elements.txt.value.trim(), lista = capAnexos.slice();
+  if (!texto && !lista.length) { f.elements.txt.focus(); return; }
+  return concluirCaptura(f, async () => {
+    const anexos = [];
+    for (const a of lista) {
+      if (!a.caminho) {
+        const audio = a.tipo === 'áudio';
+        a.caminho = await uploadComprovante(a.file, audio ? 'audio' : short(texto, 30) || a.tipo, { pasta: 'painel/anexos', max: audio ? 20e6 : 8e6, ext: audio ? extAudio(a.file.type) : undefined, msg: 'painel: anexo enviado' });
+      }
+      anexos.push({ tipo: a.tipo, caminho: a.caminho });
+    }
+    return addCaixa(linhasCaptura(texto, anexos), { msg: 'captura', ok: 'Guardado. O assessor organiza.' });
+  });
 }
 
 /* ─────────────── Finanças (o conteúdo do "Meus gastos", lendo o espelho da planilha) ─────────────── */
-import { brl, brl0, c2, addM, dim, pnum, valorCapturado, calcularFinancas, orcamentoDoMes, filtrarLancamentos } from './financas.mjs?v=4141e3c50571';
-import { lancamentosRealizados, graficoLancamentos } from './financas-visao.mjs?v=4141e3c50571';
+import { brl, brl0, c2, addM, dim, pnum, valorCapturado, calcularFinancas, orcamentoDoMes, filtrarLancamentos } from './financas.mjs?v=21ba6c13873e';
+import { lancamentosRealizados, graficoLancamentos } from './financas-visao.mjs?v=21ba6c13873e';
 const FCAT = { 'Moradia': ['🏠', '#7B61FF'], 'Mercado': ['🛒', '#22B07D'], 'Alimentação fora': ['🍔', '#FF8A3D'], 'Transporte': ['🚗', '#3D8BFF'], 'Saúde': ['💊', '#FF5C7A'], 'Educação': ['📚', '#A35CF7'], 'Família': ['👨‍👩‍👧', '#F2B705'], 'Bebê': ['🍼', '#38BDF8'], 'Lazer': ['🎉', '#E05CD0'], 'Assinaturas': ['📺', '#5B6BF5'], 'Contas fixas': ['💡', '#F59E0B'], 'Revenda': ['📦', '#A0785A'], 'Outros': ['🛍️', '#8E949C'], 'Uber e 99': ['🚕', '#3D8BFF'], 'Delivery': ['🛵', '#FF8A3D'], 'Comer fora': ['🍔', '#FF5C7A'], 'Compras avulsas (Outros)': ['🛍️', '#8E949C'], 'Receita': ['💰', '#22B07D'], 'Conta': ['🧾', '#F59E0B'], 'Fatura': ['💳', '#7C3AED'], 'Pix e boleto': ['⚡', '#3D8BFF'] };
 const fic = n => FCAT[n] || ['•', '#8E949C'];
 const CARTAO_COR = { 'Nubank': 'linear-gradient(135deg,#6A06B0,#A855F7)', 'Mercado Pago': 'linear-gradient(135deg,#0077C8,#22C1F5)', 'Bradesco Amazon': 'linear-gradient(135deg,#A30825,#F0435F)', 'XP': 'linear-gradient(135deg,#1f2937,#4B5563)' };
@@ -3140,6 +3302,7 @@ function bind() {
     const f = ev.target;
     const kind = f.dataset.form;
     if (kind) ev.preventDefault();
+    if (kind === 'captura') { enviarCaptura(f); return; }
     if (kind === 'nota') { concluirCaptura(f, () => saveNota(f.elements.txt.value, f.elements.areaNota.value)); return; }
     if (kind === 'status') { const it = sheetCtx && sheetCtx.item; if (it) setHabit(it, picked(f, 'st') || 'nao', f.motivo.value); closeSheet(); return; }
     if (kind === 'ficha') { submitFicha(f); return; }
@@ -3162,6 +3325,7 @@ function bind() {
   document.addEventListener('keydown', ev => {
     const t = ev.target;
     if (ev.key === 'Enter' && !ev.shiftKey && !ev.isComposing && t.matches && t.matches('form[data-form="nota"] textarea') && t.closest('#sheet')) { ev.preventDefault(); t.form.requestSubmit(); }
+    if (ev.key === 'Enter' && !ev.shiftKey && !ev.isComposing && t.matches && t.matches('form[data-form="captura"] textarea') && matchMedia('(pointer: fine)').matches) { ev.preventDefault(); t.form.requestSubmit(); }
   });
   vincularTarefas();
   $('#eye').onclick = () => { cfg.discreet = !cfg.discreet; saveCfg(); S.reveal.clear(); render(); };

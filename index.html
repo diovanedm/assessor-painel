@@ -16,16 +16,16 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Baskervville:ital@0;1&display=swap" rel="stylesheet">
-<script src="./tema.js?v=4141e3c50571"></script>
-<link rel="stylesheet" href="./painel.css?v=4141e3c50571">
-<link rel="stylesheet" href="./layout.css?v=4141e3c50571">
-<link rel="stylesheet" href="./areas.css?v=4141e3c50571">
-<link rel="stylesheet" href="./bem-estar.css?v=4141e3c50571">
-<link rel="stylesheet" href="./financas-ui.css?v=4141e3c50571">
-<link rel="stylesheet" href="./hoje.css?v=4141e3c50571">
-<link rel="stylesheet" href="./tarefas.css?v=4141e3c50571">
-<link rel="stylesheet" href="./alimentacao-ui.css?v=4141e3c50571">
-<link rel="stylesheet" href="./captura.css?v=4141e3c50571">
+<script src="./tema.js?v=21ba6c13873e"></script>
+<link rel="stylesheet" href="./painel.css?v=21ba6c13873e">
+<link rel="stylesheet" href="./layout.css?v=21ba6c13873e">
+<link rel="stylesheet" href="./areas.css?v=21ba6c13873e">
+<link rel="stylesheet" href="./bem-estar.css?v=21ba6c13873e">
+<link rel="stylesheet" href="./financas-ui.css?v=21ba6c13873e">
+<link rel="stylesheet" href="./hoje.css?v=21ba6c13873e">
+<link rel="stylesheet" href="./tarefas.css?v=21ba6c13873e">
+<link rel="stylesheet" href="./alimentacao-ui.css?v=21ba6c13873e">
+<link rel="stylesheet" href="./captura.css?v=21ba6c13873e">
 </head>
 <body class="discreet">
 
@@ -82,19 +82,10 @@
 
   <!-- REGISTRAR -->
   <main class="page" id="p-registrar" data-page="registrar" hidden>
-    <div class="capture-workspace">
+    <div class="capture-workspace chat-capture">
       <header class="workspace-head"><h1>Capturar</h1><a class="desk-link" href="#caixa">Caixa de entrada <span aria-hidden="true">↗</span></a></header>
-      <nav id="regTabs" class="capture-modes" aria-label="Tipo de captura">
-        <a href="#registrar/nota" data-mode="nota"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 15 10-10 4 4L9 19l-5 1zM13 7l4 4"/></svg>Nota</a>
-        <a href="#registrar/compra" data-mode="compra"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18m-7 5h3"/></svg>Gasto</a>
-        <a href="#registrar/comprovante" data-mode="comprovante"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6m-6 4h4"/></svg>Comprovante</a>
-        <a href="#registrar/emocional" data-mode="emocional"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 14q3.5 4.5 7 0m-7-4h.1m6.8 0h.1"/></svg>Check-in</a>
-      </nav>
-      <div class="capture-columns">
-        <section id="regBody" class="capture-paper"></section>
-        <aside class="capture-recent"><header><h2>Capturas de hoje</h2><span id="regCount" class="desk-count"></span></header>
-          <ul id="regLog" class="today-log"></ul><a class="desk-link" href="#caixa">Ver na caixa <span aria-hidden="true">→</span></a></aside>
-      </div>
+      <ol id="regLog" class="chat-log" aria-live="polite" aria-label="Capturas de hoje"></ol>
+      <section id="regBody" class="chat-dock"></section>
     </div>
   </main>
 
@@ -165,6 +156,6 @@
 <div class="sheet-wrap" id="sheet" hidden><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="shTitle"><div class="sheet-h"><h2 id="shTitle"></h2><button class="ib" id="shClose" aria-label="Fechar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div><div class="sheet-b" id="shBody"></div></div></div>
 <div class="toasts" id="toasts" aria-live="polite"></div>
 
-<script type="module" src="./painel.mjs?v=4141e3c50571"></script>
+<script type="module" src="./painel.mjs?v=21ba6c13873e"></script>
 </body>
 </html>
