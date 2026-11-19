@@ -1,14 +1,14 @@
 /* ─────────────── utilidades ─────────────── */
-import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDaNota, linkDeRegistro, metasDaTabela, notaSolta, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=6261ac1da950';
-import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=6261ac1da950';
-import { visaoBemEstar } from './bem-estar.mjs?v=6261ac1da950';
-import { casosEmAndamento, pontoDeParada } from './memoria.mjs?v=6261ac1da950';
-import { linhasCaptura, lerCaptura, tipoAnexo, extAudio } from './captura.mjs?v=6261ac1da950';
+import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDaNota, linkDeRegistro, metasDaTabela, notaSolta, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=b08edc099ce0';
+import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=b08edc099ce0';
+import { visaoBemEstar } from './bem-estar.mjs?v=b08edc099ce0';
+import { casosEmAndamento, pontoDeParada } from './memoria.mjs?v=b08edc099ce0';
+import { linhasCaptura, lerCaptura, tipoAnexo, extAudio } from './captura.mjs?v=b08edc099ce0';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const h = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=6261ac1da950';
+import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=b08edc099ce0';
 const DOW = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 const DOWL = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
 const MON = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
@@ -875,7 +875,7 @@ function dialSvg(items, nm, dow) {
 
 const isChecked = g => { const o = taskOv(g); return o ? o.kind === 'feita' : g.checked; };
 const byDue = (a, b) => (a.due || '9').localeCompare(b.due || '9') || (b.prio === 'alta') - (a.prio === 'alta');
-import { organizarTarefas, primeiroPasso } from './tarefas.mjs?v=6261ac1da950';
+import { organizarTarefas, primeiroPasso, prioridadesDoDia } from './tarefas.mjs?v=b08edc099ce0';
 function estadoTarefa(g) {
   if (g.nova) return { feita:false, data:'' };
   const item = taskOv(g);
@@ -1967,23 +1967,35 @@ function wRefeicao() {
     ${hora}<div class="hj-actions"><a href="#alimentacao/plano">Ver plano</a><a id="wCompras" href="#alimentacao/compras">Lista de compras</a></div></section>`;
 }
 function wTarefas() {
-  const pendentes = buckets().hoje.filter(g => (g.nova || !isChecked(g)) && (!cfg.discreet || !tarefaReservada(g))).sort(byDue);
+  const visivel = g => (g.nova || !isChecked(g)) && (!cfg.discreet || !tarefaReservada(g));
+  const grupos = gruposDeTarefas(), hoje = ymd(now());
+  // Atrasadas primeiro, depois as de hoje, depois as de prioridade alta sem prazo.
+  const pendentes = prioridadesDoDia(grupos).filter(visivel);
+  const quando = g => !g.due ? 'Sem prazo' : g.due < hoje ? `Atrasada desde ${dm(g.due)}` : 'Prazo hoje';
   const rows = pendentes.slice(0,3).map(g => {
     const acao = g.nova ? `<a class="hj-pending" href="#caixa" aria-label="Ver tarefa na caixa">↗</a>` : `<button class="chk" role="checkbox" aria-checked="false" data-task="${h(g.key)}" aria-label="Concluir ${h(plain(g.text))}">${ICON.check}</button>`;
-    return `<li>${acao}<span>${h(plain(g.text))}<small>${g.due < ymd(now()) ? `Prazo ${dm(g.due)}` : 'Prazo hoje'}${g.prio === 'alta' ? ' · Prioridade alta' : ''}${g.nova ? ' · Na caixa' : ''}</small></span></li>`;
+    return `<li class="${g.due && g.due < hoje ? 'atrasada' : ''}">${acao}<span>${h(plain(g.text))}<small>${quando(g)}${g.prio === 'alta' ? ' · Prioridade alta' : ''}${g.nova ? ' · Na caixa' : ''}</small></span></li>`;
   }).join('');
+  // Sem nada pra hoje, mostra o próximo prazo: "nenhuma tarefa" sozinho passava falsa calma.
+  const prox = rows ? null : grupos.proximas.filter(visivel)[0];
+  const vazio = prox
+    ? `<p class="hj-empty">Nada atrasado nem pra hoje. Próximo prazo: <strong>${h(short(plain(prox.text), 70))}</strong> · ${dayLabel(prox.due)}</p>`
+    : '<p class="hj-empty">Nada atrasado, pra hoje ou de prioridade alta.</p>';
   return `<section id="wTarefas" class="hj-card hj-prioridades">
     <header class="hj-section-head"><h2>Prioridades</h2><a href="#tarefas">Ver tarefas <span aria-hidden="true">↗</span></a></header>
-    ${rows ? `<ul class="hj-tasks">${rows}</ul>` : '<p class="hj-empty">Nenhuma tarefa visível com prazo até hoje.</p>'}
+    ${rows ? `<ul class="hj-tasks">${rows}</ul>` : vazio}
     ${pendentes.length > 3 ? `<a class="hj-more" href="#tarefas">Mais ${pendentes.length-3} na lista</a>` : ''}</section>`;
 }
 function wRetomar() {
   const casos = casosEmAndamento(S.files).filter(f => !cfg.discreet || (!f.sens && !VEIL.has(f.area)));
   const lista = casos.slice(0,2).map(f => {
     const abertas = S.tasks.filter(g => !isChecked(g) && (!cfg.discreet || !tarefaReservada(g)) && g.members.some(m => m.path === f.path)).sort(byDue);
-    const detalhe = abertas[0]?.text || pontoDeParada(f);
+    // Primeiro onde o caso está agora (a linha mais recente de "Onde está"), depois o próximo passo.
+    const situacao = plain(pontoDeParada(f)).replace(/^(agora|parei aqui)\b[^:]*:\s*/i, '');
+    const prox = abertas[0];
+    const passo = prox ? `Próximo: ${short(plain(prox.text), 80)}${prox.due ? ` · ${prox.due < ymd(now()) ? 'atrasada desde' : 'até'} ${dm(prox.due)}` : ''}` : '';
     return `<button type="button" class="hj-resume" data-open="${h(f.path)}"><span class="hj-folder" aria-hidden="true">↳</span><span><strong>${h(plain(f.title))}</strong>
-      ${detalhe ? `<small>${h(short(plain(detalhe),110))}</small>` : ''}</span><span class="hj-resume-arrow" aria-hidden="true">›</span></button>`;
+      ${situacao ? `<small>${h(short(situacao,110))}</small>` : ''}${passo ? `<small class="hj-resume-next">${h(passo)}</small>` : ''}</span><span class="hj-resume-arrow" aria-hidden="true">›</span></button>`;
   }).join('');
   return `<section class="hj-card hj-retomar" id="retomadas"><header class="hj-section-head"><h2>Retomar um caso</h2><a href="#areas">Ver memória <span aria-hidden="true">↗</span></a></header>
     ${lista || '<p class="hj-empty">Nenhum caso visível para retomar.</p>'}</section>`;
@@ -2517,8 +2529,8 @@ function enviarCaptura(f) {
 }
 
 /* ─────────────── Finanças (o conteúdo do "Meus gastos", lendo o espelho da planilha) ─────────────── */
-import { brl, brl0, c2, addM, dim, pnum, valorCapturado, calcularFinancas, orcamentoDoMes, filtrarLancamentos } from './financas.mjs?v=6261ac1da950';
-import { lancamentosRealizados, graficoLancamentos } from './financas-visao.mjs?v=6261ac1da950';
+import { brl, brl0, c2, addM, dim, pnum, valorCapturado, calcularFinancas, orcamentoDoMes, filtrarLancamentos } from './financas.mjs?v=b08edc099ce0';
+import { lancamentosRealizados, graficoLancamentos } from './financas-visao.mjs?v=b08edc099ce0';
 const FCAT = { 'Moradia': ['🏠', '#7B61FF'], 'Mercado': ['🛒', '#22B07D'], 'Alimentação fora': ['🍔', '#FF8A3D'], 'Transporte': ['🚗', '#3D8BFF'], 'Saúde': ['💊', '#FF5C7A'], 'Educação': ['📚', '#A35CF7'], 'Família': ['👨‍👩‍👧', '#F2B705'], 'Bebê': ['🍼', '#38BDF8'], 'Lazer': ['🎉', '#E05CD0'], 'Assinaturas': ['📺', '#5B6BF5'], 'Contas fixas': ['💡', '#F59E0B'], 'Revenda': ['📦', '#A0785A'], 'Outros': ['🛍️', '#8E949C'], 'Uber e 99': ['🚕', '#3D8BFF'], 'Delivery': ['🛵', '#FF8A3D'], 'Comer fora': ['🍔', '#FF5C7A'], 'Compras avulsas (Outros)': ['🛍️', '#8E949C'], 'Receita': ['💰', '#22B07D'], 'Conta': ['🧾', '#F59E0B'], 'Fatura': ['💳', '#7C3AED'], 'Pix e boleto': ['⚡', '#3D8BFF'] };
 const fic = n => FCAT[n] || ['•', '#8E949C'];
 const CARTAO_COR = { 'Nubank': 'linear-gradient(135deg,#6A06B0,#A855F7)', 'Mercado Pago': 'linear-gradient(135deg,#0077C8,#22C1F5)', 'Bradesco Amazon': 'linear-gradient(135deg,#A30825,#F0435F)', 'XP': 'linear-gradient(135deg,#1f2937,#4B5563)' };

@@ -73,6 +73,8 @@
 .hj-tasks li { display:grid; grid-template-columns:32px 1fr; gap:7px; align-items:center; border-top:1px solid var(--line2); min-height:49px; padding:7px 0; overflow-wrap:anywhere; }
 .hj-tasks li:first-child { border:0; padding-top:0; }
 .hj-tasks .chk,.hj-pending { width:30px; height:30px; margin:0; }
+.hj-tasks li.atrasada small { color:var(--alert); font-weight:600; }
+.hj-prioridades .hj-empty strong { color:var(--ink); font-weight:600; }
 .hj-pending { display:grid; place-items:center; border-radius:50%; text-decoration:none; color:var(--signal); background:var(--signal-soft); }
 .hj-more { display:inline-block; padding-top:8px; }
 .hj-empty,.hj-loading { color:var(--ink2); margin:10px 0 3px; line-height:1.55; }
@@ -81,6 +83,7 @@
 .hj-resume:last-child { padding-bottom:0; }
 .hj-resume strong { font-size:15px; }
 .hj-resume small { display:block; color:var(--ink2); line-height:1.5; }
+.hj-resume small.hj-resume-next { color:var(--signal); margin-top:2px; }
 .hj-folder { display:grid; place-items:center; border-radius:11px; height:34px; color:var(--signal); background:var(--signal-soft); font-size:18px; }
 .hj-resume-arrow { text-align:right; color:var(--ink3); font-size:23px; }
 .hj-channels,.hj-links { display:grid; gap:14px; }

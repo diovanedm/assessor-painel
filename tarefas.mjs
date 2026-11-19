@@ -27,3 +27,9 @@ export function primeiroPasso(grupos, podeMostrar) {
   }
   return null;
 }
+
+// O que a tela Hoje mostra em Prioridades: atrasadas, as de hoje e as de prioridade alta sem prazo
+// (sem prazo, uma tarefa importante sumia da Hoje e o painel dizia que não havia nada).
+export function prioridadesDoDia(grupos) {
+  return [...grupos.atrasadas, ...grupos.hoje, ...grupos.semdata.filter(t => t.prio === 'alta')];
+}

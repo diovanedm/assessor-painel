@@ -26,3 +26,10 @@ test('foco respeita prioridade, privacidade e confirmação das novas na caixa',
   assert.equal(primeiroPasso(todas, () => true), reservada);
   assert.equal(primeiroPasso(organizarTarefas([], hoje, estado), () => true), null);
 });
+
+test('prioridades do dia trazem atrasadas, hoje e alta sem prazo, nessa ordem', async () => {
+  const { prioridadesDoDia } = await import('../tarefas.mjs');
+  const atrasada = { due:'2030-05-01' }, deHoje = { due:hoje }, alta = { prio:'alta' }, comum = {}, futura = { due:'2030-06-01', prio:'alta' };
+  const grupos = organizarTarefas([comum, alta, futura, deHoje, atrasada], hoje, estado);
+  assert.deepEqual(prioridadesDoDia(grupos), [atrasada, deHoje, alta]);
+});
