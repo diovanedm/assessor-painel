@@ -1,4 +1,4 @@
-import { norm } from './datas.mjs?v=3815c98edb71';
+import { norm } from './datas.mjs?v=4141e3c50571';
 
 export function casosEmAndamento(arquivos) {
   const encerrados = /^(fechado|resolvido|concluido|encerrado)$/;

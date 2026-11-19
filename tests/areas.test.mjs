@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  areasDoTexto, custosDaArea, destinoDaArea, linksDasNotas, diasDaArea, entradasDatadas, linkDeRegistro, metasDaTabela, notasDaArea,
+  areasDoTexto, custosDaArea, destinoDaArea, linksDasNotas, diasDaArea, entradasDatadas, linkDaNota, linkDeRegistro, metasDaTabela, notaSolta, notasDaArea,
   padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico,
 } from '../areas.mjs';
 
@@ -128,4 +128,34 @@ test('links das notas: sem repetir e sem os documentos do Google', () => {
   const ls = linksDasNotas([nota('areas/ingles/progresso.md', '- [Canal X](https://youtube.com/x) bom pra listening\n- https://youtube.com/x de novo\n- [PDF](https://drive.google.com/file/1)\n- ver https://cake.me.')]);
   assert.deepEqual(ls.map(l => [l.url, l.titulo]), [['https://youtube.com/x', 'Canal X'], ['https://cake.me', '']]);
   assert.match(ls[0].contexto, /bom pra listening/);
+});
+
+test('toda nota abre na página: dentro da área dela, da área atual ou numa página própria', () => {
+  const areas = ['trabalho', 'cultura'];
+  // nota da pasta da área: como antes
+  assert.equal(linkDaNota('areas/trabalho/revenda.md', 'trabalho', null, areas), '#area/trabalho/nota/revenda');
+  assert.equal(linkDaNota('areas/trabalho/trabalho.md', 'trabalho', 'cultura', areas), '#area/trabalho/nota/trabalho');
+  // caso com área: sempre dentro da área dele, mesmo vindo de outra
+  const caso = linkDaNota('casos/apsis-testes.md', 'trabalho', 'cultura', areas);
+  assert.equal(caso, '#area/trabalho/ver/casos/apsis-testes');
+  assert.deepEqual(destinoDaArea(caso, areas), { area: 'trabalho', vista: 'nota', dia: null, path: 'casos/apsis-testes.md' });
+  // pessoa (sem área): fica na área em que você está
+  assert.equal(linkDaNota('pessoas/douglas-apsis.md', 'pessoas', 'trabalho', areas), '#area/trabalho/ver/pessoas/douglas-apsis');
+  // sem área e fora de uma área: página própria, com o mesmo layout
+  const solta = linkDaNota('casos/tv-samsung-procon.md', 'pessoal', null, areas);
+  assert.equal(solta, '#nota/casos/tv-samsung-procon');
+  assert.deepEqual(notaSolta(solta), { path: 'casos/tv-samsung-procon.md' });
+  assert.equal(notaSolta(linkDaNota('eu/Notas #2.md', 'eu', null, areas)).path, 'eu/Notas #2.md');
+  // links quebrados não viram caminho
+  assert.equal(notaSolta('#nota/%').path, null);
+  assert.equal(notaSolta('#nota/../AGENTS').path, null);
+  assert.equal(destinoDaArea('#area/trabalho/ver/%', areas).path, null);
+  assert.equal(notaSolta('#area/trabalho'), null);
+});
+
+test('a introdução antes do primeiro título fica marcada, separada das seções', () => {
+  const [intro, estoque] = secoesDeLeitura('# Revenda\n> [!info] Como enche\n\n## Estoque\n| Item |\n|---|');
+  assert.equal(intro.intro, true);
+  assert.equal(estoque.intro, undefined);
+  assert.equal(secoesDeLeitura('# Caso\n## Onde está\nTexto')[0].intro, undefined);
 });

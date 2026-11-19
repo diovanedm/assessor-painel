@@ -298,3 +298,31 @@
 .sm-escolha legend { font-size: 12px; }
 .sm-escolha label { display: flex; gap: 8px; align-items: center; min-height: 36px; cursor: pointer; }
 .sm-escolha input { width: 16px; height: 16px; flex: none; accent-color: var(--area-accent); }
+
+/* ─────────── leitura de nota: o mesmo layout pra toda nota (caso, pessoa, nota da área, eu/…) ─────────── */
+.reading-note > header { display: block; }
+.rn-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; }
+.rn-chips span {
+  display: inline-flex; align-items: center; min-height: 26px; padding: 0 11px;
+  border: 1px solid var(--line2); border-radius: 999px; background: var(--bg);
+  color: var(--ink2); font-size: 13px; font-weight: 600;
+}
+.rn-chips .rn-status { border-color: transparent; background: var(--area-tint); color: var(--area-ink); }
+.rn-topo { display: flex; align-items: center; justify-content: space-between; gap: 10px 12px; margin-bottom: 14px; }
+.reading-note h2:focus:not(:focus-visible) { outline: none; }
+.area-main .reading-note { max-width: none; margin: 0; }
+.rn-meta { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 10px 0 0; color: var(--ink2); font-size: 13px; line-height: 1.6; }
+.reading-note .rn-meta time { display: inline; margin: 0; }
+.rn-meta a { color: var(--ink2); }
+.rn-meta a.wl { color: var(--area-ink); font-weight: 600; }
+.rn-resumo { margin: 0 0 14px; padding: 16px 18px; border-radius: 16px; background: var(--area-tint); }
+.rn-resumo h3 { margin: 0 0 6px; color: var(--area-ink); font: 650 13px/1.3 var(--f-ui); letter-spacing: .01em; }
+.rn-resumo p { margin: 0; max-width: 72ch; font-size: 16px; line-height: 1.62; }
+.rn-intro { max-width: 72ch; padding: 2px 0 8px; color: var(--ink2); font-size: 15px; line-height: 1.65; }
+.nota-voltar { justify-self: start; min-height: 36px; }
+.nota-solta { max-width: 90ch; margin: 0 auto; }
+@media (max-width: 740px) {
+  .rn-topo { align-items: flex-start; }
+  .reading-note .rn-topo .btn { flex: none; min-height: 40px; padding-inline: 12px; }
+  .rn-resumo { padding: 14px 15px; }
+}

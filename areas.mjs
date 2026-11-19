@@ -1,4 +1,4 @@
-import { norm, pad, pymd, ymd } from './datas.mjs?v=3815c98edb71';
+import { norm, pad, pymd, ymd } from './datas.mjs?v=4141e3c50571';
 
 /* Tópicos fixos de toda área, na ordem do sumário. `re` acha as seções (## …) das notas
    que alimentam o tópico; os tópicos sem `re` são montados pelo painel. */
@@ -56,12 +56,39 @@ export function linkDeRegistro(path) {
   return match[2] === match[1] ? `#area/${match[1]}` : `#area/${match[1]}/nota/${encodeURIComponent(match[2])}`;
 }
 
-/** `#area/<area>[/<tópico>|/dias|/dia/aaaa-mm-dd|/nota/<arquivo>]` → o que mostrar. */
+/* Caminho no fim do link (`casos/tv-samsung` → `casos/tv-samsung.md`); null se o link estiver quebrado. */
+const caminhoDoLink = partes => {
+  try {
+    const path = partes.map(decodeURIComponent).join('/');
+    return path && !path.split('/').some(p => !p || p === '.' || p === '..') ? path + '.md' : null;
+  } catch { return null; }
+};
+const linkDoCaminho = path => path.replace(/\.md$/, '').split('/').map(encodeURIComponent).join('/');
+
+/** Toda nota abre na página, com o mesmo layout. Nota da pasta de uma área → dentro da área.
+    Nota de fora (caso, pessoa, eu/…) com `area:` de uma das áreas → dentro dessa área.
+    Sem área: dentro da área em que você está, ou numa página própria (`#nota/…`). */
+export function linkDaNota(path, areaDaNota, areaAtual, areas) {
+  const pasta = /^areas\/([^/]+)\//.exec(path);
+  if (pasta && areas.includes(pasta[1])) return path === `areas/${pasta[1]}/${pasta[1]}.md` ? `#area/${pasta[1]}/nota/${encodeURIComponent(pasta[1])}` : linkDeRegistro(path);
+  const area = areas.includes(areaDaNota) ? areaDaNota : areas.includes(areaAtual) ? areaAtual : null;
+  return area ? `#area/${area}/ver/${linkDoCaminho(path)}` : `#nota/${linkDoCaminho(path)}`;
+}
+
+/** `#nota/<caminho>` → caminho da nota (página própria, fora das áreas). */
+export function notaSolta(hash) {
+  const [prefix, ...partes] = hash.replace(/^#/, '').split('/');
+  if (prefix !== 'nota' || !partes.length) return null;
+  return { path: caminhoDoLink(partes) };
+}
+
+/** `#area/<area>[/<tópico>|/dias|/dia/aaaa-mm-dd|/nota/<arquivo>|/ver/<caminho>]` → o que mostrar. */
 export function destinoDaArea(hash, areas) {
   const [prefix, area, sub, extra, ...resto] = hash.replace(/^#/, '').split('/');
   if (prefix !== 'area' || !areas.includes(area)) return null;
   const base = { area, vista: 'resumo', dia: null, path: null };
   if (!sub) return base;
+  if (sub === 'ver' && extra) return { ...base, vista: 'nota', path: caminhoDoLink([extra, ...resto]) };
   if (TOPICO_IDS.has(sub) && !extra) return { ...base, vista: sub };
   if ((sub === 'dias' || sub === 'registros') && !extra) return { ...base, vista: 'dias' };
   if (sub === 'dia' && /^\d{4}-\d{2}-\d{2}$/.test(extra || '') && !resto.length) return { ...base, vista: 'dia', dia: extra };
@@ -76,11 +103,12 @@ export function destinoDaArea(hash, areas) {
 // Preserva introduções, blocos de código e a ordem do texto da nota.
 export function secoesDeLeitura(body) {
   const sections = [];
-  let title = 'Apresentação', lines = [], fence = '', firstTitle = true;
+  let title = 'Apresentação', lines = [], fence = '', firstTitle = true, intro = true;
   const flush = () => {
     const text = lines.join('\n').trim();
-    if (text) sections.push({ title, text });
+    if (text) sections.push(intro ? { title, text, intro: true } : { title, text });
     lines = [];
+    intro = false;
   };
   for (const line of body.split(/\r?\n/)) {
     const delimiter = /^\s*(`{3,}|~{3,})/.exec(line);

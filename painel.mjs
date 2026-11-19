@@ -1,13 +1,13 @@
 /* ─────────────── utilidades ─────────────── */
-import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDeRegistro, metasDaTabela, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=3815c98edb71';
-import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=3815c98edb71';
-import { visaoBemEstar } from './bem-estar.mjs?v=3815c98edb71';
-import { casosEmAndamento, pontoDeParada } from './memoria.mjs?v=3815c98edb71';
+import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDaNota, linkDeRegistro, metasDaTabela, notaSolta, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=4141e3c50571';
+import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=4141e3c50571';
+import { visaoBemEstar } from './bem-estar.mjs?v=4141e3c50571';
+import { casosEmAndamento, pontoDeParada } from './memoria.mjs?v=4141e3c50571';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const h = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=3815c98edb71';
+import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=4141e3c50571';
 const DOW = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 const DOWL = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
 const MON = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
@@ -768,10 +768,11 @@ function render() {
   $('#eye').setAttribute('aria-pressed', String(!cfg.discreet));
   $('#eyeSlash').style.display = cfg.discreet ? '' : 'none';
   renderNav(); renderInicio(); renderTasks(); renderFinancas(); renderAlimentacao(); renderRegistrar(); renderCaixa(); renderFeed(); renderInbox(); renderRhythm(); renderAreas(); renderCases(); renderAreaPage();
-  if (S.open && document.activeElement?.id !== 'drNoteTxt') renderDrawer();
+  renderNotaPage();
+  if (S.open) renderDrawer();
 }
 function renderNav() {
-  const active = S.page === 'area' ? (S.areaRoute.area === 'financas' ? 'financas' : 'areas') : S.page;
+  const active = S.page === 'area' ? (S.areaRoute.area === 'financas' ? 'financas' : 'areas') : S.page === 'nota' ? 'areas' : S.page;
   const n = S.cx.length;
   const badge = p => p.id === 'caixa' && n ? `<span class="badge" aria-label="${n} na caixa">${n}</span>` : '';
   $('#nav').innerHTML = PAGES.map(p => `<a href="#${p.id}"${active === p.id ? ' aria-current="page"' : ''}>${p.icon}<span>${p.nome}</span>${badge(p)}</a>`).join('');
@@ -787,13 +788,17 @@ function route() {
     id = 'financas'; sub = ''; area = null;
   }
   if (!id || id === 'hoje') id = 'inicio';
-  const p = area ? 'area' : id === 'area' ? 'areas' : PAGES.some(x => x.id === id) ? id : 'inicio';
-  const changed = p !== S.page || (p === 'area' && location.hash !== S.areaHash);
+  const solta = area ? null : notaSolta(location.hash);
+  const p = area ? 'area' : solta ? 'nota' : id === 'area' ? 'areas' : PAGES.some(x => x.id === id) ? id : 'inicio';
+  const changed = p !== S.page || ((p === 'area' || p === 'nota') && location.hash !== S.areaHash);
+  S.notaPath = solta ? solta.path : null;
+  if (changed && S.open) closeNote();
   const previousArea = S.areaRoute?.area || (S.page === 'financas' ? 'financas' : null);
   const nextArea = area?.area || (p === 'financas' ? 'financas' : null);
   if (previousArea && previousArea !== nextArea) S.reveal.delete(`#area/${previousArea}`);
   S.areaRoute = area;
-  S.areaHash = area ? location.hash : '';
+  S.areaHash = area || solta ? location.hash : '';
+  if (changed) S.voltas = (S.voltas || 0) + 1;
   if (changed) S.sumario = false;
   const saiDeTarefas = S.page === 'tarefas' && p !== 'tarefas';
   if (saiDeTarefas) S.reveal.delete('#tarefas');
@@ -812,15 +817,17 @@ function route() {
   for (const el of $$('.page')) el.hidden = el.dataset.page !== p;
   renderNav();
   renderAreaPage();
+  renderNotaPage();
   if (p === 'tarefas' || saiDeTarefas) renderTasks();
   if (p === 'alimentacao') renderAlimentacao();
   if (p === 'financas' || (previousArea === 'financas' && nextArea !== previousArea)) renderFinancas();
   if (p === 'registrar') renderRegistrar();
   if (p === 'caixa') renderCaixa();
-  document.title = `${area ? AREAS[area.area].nome : PAGES.find(page => page.id === p)?.nome || 'Hoje'} · Meu Assessor`;
+  const notaAberta = S.files[area?.path || S.notaPath];
+  document.title = `${notaAberta ? plain(notaAberta.title) : area ? AREAS[area.area].nome : PAGES.find(page => page.id === p)?.nome || 'Hoje'} · Meu Assessor`;
   if (changed) {
     window.scrollTo(0, 0);
-    if (p === 'area') $('#areaPage h1')?.focus({ preventScroll: true });
+    if (p === 'area' || p === 'nota') $(`#${p === 'nota' ? 'notaPage' : 'areaPage'} ${area?.vista === 'nota' || p === 'nota' ? '.reading-note h2' : 'h1'}`)?.focus({ preventScroll: true });
   }
 }
 
@@ -860,7 +867,7 @@ function dialSvg(items, nm, dow) {
 
 const isChecked = g => { const o = taskOv(g); return o ? o.kind === 'feita' : g.checked; };
 const byDue = (a, b) => (a.due || '9').localeCompare(b.due || '9') || (b.prio === 'alta') - (a.prio === 'alta');
-import { organizarTarefas, primeiroPasso } from './tarefas.mjs?v=3815c98edb71';
+import { organizarTarefas, primeiroPasso } from './tarefas.mjs?v=4141e3c50571';
 function estadoTarefa(g) {
   if (g.nova) return { feita:false, data:'' };
   const item = taskOv(g);
@@ -1252,7 +1259,8 @@ function topicosDaArea(C) {
 
 function sumarioDaArea(C, T, vista) {
   const { area } = C;
-  const atual = vista.vista === 'nota' ? null : vista.vista;
+  // caso ou pessoa aberto dentro da área acende "Pessoas e casos"; nota da área acende "Notas da área"
+  const atual = vista.vista !== 'nota' ? vista.vista : /^(casos|pessoas)\//.test(vista.path || '') ? 'pessoas' : null;
   const item = t => {
     const vazio = t.id !== 'resumo' && !T.n[t.id];
     return `<li><a href="${linkTopico(area, t.id)}"${atual === t.id ? ' aria-current="page"' : ''}${vazio ? ' class="vazio"' : ''}><span class="sm-ic" aria-hidden="true">${t.emoji}</span><span class="sm-nome">${t.curto || t.nome}</span>${!vazio && t.id !== 'resumo' ? `<span class="sm-n">${T.n[t.id]}</span>` : ''}</a></li>`;
@@ -1274,7 +1282,7 @@ function sumarioDaArea(C, T, vista) {
   const lista = grupos => grupos.map(g => g.html).join('');
   const mais = grupos.filter(g => !visivel(g));
   const totalMais = mais.reduce((total, g) => total + (T.n[g.id] || 0), 0);
-  const grupoAtual = vista.vista === 'nota' ? 'notas' : vista.dia ? 'dias' : atual;
+  const grupoAtual = vista.vista === 'nota' ? atual || 'notas' : vista.dia ? 'dias' : atual;
   return `<nav class="sumario" id="areaSumario" aria-label="Sumário de ${h(AREAS[area].nome)}">
     <div class="sm-topo"><span>Sumário</span><button type="button" class="ib sm-fechar" data-sumario="fechar" aria-label="Fechar sumário">${ICON.x}</button></div>
     <details class="sm-escolha" data-section="sm-escolha"><summary>Personalizar sumário</summary>
@@ -1423,16 +1431,71 @@ function corpoDoTopico(C, T, vista) {
   return extra + secs.map(cartaoSecao).join('');
 }
 
-function leituraDaNota(f, sections) {
+/* ─────────────── leitura de nota: o mesmo layout pra toda nota ─────────────── */
+function tipoDaNota(f) {
+  const p = f.path;
+  if (p.startsWith('casos/')) return '📂 Caso';
+  if (p.startsWith('pessoas/')) return '👤 Pessoa';
+  if (/^areas\/([^/]+)\/\1\.md$/.test(p)) return '📌 Nota principal';
+  if (ehRegistroDoMes(p) || /\/(journal|treinos)-\d{4}-\d{2}\.md$/.test(p)) return '📅 Registros do mês';
+  if (p.startsWith('areas/')) return '📄 Nota da área';
+  if (p.startsWith('diario/')) return '📓 Diário';
+  if (p.startsWith('documentos/')) return '🔢 Documentos';
+  if (p === 'agenda.md') return '🗓️ Agenda';
+  if (p === 'tarefas.md') return '✅ Tarefas';
+  if (p.startsWith('eu/')) return '🙋 Sobre você';
+  if (p.startsWith('painel/')) return '📲 Painel';
+  return '📄 Nota';
+}
+/* Seções do assunto ficam abertas; histórico e dias antigos começam fechados (abre com um toque). */
+const SECAO_FECHADA = /^(linha do tempo|historico|descartad|arquivad|antig)/;
+function leituraDaNota(f) {
+  const secoes = secoesDeLeitura(f.body);
+  const intro = secoes[0]?.intro ? secoes.shift() : null;
+  const datas = secoes.map(s => (s.title.match(/^(\d{4}-\d{2}-\d{2})/) || [])[1]).filter(Boolean).sort();
+  const aberta = s => { const d = (s.title.match(/^(\d{4}-\d{2}-\d{2})/) || [])[1]; return d ? d === datas.at(-1) : !SECAO_FECHADA.test(norm(plain(s.title))); };
   const date = String(f.meta.atualizado || '').slice(0, 10);
+  const pessoas = [].concat(f.meta.pessoas || []).map(p => String(p).replace(/^\[\[|\]\]$/g, '').trim()).filter(Boolean);
+  const chips = [tipoDaNota(f), AREAS[f.area] && !f.path.startsWith('areas/') ? `${AREAS[f.area].emoji} ${AREAS[f.area].nome}` : '']
+    .filter(Boolean).map(c => `<span>${h(c)}</span>`).join('') + (f.meta.status ? `<span class="rn-status">${h(f.meta.status)}</span>` : '');
+  const ghUrl = `https://github.com/${cfg.repo}/blob/${encodeURIComponent(cfg.branch || 'main')}/${repoPath(f.path)}`;
+  const meta = [/^\d{4}-\d{2}-\d{2}$/.test(date) ? `<time datetime="${date}">Atualizada em ${dm(date)}/${date.slice(0, 4)}</time>` : '',
+    pessoas.length ? `<span>👥 ${pessoas.map(p => wl(p)).join(', ')}</span>` : '',
+    `<a href="${h(ghUrl)}" target="_blank" rel="noopener noreferrer">abrir no GitHub ↗</a>`].filter(Boolean).join('');
   return `<article class="reading-note">
-    <header><div>${/^\d{4}-\d{2}-\d{2}$/.test(date) ? `<time datetime="${date}">Atualizado em ${dm(date)}/${date.slice(0,4)}</time>` : ''}
-      <h2>${h(plain(f.title))}</h2></div><button type="button" class="btn ghost" data-anotar-nota="${h(f.path)}">Anotar aqui</button></header>
-    ${f.meta.resumo ? `<details class="reading-part" data-section="resumo"><summary>Resumo da nota</summary><div class="md"><p>${inline(f.meta.resumo)}</p></div></details>` : ''}
-    ${sections.map((s, i) => `<details class="reading-part" data-section="${i}"${sections.length === 1 ? ' open' : ''}>
+    <header><div class="rn-topo"><p class="rn-chips">${chips}</p><button type="button" class="btn ghost" data-anotar-nota="${h(f.path)}">✏️ Anotar aqui</button></div>
+      <h2 tabindex="-1">${h(plain(f.title))}</h2>
+      <p class="rn-meta">${meta}</p></header>
+    ${f.meta.resumo ? `<section class="rn-resumo"><h3>📌 Resumo</h3><p>${inline(f.meta.resumo)}</p></section>` : ''}
+    ${intro ? `<div class="md rn-intro">${md(intro.text, f.path, true)}</div>` : ''}
+    ${secoes.map((s, i) => `<details class="reading-part" data-section="${i}"${aberta(s) ? ' open' : ''}>
       <summary>${h(plain(s.title))}</summary><div class="md">${md(s.text, f.path, true)}</div></details>`).join('')}
-    ${!sections.length && !f.meta.resumo ? '<p class="area-empty">Esta nota ainda está vazia.</p>' : ''}
+    ${!secoes.length && !intro && !f.meta.resumo ? '<p class="area-empty">Esta nota ainda está vazia.</p>' : ''}
     </article>`;
+}
+/* Nota reservada com o modo discreto ligado: pede um toque antes de mostrar. */
+const notaVelada = (f, base) => cfg.discreet && (f.sens || VEIL.has(f.area) || f.path === CAIXA) && !S.reveal.has(f.path) && !(base && S.reveal.has(base));
+const veuDaNota = f => `<div class="area-gate">${ICON.lock}<h2>Nota reservada</h2><p>Esta nota é de ${h(AREAS[f.area]?.nome || 'um assunto reservado')} e o modo discreto está ativo.</p><button class="btn" data-reveal="${h(f.path)}">Mostrar a nota</button></div>`;
+const voltarDaNota = destino => `<a class="area-back nota-voltar" href="${destino}"${S.voltas > 1 ? ' data-voltar' : ''}><span aria-hidden="true">←</span> Voltar</a>`;
+
+/* Página própria (`#nota/…`) para nota sem área, aberta fora de uma área: o mesmo layout, sem sumário. */
+let lastNotaMarkup = '';
+function renderNotaPage() {
+  const el = $('#notaPage');
+  if (!el) return;
+  if (S.page !== 'nota') { if (el.childElementCount) el.replaceChildren(); lastNotaMarkup = ''; return; }
+  const f = S.files[S.notaPath];
+  const openDetails = new Map();
+  const same = el.dataset.route === location.hash;
+  if (same) for (const d of $$('details', el)) openDetails.set(d.dataset.section, d.open);
+  el.dataset.route = location.hash;
+  el.style.setProperty('--area-accent', areaColor(f?.area));
+  const corpo = !f ? `<p class="area-card">${S.head ? 'Esta nota não foi encontrada.' : 'Carregando a nota…'}</p>` : notaVelada(f) ? veuDaNota(f) : leituraDaNota(f);
+  const markup = `${voltarDaNota('#areas')}<div class="area-main nota-solta">${corpo}</div>`;
+  if (same && markup === lastNotaMarkup) return;
+  lastNotaMarkup = markup;
+  el.innerHTML = markup;
+  for (const node of $$('details', el)) if (openDetails.has(node.dataset.section)) node.open = openDetails.get(node.dataset.section);
 }
 
 let lastAreaMarkup = '';
@@ -1463,18 +1526,17 @@ function renderAreaPage() {
     markup = head + `<div class="area-gate">${ICON.lock}<h2>Área reservada</h2><p>O modo discreto está ativo.</p><button class="btn" data-reveal-area="${area}">Mostrar esta área</button></div>`;
   } else {
     const C = contextoDaArea(area, base), T = topicosDaArea(C);
-    let titulo, corpo;
+    let titulo = '', corpo;
     if (route.vista === 'nota') {
-      const f = C.notas.find(file => file.path === route.path);
-      titulo = f ? (f === C.principal ? 'Nota principal' : plain(f.title)) : 'Nota';
-      corpo = f ? leituraDaNota(f, secoesDeLeitura(f.body)) : `<p class="area-card">${S.head ? 'Esta nota não foi encontrada.' : 'Carregando a nota…'}</p>`;
+      const f = S.files[route.path];
+      corpo = !f ? `<p class="area-card">${S.head ? 'Esta nota não foi encontrada.' : 'Carregando a nota…'}</p>` : notaVelada(f, base) ? veuDaNota(f) : leituraDaNota(f);
     } else {
       const t = TOPICOS.find(x => x.id === route.vista);
-      titulo = t ? `${t.emoji} ${t.nome}` : route.vista === 'dias' ? '📅 Registros diários' : `📅 ${diaLongo(route.dia)}`;
+      titulo = `<h2 class="topico-titulo">${t ? `${t.emoji} ${t.nome}` : route.vista === 'dias' ? '📅 Registros diários' : `📅 ${diaLongo(route.dia)}`}</h2>`;
       corpo = S.head || Object.keys(S.files).length ? corpoDoTopico(C, T, route) : '<p class="area-card">Carregando suas notas…</p>';
     }
     markup = head + `<div class="area-shell"><div class="area-sumario-col">${sumarioDaArea(C, T, route)}</div>
-      <div class="area-main"><h2 class="topico-titulo">${titulo}</h2>${corpo}</div></div>
+      <div class="area-main">${route.vista === 'nota' ? voltarDaNota(base) : ''}${titulo}${corpo}</div></div>
       <button type="button" class="sumario-fab" data-sumario="abrir" aria-controls="areaSumario" aria-expanded="${S.sumario ? 'true' : 'false'}">${SUMARIO_ICON}<span>Sumário</span></button>
       <div class="sumario-scrim" data-sumario="fechar" aria-hidden="true"></div>`;
   }
@@ -1503,29 +1565,16 @@ function renderCases() {
   }).join('') || '<p class="empty">Nenhum caso aberto.</p>';
 }
 
-/* ─────────────── gaveta (só leitura + anotar) ─────────────── */
+/* ─────────────── abrir nota: sempre na página, com o mesmo layout ─────────────── */
 function openNote(path) {
   if (!S.files[path]) return;
-  const area = path.split('/')[1];
-  if (path.startsWith('areas/') && AREA_ORDER.includes(area)) {
-    if (S.open) { closeNote(); if (S.open) return; }
-    const target = path === `areas/${area}/${area}.md` ? linkDeNota(area) : linkDeRegistro(path);
-    if (location.hash !== target) location.hash = target;
-    return;
-  }
-  S.from = S.open && S.open.startsWith('@') ? S.open.slice(1) : null;
-  S.open = path;
-  const dr = $('#drawer'), sc = $('#scrim');
-  dr.hidden = false; sc.hidden = false;
-  $('#drBody').innerHTML = '';
-  renderDrawer();
-  requestAnimationFrame(() => { dr.classList.add('on'); sc.classList.add('on'); $('#drClose').focus(); });
+  if (S.open) closeNote();
+  const alvo = linkDaNota(path, S.files[path].area, S.page === 'area' ? S.areaRoute?.area : null, AREA_ORDER);
+  if (location.hash !== alvo) location.hash = alvo;
 }
+/* A gaveta ficou só para "o que entrou de novo" (um registro do assessor ou do painel). */
 function closeNote() {
-  const ta = $('#drNoteTxt');
-  if (ta && ta.value.trim() && !closeNote.warned) { closeNote.warned = true; toast('Você escreveu uma anotação e não guardou. Feche de novo para descartar.'); return; }
-  closeNote.warned = false;
-  S.open = null; S.from = null;
+  S.open = null;
   const dr = $('#drawer'), sc = $('#scrim');
   dr.classList.remove('on'); sc.classList.remove('on');
   setTimeout(() => { if (!S.open) { dr.hidden = true; sc.hidden = true; $('#drBody').innerHTML = ''; } }, 260);
@@ -1533,7 +1582,6 @@ function closeNote() {
 /* ─────────────── registro (commit) na gaveta ─────────────── */
 const Commits = new Map();
 function openCommit(sha) {
-  S.from = null;
   S.open = '@' + sha;
   const dr = $('#drawer'), sc = $('#scrim');
   dr.hidden = false; sc.hidden = false;
@@ -1598,29 +1646,8 @@ function renderCommit() {
   body.scrollTop = scroll;
 }
 function renderDrawer() {
-  if (S.open && S.open.startsWith('@')) { renderCommit(); return; }
-  const f = S.files[S.open];
-  if (!f) { closeNote(); return; }
-  $('#drTitle').textContent = plain(f.title);
-  const ghUrl = `https://github.com/${cfg.repo}/blob/${encodeURIComponent(cfg.branch || 'main')}/${repoPath(f.path)}`;
-  $('#drPath').innerHTML = `${S.from ? `<a href="#" class="back" data-commit="${h(S.from)}">← voltar ao registro</a>` : ''}<span>${h(f.path)}</span>${f.meta.atualizado ? `<span>${relDay(f.meta.atualizado)}</span>` : ''}<a href="${h(ghUrl)}" target="_blank" rel="noopener noreferrer">abrir no GitHub</a>`;
-  const body = $('#drBody');
-  const draft = $('#drNoteTxt') ? $('#drNoteTxt').value : '';
-  const focused = document.activeElement && document.activeElement.id === 'drNoteTxt';
-  if ((f.sens || VEIL.has(f.area) || f.path === CAIXA) && cfg.discreet && !S.reveal.has(f.path)) {
-    body.innerHTML = `<div class="gate">${ICON.lock.replace('<svg', '<svg style="width:28px;height:28px;color:var(--ink3)"')}<p>Esta nota é de ${h(AREAS[f.area]?.nome || 'um assunto reservado')}.</p><button class="btn" data-reveal="${h(f.path)}">Mostrar a nota</button></div>`;
-    return;
-  }
-  const meta = [];
-  if (f.meta.status) meta.push(`<span>Status: <b>${h(f.meta.status)}</b></span>`);
-  if (Array.isArray(f.meta.pessoas) && f.meta.pessoas.length) meta.push(`<span>Pessoas: ${f.meta.pessoas.map(p => wl(p)).join(', ')}</span>`);
-  if (f.meta.resumo) meta.push(`<span class="rsm">${inline(f.meta.resumo)}</span>`);
-  const scroll = body.scrollTop;
-  body.innerHTML = `<div class="fm">${meta.join('')}</div><div class="md">${md(f.body, f.path)}</div>
-    <form class="dr-note" id="drNote" autocomplete="off"><h3 style="margin-top:0">Anotar sobre isto</h3><label class="sr" for="drNoteTxt">Anotação sobre esta nota</label><textarea id="drNoteTxt" placeholder="Algo mudou? Escreva aqui; vai pra caixa e o assessor atualiza a nota."></textarea><div class="form-foot"><button class="btn" type="submit">Guardar na caixa</button></div></form>`;
-  if (draft) $('#drNoteTxt').value = draft;
-  if (focused) $('#drNoteTxt').focus();
-  body.scrollTop = scroll;
+  if (S.open && S.open.startsWith('@')) renderCommit();
+  else if (S.open) closeNote();
 }
 
 /* ─────────────── busca ─────────────── */
@@ -2317,8 +2344,8 @@ function renderRegistrar() {
 }
 
 /* ─────────────── Finanças (o conteúdo do "Meus gastos", lendo o espelho da planilha) ─────────────── */
-import { brl, brl0, c2, addM, dim, pnum, valorCapturado, calcularFinancas, orcamentoDoMes, filtrarLancamentos } from './financas.mjs?v=3815c98edb71';
-import { lancamentosRealizados, graficoLancamentos } from './financas-visao.mjs?v=3815c98edb71';
+import { brl, brl0, c2, addM, dim, pnum, valorCapturado, calcularFinancas, orcamentoDoMes, filtrarLancamentos } from './financas.mjs?v=4141e3c50571';
+import { lancamentosRealizados, graficoLancamentos } from './financas-visao.mjs?v=4141e3c50571';
 const FCAT = { 'Moradia': ['🏠', '#7B61FF'], 'Mercado': ['🛒', '#22B07D'], 'Alimentação fora': ['🍔', '#FF8A3D'], 'Transporte': ['🚗', '#3D8BFF'], 'Saúde': ['💊', '#FF5C7A'], 'Educação': ['📚', '#A35CF7'], 'Família': ['👨‍👩‍👧', '#F2B705'], 'Bebê': ['🍼', '#38BDF8'], 'Lazer': ['🎉', '#E05CD0'], 'Assinaturas': ['📺', '#5B6BF5'], 'Contas fixas': ['💡', '#F59E0B'], 'Revenda': ['📦', '#A0785A'], 'Outros': ['🛍️', '#8E949C'], 'Uber e 99': ['🚕', '#3D8BFF'], 'Delivery': ['🛵', '#FF8A3D'], 'Comer fora': ['🍔', '#FF5C7A'], 'Compras avulsas (Outros)': ['🛍️', '#8E949C'], 'Receita': ['💰', '#22B07D'], 'Conta': ['🧾', '#F59E0B'], 'Fatura': ['💳', '#7C3AED'], 'Pix e boleto': ['⚡', '#3D8BFF'] };
 const fic = n => FCAT[n] || ['•', '#8E949C'];
 const CARTAO_COR = { 'Nubank': 'linear-gradient(135deg,#6A06B0,#A855F7)', 'Mercado Pago': 'linear-gradient(135deg,#0077C8,#22C1F5)', 'Bradesco Amazon': 'linear-gradient(135deg,#A30825,#F0435F)', 'XP': 'linear-gradient(135deg,#1f2937,#4B5563)' };
@@ -2964,7 +2991,7 @@ function copiar(txt, ok) {
 }
 function bind() {
   document.addEventListener('click', ev => {
-    const t = ev.target.closest('[data-commit],[data-open],[data-task],[data-compra],[data-cxdel],[data-tab],[data-mdt],[data-reveal],[data-find],[data-reg],[data-mood],[data-emo],#copyAsk,[data-act],[data-st],[data-day],[data-wk],[data-pick],[data-ficha],[data-regficha],[data-fmes],[data-ftab],[data-fo],[data-fcart],[data-fvenc],[data-fdia],[data-fcat],[data-alitab],[data-pessoa],[data-dias],[data-pego],[data-trocagrupo],[data-ref],[data-trocap],[data-close],[data-reveal-area],[data-ocultar-area],[data-area-captura],[data-anotar-nota],[data-box-remove],[data-sumario]');
+    const t = ev.target.closest('[data-commit],[data-open],[data-task],[data-compra],[data-cxdel],[data-tab],[data-mdt],[data-reveal],[data-find],[data-reg],[data-mood],[data-emo],#copyAsk,[data-act],[data-st],[data-day],[data-wk],[data-pick],[data-ficha],[data-regficha],[data-fmes],[data-ftab],[data-fo],[data-fcart],[data-fvenc],[data-fdia],[data-fcat],[data-alitab],[data-pessoa],[data-dias],[data-pego],[data-trocagrupo],[data-ref],[data-trocap],[data-close],[data-reveal-area],[data-ocultar-area],[data-area-captura],[data-anotar-nota],[data-box-remove],[data-sumario],[data-voltar]');
     if (!t) return;
     const d = t.dataset;
     if (d.sumario) { ev.preventDefault(); sumario(d.sumario === 'abrir' && !S.sumario); return; }
@@ -3035,6 +3062,7 @@ function bind() {
       if (a === 'olho') { closeSheet(); cfg.discreet = !cfg.discreet; saveCfg(); S.reveal.clear(); render(); return; }
       return;
     }
+    if (d.voltar !== undefined) { ev.preventDefault(); history.back(); return; }
     if (d.commit) { ev.preventDefault(); openCommit(d.commit); return; }
     if (d.open !== undefined) { ev.preventDefault(); closeFind(); openNote(d.open); return; }
     if (d.task) { clickTask(d.task); return; }
@@ -3045,7 +3073,7 @@ function bind() {
       else if (d.mdpath === COMPRAS) { const t2 = S.files[COMPRAS]?.tasks.find(x => x.raw === d.mdraw); if (t2) clickCompra(t2); }
       return;
     }
-    if (d.reveal) { S.reveal.add(d.reveal); renderDrawer(); return; }
+    if (d.reveal) { S.reveal.add(d.reveal); if (S.open) renderDrawer(); renderAreaPage(); renderNotaPage(); return; }
     if (d.find) { const r = findList[+d.find]; if (r) { closeFind(); openNote(r.f.path); } return; }
     if (d.reg) { location.hash = '#registrar/' + d.reg; return; }
     if (d.fmes) { const M = finModel(); if (M && M.meses[+d.fmes]) { S.finMes = M.meses[+d.fmes]; S.finOpen = {}; S.finDia = null; S.finCat = null; renderFinancas(); } return; }
@@ -3120,16 +3148,15 @@ function bind() {
     if (kind === 'receita' || kind === 'transferencia') { guardarMovimento(f); return; }
     if (kind === 'outro') { const txt = oneLine(f.txt.value); if (!txt) { f.txt.focus(); return; } const lugar = f.lugar.value; addCaixa([`🛒 Comprado: ${txt}${lugar ? ` (no lugar de ${lugar})` : ''}`], { msg: `comprado — ${short(txt, 40)}`, ok: lugar ? `Anotado no lugar de ${lugar}.` : 'Anotado.' }); f.txt.value = ''; f.lugar.value = ''; return; }
     if (kind === 'addcompra') { const txt = oneLine(f.txt.value); if (!txt) { f.txt.focus(); return; } addCompraBox(txt, f.sec.value); f.txt.value = ''; return; }
-    if (f.id === 'drNote' || kind === 'nota-vinculada') {
-      ev.preventDefault();
-      const field = kind === 'nota-vinculada' ? f.elements.txt : $('#drNoteTxt');
-      const v = field.value.trim(), nf = S.files[kind === 'nota-vinculada' ? f.dataset.path : S.open];
+    if (kind === 'nota-vinculada') {
+      const field = f.elements.txt;
+      const v = field.value.trim(), nf = S.files[f.dataset.path];
       if (!v || !nf) return;
       const lines = v.split(/\n+/);
       const an = AREAS[nf.area]?.nome || (nf.path.startsWith('casos/') ? 'Caso' : 'Geral');
       addCaixa([`📝 Anotação (${an}): ${lines[0]} → ${nf.path}`, ...lines.slice(1)], { sens: nf.sens, msg: `anotação sobre ${short(plain(nf.title), 40)}`, ok: 'Guardado na caixa. O assessor atualiza a nota.' });
       field.value = '';
-      if (kind === 'nota-vinculada') closeSheet();
+      closeSheet();
     }
   });
   document.addEventListener('keydown', ev => {
