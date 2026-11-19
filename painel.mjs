@@ -1,13 +1,13 @@
 /* ─────────────── utilidades ─────────────── */
-import { destinoDaArea, linkDeRegistro, notasDaArea, primeiraMeta, secoesDeLeitura } from './areas.mjs?v=c0273d90ee1f';
-import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=c0273d90ee1f';
-import { visaoBemEstar } from './bem-estar.mjs?v=c0273d90ee1f';
-import { casosEmAndamento, pontoDeParada } from './memoria.mjs?v=c0273d90ee1f';
+import { TOPICOS, areasDoTexto, casosDaArea, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDeRegistro, metasDaTabela, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=6e8bf3eb68dd';
+import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=6e8bf3eb68dd';
+import { visaoBemEstar } from './bem-estar.mjs?v=6e8bf3eb68dd';
+import { casosEmAndamento, pontoDeParada } from './memoria.mjs?v=6e8bf3eb68dd';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const h = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=c0273d90ee1f';
+import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=6e8bf3eb68dd';
 const DOW = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 const DOWL = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
 const MON = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
@@ -673,6 +673,7 @@ function inline(t) {
   s = s.replace(/\[\[([^\]|#]+)(#[^\]|]*)?(?:\|([^\]]+))?\]\]/g, (_, st, _h, al) => wl(st, al));
   s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (_, tx, u) => `<a href="${u}" target="_blank" rel="noopener noreferrer">${tx}</a>`);
   s = s.replace(/(^|[\s(])(https?:\/\/[^\s<)]+)/g, (_, pre, u) => `${pre}<a href="${u}" target="_blank" rel="noopener noreferrer">${u.replace(/^https?:\/\/(www\.)?/, '').slice(0, 42)}${u.length > 52 ? '…' : ''}</a>`);
+  s = s.replace(/~~([^~]+)~~/g, '<del>$1</del>');
   s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/(^|[^*\w])\*([^*\s][^*]*?)\*(?!\w)/g, '$1<em>$2</em>');
   return s.replace(/\u0000(\d+)\u0000/g, (_, i) => `<code>${codes[i]}</code>`);
 }
@@ -781,7 +782,7 @@ function renderNav() {
 function route() {
   let [id, sub] = location.hash.slice(1).split('/');
   let area = destinoDaArea(location.hash, AREA_ORDER);
-  if (area?.area === 'financas' && !area.registros) {
+  if (area?.area === 'financas' && /^#area\/financas\/?$/.test(location.hash)) {
     history.replaceState(null, '', '#financas');
     id = 'financas'; sub = ''; area = null;
   }
@@ -793,6 +794,7 @@ function route() {
   if (previousArea && previousArea !== nextArea) S.reveal.delete(`#area/${previousArea}`);
   S.areaRoute = area;
   S.areaHash = area ? location.hash : '';
+  if (changed) S.sumario = false;
   const saiDeTarefas = S.page === 'tarefas' && p !== 'tarefas';
   if (saiDeTarefas) S.reveal.delete('#tarefas');
   if (p === 'tarefas') S.tab = ['proximas', 'semdata', 'feitas'].includes(sub) ? sub : 'hoje';
@@ -858,7 +860,7 @@ function dialSvg(items, nm, dow) {
 
 const isChecked = g => { const o = taskOv(g); return o ? o.kind === 'feita' : g.checked; };
 const byDue = (a, b) => (a.due || '9').localeCompare(b.due || '9') || (b.prio === 'alta') - (a.prio === 'alta');
-import { organizarTarefas, primeiroPasso } from './tarefas.mjs?v=c0273d90ee1f';
+import { organizarTarefas, primeiroPasso } from './tarefas.mjs?v=6e8bf3eb68dd';
 function estadoTarefa(g) {
   if (g.nova) return { feita:false, data:'' };
   const item = taskOv(g);
@@ -1146,25 +1148,224 @@ function areaRecordList(files, area) {
     const principal = f.path === `areas/${area}/${area}.md`;
     const date = String(f.meta.atualizado || '').slice(0, 10);
     const meta = [principal ? 'Nota principal' : '', /^\d{4}-\d{2}-\d{2}$/.test(date) ? `Atualizado em ${dm(date)}/${date.slice(0, 4)}` : ''].filter(Boolean);
-    return `<li><a href="${h(linkDeRegistro(f.path))}"><span class="book-icon" aria-hidden="true">${BOOK_ICON}</span><span class="index-title">${h(plain(f.title))}${meta.length ? `<small>${h(meta.join(' · '))}</small>` : ''}</span><span aria-hidden="true">›</span></a></li>`;
+    return `<li><a href="${h(principal ? linkDeNota(area) : linkDeRegistro(f.path))}"><span class="book-icon" aria-hidden="true">${BOOK_ICON}</span><span class="index-title">${h(plain(f.title))}${meta.length ? `<small>${h(meta.join(' · '))}</small>` : ''}</span><span aria-hidden="true">›</span></a></li>`;
   }).join('')}</ul>`;
 }
 
 const BOOK_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M6 4.5h11.5v15H7.3A2.3 2.3 0 0 1 5 17.2V6a1.5 1.5 0 0 1 1-1.5Z"/><path d="M5.5 16h12M9 8h5"/></svg>';
+const SUMARIO_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 6h3M10 6h10M4 12h3M10 12h10M4 18h3M10 18h10"/></svg>';
+const linkTopico = (area, id) => id === 'resumo' ? (area === 'financas' ? '#area/financas/resumo' : `#area/${area}`) : `#area/${area}/${id}`;
+const linkDeNota = area => `#area/${area}/nota/${encodeURIComponent(area)}`;
+const diaLongo = s => { const t = pymd(s).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }); return t.charAt(0).toUpperCase() + t.slice(1); };
+const ORIGEM_ICON = { registro: '📓', area: '📄', caso: '📂', Hábitos: '🔁', Decisões: '🧭', Documentos: '🔢' };
+const DICA = {
+  metas: 'As metas do trimestre entram aqui quando você combinar na revisão. Ficam em “Metas do trimestre” na nota da área.',
+  tarefas: 'Nenhuma tarefa nesta área. Quando você pedir uma, o assessor cria no TickTick e ela aparece aqui.',
+  combinados: 'Quando você combinar algo (com alguém ou com você mesmo), o assessor anota em “Combinados”.',
+  decisoes: 'Decisões que mudam o rumo desta área. O assessor guarda com a data e o porquê.',
+  padroes: 'O que funciona e o que trava. Aparece sozinho quando houver ✅ e ❌ de hábitos desta área, e o assessor completa na revisão de domingo.',
+  numeros: 'Protocolos, valores, contatos e documentos dos casos desta área.',
+  pessoas: 'Pessoas e casos aparecem aqui quando estiverem ligados às notas desta área.',
+  perguntas: 'O que ficou pra decidir ou conferir. O assessor traz na revisão de domingo.',
+  conquistas: 'O que deu certo, com a data. Serve de prova quando o dia parecer ruim.',
+  dias: 'Nenhum registro com data nesta área ainda. O assessor grava aqui o que você fez ou não fez, dia a dia.',
+};
 
-function visaoGeralArea(area, files) {
-  const root = `areas/${area}/${area}.md`, f = S.files[root];
-  const goal = f && primeiraMeta(secoesDeLeitura(f.body));
-  const tasks = S.tasks.filter(g => !isChecked(g) && (!cfg.discreet || !g.sens)
-    && g.members.some(m => m.path.startsWith(`areas/${area}/`))).sort(byDue);
-  const recentes = files.filter(note => note !== f).slice(0, 3);
-  return `<div class="area-overview">
-    <section class="area-card focus-card"><h2>${goal ? 'Meta em foco' : 'Panorama'}</h2>
-      <p>${h(short(plain(goal || f?.meta.resumo || 'Abra os registros para consultar o que você guardou nesta área.'), 200))}</p>
-      ${f ? `<a class="area-link" href="${h(linkDeRegistro(root))}">Ler a nota principal <span aria-hidden="true">→</span></a>` : ''}</section>
-    <section class="area-card"><h2>Próximos passos</h2>${tasks.length ? `<ul class="area-steps">${tasks.slice(0, 3).map(t => taskLi(t)).join('')}</ul>` : '<p class="area-empty">Nenhuma tarefa aberta nas notas desta área.</p>'}</section>
-    ${recentes.length ? `<section class="area-card area-recent"><div class="area-card-head"><h2>Registros recentes</h2><a class="area-link" href="#area/${area}/registros">Ver todos</a></div>${areaRecordList(recentes, area)}</section>` : ''}
-    </div>`;
+/* tudo que a página da área precisa, calculado uma vez por desenho */
+function contextoDaArea(area, base) {
+  const ver = f => !cfg.discreet || !f.sens || S.reveal.has(base);
+  const notas = notasDaArea(S.files, area).filter(ver);
+  const principal = notas.find(f => f.path === `areas/${area}/${area}.md`) || null;
+  const casos = casosDaArea(S.files, area).filter(ver)
+    .sort((a, b) => Number(/^(fechado|resolvido|concluido|encerrado)$/.test(norm(a.meta.status))) - Number(/^(fechado|resolvido|concluido|encerrado)$/.test(norm(b.meta.status)))
+      || String(b.meta.atualizado || '').localeCompare(String(a.meta.atualizado || '')));
+  const hoje = ymd(now());
+  const dias = diasDaArea(Object.fromEntries([...notas, ...casos, ...['eu/habitos.md', 'eu/decisoes.md', 'documentos/documentos.md'].map(p => S.files[p]).filter(Boolean)].map(f => [f.path, f])), area, hoje);
+  const tarefas = organizarTarefas(S.tasks.filter(g => g.members.some(m => S.files[m.path]?.area === area) && (!cfg.discreet || !g.sens || S.reveal.has(base))), hoje, estadoTarefa);
+  const apoio = notas.filter(f => f !== principal && !ehRegistroDoMes(f.path));
+  return { area, base, notas, principal, casos, dias, tarefas, apoio, hoje };
+}
+const ultimosDias = (C, n) => C.dias.slice(0, n);
+/* lista longa: os n primeiros itens de 1º nível ficam à vista, o resto vai pra um "mais" */
+function cortarLista(text, n) {
+  const L = text.split('\n');
+  let itens = 0, corte = -1;
+  for (let i = 0; i < L.length; i++) if (/^([-*+]|\d+\.)\s+/.test(L[i]) && ++itens === n + 1) { corte = i; break; }
+  if (corte < 0) return { inicio: text, resto: '', n: 0 };
+  const resto = L.slice(corte).join('\n');
+  return { inicio: L.slice(0, corte).join('\n'), resto, n: resto.split('\n').filter(l => /^([-*+]|\d+\.)\s+/.test(l)).length };
+}
+const maiuscula = t => t.charAt(0).toUpperCase() + t.slice(1);
+const semTraco = t => String(t || '').replace(/^\s*[—–-]+\s*/, '');
+const itensDoDia = dia => dia.entradas.reduce((n, e) => n + (e.tipo === 'texto' ? Math.max(1, e.texto.split('\n').filter(l => /^\s*([-*+]|\d+\.)\s+/.test(l) && !/^\s{2,}/.test(l)).length) : 1), 0);
+function linhasDoDia(dia) {
+  return dia.entradas.map(e => {
+    if (e.tipo === 'texto') {
+      const l = e.texto.split('\n').map(x => x.trim()).find(x => x && !/^[#|>]/.test(x));
+      return l ? plain(l.replace(/^([-*+]|\d+\.)\s+(\[[ xX]\]\s*)?/, '')) : plain(e.titulo || e.fonte);
+    }
+    const st = e.campos.find(([, v]) => /^[✅❌🚫↷]/u.test(v.trim()) && v.trim().length <= 3)?.[1] || '';
+    const resto = e.campos.filter(([, v]) => v !== st);
+    const principal = resto.length > 2 ? `${resto[0][0].replace(/\s*\(.*\)$/, '')}: ${resto[0][1]}` : resto[0]?.[1] || '';
+    return plain(`${st ? st + ' ' : ''}${principal}`);
+  }).filter(Boolean);
+}
+
+function topicosDaArea(C) {
+  const { area, notas, principal, casos } = C;
+  const secoes = id => secoesDoTopico(['decisoes', 'numeros', 'perguntas'].includes(id) ? [...notas, ...casos] : notas, id);
+  const decisoesFora = S.files['eu/decisoes.md'] ? entradasDatadas(S.files['eu/decisoes.md']).filter(e => e.tipo === 'linha' && e.campos.some(([k, v]) => /^areas?$/.test(norm(k)) && areasDoTexto(v).has(area))) : [];
+  const casoStems = new Set(casos.map(f => f.stem.toLowerCase()));
+  const docs = S.files['documentos/documentos.md'] ? entradasDatadas(S.files['documentos/documentos.md']).filter(e => e.tipo === 'linha' && e.campos.some(([k, v]) => norm(k) === 'caso' && [...v.matchAll(/\[\[([^\]|#]+)/g)].some(m => m[1].trim().toLowerCase() === area || casoStems.has(m[1].trim().toLowerCase())))) : [];
+  const padroes = padroesDosHabitos(S.habits, area, C.hoje);
+  const pessoas = new Set();
+  for (const f of [...notas, ...casos]) {
+    for (const m of f.text.matchAll(/\[\[([^\]|#]+)/g)) { const p = S.stems[m[1].trim().toLowerCase()]; if (p?.startsWith('pessoas/')) pessoas.add(p); }
+    for (const nome of [].concat(f.meta.pessoas || [])) { const p = S.stems[String(nome).replace(/^\[\[|\]\]$/g, '').trim().toLowerCase()]; if (p?.startsWith('pessoas/')) pessoas.add(p); }
+  }
+  const abertas = ['atrasadas', 'hoje', 'proximas', 'semdata'].reduce((n, k) => n + C.tarefas[k].length, 0);
+  const metasSec = secoes('metas');
+  const extras = { decisoes: decisoesFora, numeros: docs };
+  const n = {
+    resumo: 0, metas: metasSec.reduce((t, s) => t + Math.max(1, metasDaTabela(s.texto).length), 0), tarefas: abertas,
+    pessoas: casos.length + pessoas.size, padroes: secoes('padroes').length + padroes.lista.length,
+  };
+  for (const id of ['combinados', 'decisoes', 'numeros', 'perguntas', 'conquistas']) n[id] = secoes(id).length + (extras[id]?.length || 0);
+  return { n, secoes, decisoesFora, docs, padroes, pessoas: [...pessoas].map(p => S.files[p]).filter(Boolean), metasSec };
+}
+
+function sumarioDaArea(C, T, vista) {
+  const { area } = C;
+  const atual = vista.vista === 'nota' ? null : vista.vista;
+  const topicos = TOPICOS.map(t => {
+    const vazio = t.id !== 'resumo' && !T.n[t.id];
+    return `<li><a href="${linkTopico(area, t.id)}"${atual === t.id ? ' aria-current="page"' : ''}${vazio ? ' class="vazio"' : ''}><span class="sm-ic" aria-hidden="true">${t.emoji}</span><span class="sm-nome">${t.curto || t.nome}</span>${!vazio && t.id !== 'resumo' ? `<span class="sm-n">${T.n[t.id]}</span>` : ''}</a></li>`;
+  }).join('');
+  const meses = new Map();
+  for (const d of C.dias) { const k = d.date.slice(0, 7); if (!meses.has(k)) meses.set(k, []); meses.get(k).push(d); }
+  const mesAtual = (vista.dia || C.dias[0]?.date || C.hoje).slice(0, 7);
+  const dias = [...meses.entries()].map(([k, ds]) => `<details class="sm-mes"${k === mesAtual ? ' open' : ''} data-section="mes-${k}"><summary>${MESES[+k.slice(5) - 1]} ${k.slice(0, 4)} <span class="sm-n">${ds.length}</span></summary>
+    <ul class="sm-dias">${ds.map(d => `<li><a href="#area/${area}/dia/${d.date}"${vista.dia === d.date ? ' aria-current="page"' : ''}><span>${dayLabel(d.date)}</span><span class="sm-n">${itensDoDia(d)}</span></a></li>`).join('')}</ul></details>`).join('');
+  const notas = [C.principal ? `<li><a href="${linkDeNota(area)}"${vista.path === C.principal.path ? ' aria-current="page"' : ''}>Nota principal</a></li>` : '',
+    ...C.apoio.map(f => `<li><a href="${h(linkDeRegistro(f.path))}"${vista.path === f.path ? ' aria-current="page"' : ''}>${h(plain(f.title))}</a></li>`)].join('');
+  return `<nav class="sumario" id="areaSumario" aria-label="Sumário de ${h(AREAS[area].nome)}">
+    <div class="sm-topo"><span>Sumário</span><button type="button" class="ib sm-fechar" data-sumario="fechar" aria-label="Fechar sumário">${ICON.x}</button></div>
+    <ul class="sm-topicos">${topicos}</ul>
+    <div class="sm-sec"><a href="#area/${area}/dias"${atual === 'dias' ? ' aria-current="page"' : ''}>📅 Registros diários</a><span class="sm-n">${C.dias.length || ''}</span></div>
+    ${dias || '<p class="sm-vazio">Nenhum dia registrado ainda.</p>'}
+    ${notas ? `<div class="sm-sec"><span>📚 Notas da área</span></div><ul class="sm-notas">${notas}</ul>` : ''}
+  </nav>`;
+}
+
+const vazioTopico = (id, area) => `<div class="area-card topico-vazio"><p>${h(DICA[id] || 'Nada aqui ainda.')}</p><button type="button" class="btn ghost" data-area-captura="${area}">＋ Anotar agora</button></div>`;
+const cartaoSecao = s => `<section class="area-card secao-card"><header class="secao-h"><h3>${h(plain(s.titulo))}</h3>${s.titulo !== s.fonte ? `<button type="button" class="secao-fonte" data-open="${h(s.path)}">${h(short(plain(s.fonte), 34))} <span aria-hidden="true">↗</span></button>` : `<button type="button" class="secao-fonte" data-open="${h(s.path)}">abrir <span aria-hidden="true">↗</span></button>`}</header><div class="md">${md(s.texto, s.path, true)}</div></section>`;
+function barraMeta(m) {
+  return `<li class="meta-item"><div class="meta-t">${inline(m.meta)}</div><div class="meta-nums"><span>Atual <b>${inline(m.atual || '—')}</b></span><span>Alvo <b>${inline(m.alvo || '—')}</b></span></div>${m.pct !== null ? `<div class="meta-barra" role="img" aria-label="${m.pct}% do alvo"><i style="width:${m.pct}%"></i></div>` : ''}</li>`;
+}
+function linhaDoRegistro(e) {
+  let campos = [...e.campos], st = '';
+  const i = campos.findIndex(([, v]) => /^[✅❌🚫↷]/u.test(v.trim()) && v.trim().length <= 3);
+  if (i >= 0) { st = campos[i][1].trim(); campos.splice(i, 1); }
+  if (campos.length <= 2) {
+    const [principal, extra] = campos;
+    return `<li class="dia-linha">${st ? `<span class="dia-st">${st}</span>` : ''}<span>${inline(principal?.[1] || '')}${extra ? ` <small>${inline(extra[0])}: ${inline(extra[1])}</small>` : ''}</span></li>`;
+  }
+  return `<li class="dia-linha dia-campos">${st ? `<span class="dia-st">${st}</span>` : ''}<dl>${campos.map(([k, v]) => `<div><dt>${inline(k)}</dt><dd>${inline(v)}</dd></div>`).join('')}</dl></li>`;
+}
+function blocoDoDia(dia) {
+  const grupos = new Map();
+  for (const e of dia.entradas) { if (!grupos.has(e.path)) grupos.set(e.path, []); grupos.get(e.path).push(e); }
+  return [...grupos.entries()].map(([path, es]) => {
+    const e0 = es[0], ic = ORIGEM_ICON[e0.fonte] || ORIGEM_ICON[e0.origem] || '📄';
+    const secao = [...new Set(es.map(e => e.secao).filter(Boolean))].map(plain).join(' · ');
+    const textos = es.filter(e => e.tipo === 'texto').map(e => `${e.titulo && !/^(seg|ter|qua|qui|sex|s[aá]b|dom)\.?$/i.test(e.titulo) ? `<p class="dia-sub">${inline(e.titulo)}</p>` : ''}<div class="md">${md(e.texto, path, true)}</div>`).join('');
+    const linhas = es.filter(e => e.tipo === 'linha');
+    return `<section class="dia-grupo"><header><span aria-hidden="true">${ic}</span><button type="button" class="dia-fonte" data-open="${h(path)}">${h(plain(e0.origem === 'registro' ? 'Anotações do dia' : e0.fonte))}</button>${secao && e0.origem !== 'fora' ? `<small>${h(secao)}</small>` : ''}</header>
+      ${textos}${linhas.length ? `<ul class="dia-linhas">${linhas.map(linhaDoRegistro).join('')}</ul>` : ''}</section>`;
+  }).join('');
+}
+
+function corpoDoTopico(C, T, vista) {
+  const { area, principal } = C;
+  const id = vista.vista;
+  if (id === 'resumo') {
+    const secs = principal ? secoesDeLeitura(principal.body) : [];
+    const agora = secs.find(s => /^agora\b/.test(norm(s.title)));
+    const importante = secs.find(s => /^importante\b/.test(norm(s.title)));
+    const meta = T.metasSec.flatMap(s => metasDaTabela(s.texto))[0];
+    const metaLista = !meta && primeiraMeta(secs);
+    const status = norm(principal?.meta.status || '');
+    const prox = [...C.tarefas.atrasadas, ...C.tarefas.hoje, ...C.tarefas.proximas, ...C.tarefas.semdata].slice(0, 3);
+    const dias = ultimosDias(C, 3);
+    return `<div class="area-overview">
+      <section class="area-card focus-card"><div class="area-card-head"><h3>Como está</h3>${Object.hasOwn(STATUS, status) ? `<span class="area-status lamp s-${status}">${STATUS[status]}</span>` : ''}</div>
+        <p>${h(short(plain(principal?.meta.resumo || 'Ainda sem resumo. O assessor escreve um quando você contar como está esta área.'), 240))}</p>
+        ${agora ? (() => { const { inicio, resto, n } = cortarLista(agora.text, 4); return `<div class="md resumo-agora">${md(inicio, principal.path, true)}</div>${n ? `<details class="resumo-mais" data-section="agora-mais"><summary>Mais ${n} ${n === 1 ? 'item' : 'itens'} em “Agora”</summary><div class="md resumo-agora">${md(resto, principal.path, true)}</div></details>` : ''}`; })() : ''}</section>
+      <section class="area-card"><div class="area-card-head"><h3>Meta em foco</h3><a class="area-link" href="${linkTopico(area, 'metas')}">Metas →</a></div>
+        ${meta ? `<ul class="metas">${barraMeta(meta)}</ul>` : metaLista ? `<p class="area-empty">${inline(metaLista)}</p>` : `<p class="area-empty">Nenhuma meta definida para o trimestre.</p>`}</section>
+      <section class="area-card"><div class="area-card-head"><h3>Próximos passos</h3><a class="area-link" href="${linkTopico(area, 'tarefas')}">Tarefas →</a></div>
+        ${prox.length ? `<ul class="area-steps">${prox.map(taskLi).join('')}</ul>` : '<p class="area-empty">Nenhuma tarefa aberta nesta área.</p>'}</section>
+      <section class="area-card area-recent"><div class="area-card-head"><h3>Últimos dias</h3><a class="area-link" href="#area/${area}/dias">Todos →</a></div>
+        ${dias.length ? `<ul class="ultimos">${dias.map(d => `<li><a href="#area/${area}/dia/${d.date}"><b>${dayLabel(d.date)}</b><span>${h(short(linhasDoDia(d).slice(0, 2).join(' · '), 110))}</span></a></li>`).join('')}</ul>` : '<p class="area-empty">Nenhum registro com data ainda.</p>'}</section>
+      ${importante ? `<section class="area-card area-recent"><h3>Importante</h3><div class="md">${md(importante.text, principal.path, true)}</div></section>` : ''}
+      ${area === 'financas' ? `<a class="area-card area-recent fin-atalho" href="#financas"><b>💰 Abrir Finanças</b><span>Saldo, extrato, orçamento e cartões, direto da planilha →</span></a>` : ''}
+    </div>${SENS.has(area) ? visaoBemEstar(area, Object.values(S.files), C.hoje) : ''}`;
+  }
+  if (id === 'metas') {
+    if (!T.metasSec.length) return vazioTopico('metas', area);
+    const hj = pymd(C.hoje), seg = addDays(hj, -((hj.getDay() + 6) % 7));
+    const semana = [...Array(7)].map((_, i) => ymd(addDays(seg, i)));
+    const hab = S.habits.filter(x => x.area === area && semana.includes(x.date) && x.st);
+    const feitos = hab.filter(x => x.st === 'feito').length;
+    return T.metasSec.map(s => {
+      const metas = metasDaTabela(s.texto);
+      return `<section class="area-card secao-card"><header class="secao-h"><h3>${h(plain(s.titulo))}</h3><button type="button" class="secao-fonte" data-open="${h(s.path)}">abrir <span aria-hidden="true">↗</span></button></header>
+        ${metas.length ? `<ul class="metas">${metas.map(barraMeta).join('')}</ul>` : `<div class="md">${md(s.texto, s.path, true)}</div>`}</section>`;
+    }).join('') + (hab.length ? `<section class="area-card"><h3>Esta semana</h3><p class="semana-hab"><b>${feitos} de ${hab.length}</b> blocos e hábitos feitos (${Math.round(feitos / hab.length * 100)}%)</p>
+      <ul class="dia-linhas">${hab.sort((a, b) => a.date.localeCompare(b.date)).map(x => `<li class="dia-linha"><span class="dia-st">${x.st === 'feito' ? '✅' : x.st === 'nao' ? '❌' : '🚫'}</span><span>${h(x.oque)} <small>${dayLabel(x.date)}${x.motivo && !/^[—–-]$/.test(x.motivo.trim()) ? ' · ' + h(x.motivo) : ''}</small></span></li>`).join('')}</ul></section>` : '');
+  }
+  if (id === 'tarefas') {
+    const G = C.tarefas, todos = () => true, exp = new Set(LS.get(K + 'area-tarefas', []));
+    const html = grupoTarefas('Atrasadas e de hoje', [...G.atrasadas, ...G.hoje], 'area-hoje', exp, todos)
+      + grupoTarefas('Próximas', G.proximas, 'area-proximas', exp, todos)
+      + grupoTarefas('Sem prazo', G.semdata, 'area-semdata', exp, todos)
+      + grupoTarefas('Feitas por último', G.feitas.slice(0, 8), 'area-feitas', exp, todos);
+    return html ? `<div class="area-tarefas">${html}</div>` : vazioTopico('tarefas', area);
+  }
+  if (id === 'pessoas') {
+    if (!T.n.pessoas) return vazioTopico('pessoas', area);
+    const caso = f => { const open = S.tasks.filter(g => !isChecked(g) && g.members.some(m => m.path === f.path)); return `<button class="case" data-open="${h(f.path)}"><div class="hd"><span class="ct">${h(plain(f.title))}</span><span class="st">${h(f.meta.status || '')}</span></div><p class="rs">${h(plain(f.meta.resumo || ''))}</p><div class="ft">${open.length ? `<span>${open.length} ${open.length > 1 ? 'tarefas' : 'tarefa'}</span>` : ''}<span>${relDay(f.meta.atualizado)}</span></div></button>`; };
+    return `${C.casos.length ? `<section class="area-card"><h3>Casos</h3><div class="cases area-cases">${C.casos.map(caso).join('')}</div></section>` : ''}
+      ${T.pessoas.length ? `<section class="area-card"><h3>Pessoas</h3><ul class="pessoas-lista">${T.pessoas.map(f => `<li><button type="button" data-open="${h(f.path)}"><b>${h(plain(f.title))}</b><span>${h(short(plain(f.meta.resumo || ''), 120))}</span></button></li>`).join('')}</ul></section>` : ''}`;
+  }
+  if (id === 'dias') {
+    if (!C.dias.length) return vazioTopico('dias', area);
+    return `<ol class="dias-lista">${C.dias.map(d => { const ls = linhasDoDia(d); return `<li><a href="#area/${area}/dia/${d.date}"><span class="dl-data"><b>${dayLabel(d.date)}</b><small>${d.date.slice(0, 4)}</small></span><span class="dl-txt">${ls.slice(0, 3).map(l => `<span>${h(short(l, 120))}</span>`).join('')}${ls.length > 3 ? `<small>+${ls.length - 3}</small>` : ''}</span><span aria-hidden="true">›</span></a></li>`; }).join('')}</ol>`;
+  }
+  if (id === 'dia') {
+    const i = C.dias.findIndex(d => d.date === vista.dia);
+    const dia = C.dias[i];
+    const novo = C.dias[i - 1], velho = i >= 0 ? C.dias[i + 1] : C.dias.find(d => d.date < vista.dia);
+    const nav = `<nav class="dia-nav" aria-label="Outros dias">${velho ? `<a href="#area/${area}/dia/${velho.date}">← ${dayLabel(velho.date)}</a>` : '<span></span>'}${novo ? `<a href="#area/${area}/dia/${novo.date}">${dayLabel(novo.date)} →</a>` : ''}</nav>`;
+    return `${dia ? blocoDoDia(dia) : `<div class="area-card topico-vazio"><p>Nada registrado nesta área em ${dm(vista.dia)}.</p></div>`}${nav}`;
+  }
+  // tópicos montados a partir das seções das notas
+  const secs = T.secoes(id);
+  let extra = '';
+  if (id === 'decisoes' && T.decisoesFora.length) {
+    extra = `<section class="area-card secao-card"><header class="secao-h"><h3>Decisões registradas</h3><button type="button" class="secao-fonte" data-open="eu/decisoes.md">todas <span aria-hidden="true">↗</span></button></header><ul class="dia-linhas">${T.decisoesFora.sort((a, b) => b.date.localeCompare(a.date)).map(e => `<li class="dia-linha"><span class="dia-st dia-data">${dm(e.date)}</span><span>${inline(e.campos.find(([k]) => /^decis/.test(norm(k)))?.[1] || '')}${(() => { const p = e.campos.find(([k]) => /^por que/.test(norm(k))); return p ? ` <small>Por quê: ${inline(p[1])}</small>` : ''; })()}</span></li>`).join('')}</ul></section>`;
+  }
+  if (id === 'numeros' && T.docs.length) {
+    extra = `<section class="area-card secao-card"><header class="secao-h"><h3>Documentos registrados</h3><button type="button" class="secao-fonte" data-open="documentos/documentos.md">todos <span aria-hidden="true">↗</span></button></header><ul class="dia-linhas">${T.docs.sort((a, b) => b.date.localeCompare(a.date)).map(e => { const get = re => e.campos.find(([k]) => re.test(norm(k)))?.[1] || ''; const num = get(/^numero/), onde = get(/^onde/), caso = get(/^caso/); return `<li class="dia-linha"><span class="dia-st dia-data">${dm(e.date)}</span><span>${inline(get(/^documento/))}${num && !/^[—–-]/.test(num) ? ` <small>Nº ${inline(num)}</small>` : ''}${caso ? ` <small>${inline(caso)}</small>` : ''}${onde && !/^[—–-]$/.test(onde) ? ` <small>${inline(onde)}</small>` : ''}</span></li>`; }).join('')}</ul></section>`;
+  }
+  if (id === 'padroes' && T.padroes.lista.length) {
+    const P = T.padroes;
+    extra = `<section class="area-card secao-card"><header class="secao-h"><h3>Calculado dos seus ✅ e ❌</h3><small class="secao-nota">desde ${dm(P.desde)}</small></header>
+      <ul class="padroes">${P.lista.map(r => { const tot = r.feito + r.nao; return `<li><div class="pd-t"><b>${h(maiuscula(r.nome))}</b><span>${r.feito} de ${tot} feitos${r.cancelado ? ` · ${r.cancelado} cancelado${r.cancelado > 1 ? 's' : ''}` : ''}</span></div>${tot ? `<div class="meta-barra"><i style="width:${Math.round(r.feito / tot * 100)}%"></i></div>` : ''}${r.motivos.length ? `<p class="pd-m">Motivos das faltas: ${r.motivos.slice(-3).map(m => `${dm(m.date)} ${h(semTraco(m.motivo))}`).join(' · ')}</p>` : ''}</li>`; }).join('')}</ul>
+      ${P.diaQueMaisFalha !== null ? `<p class="pd-dia">Dia que mais falha: <b>${DOWL[P.diaQueMaisFalha]}</b></p>` : ''}</section>`;
+  }
+  if (!secs.length && !extra) return vazioTopico(id, area);
+  return extra + secs.map(cartaoSecao).join('');
 }
 
 function leituraDaNota(f, sections) {
@@ -1185,9 +1386,11 @@ function renderAreaPage() {
   if (S.page !== 'area' || !route) {
     if (el.childElementCount) el.replaceChildren();
     lastAreaMarkup = '';
+    S.sumario = false;
+    el.classList.remove('sumario-on');
     return;
   }
-  const { area, registros, path } = route;
+  const { area } = route;
   const label = AREAS[area].nome, base = `#area/${area}`;
   const gate = cfg.discreet && VEIL.has(area) && !S.reveal.has(base);
   const same = el.dataset.route === location.hash && el.dataset.locked === String(gate);
@@ -1197,30 +1400,42 @@ function renderAreaPage() {
   el.dataset.route = location.hash;
   el.dataset.locked = String(gate);
   el.style.setProperty('--area-accent', areaColor(area));
-  const overview = area === 'financas' ? '#financas' : base;
-  const index = `${base}/registros`;
-  const files = notasDaArea(S.files, area).filter(f => !cfg.discreet || !f.sens || S.reveal.has(base));
-  let body;
-  if (gate) {
-    body = `<div class="area-gate">${ICON.lock}<h2>Área reservada</h2><p>O modo discreto está ativo.</p><button class="btn" data-reveal-area="${area}">Mostrar esta área</button></div>`;
-  } else if (path) {
-    const f = files.find(file => file.path === path);
-    body = f ? leituraDaNota(f, secoesDeLeitura(f.body)) : `<p class="area-card">${S.head ? 'Este registro não foi encontrado.' : 'Carregando o registro…'}</p>`;
-  } else if (registros) {
-    body = `<section class="area-card library"><h2>Registros escritos</h2>${files.length ? areaRecordList(files, area) : `<p class="area-empty">${S.head ? 'Nenhuma nota nesta área.' : 'Carregando suas notas…'}</p>`}</section>`;
-  } else if (SENS.has(area)) {
-    body = visaoBemEstar(area, Object.values(S.files), ymd(now()));
-  } else {
-    body = visaoGeralArea(area, files);
-  }
   const hide = cfg.discreet && S.reveal.has(base) ? `<button class="btn ghost" data-ocultar-area="${area}">Ocultar área</button>` : '';
-  const markup = `<a class="area-back" href="${path ? index : '#areas'}"><span aria-hidden="true">←</span> ${path ? 'Todos os registros' : 'Todas as áreas'}</a>
-    <div class="area-heading"><h1 tabindex="-1">${label}</h1><div class="area-tools">${hide}${gate || registros ? '' : `<button class="btn ghost" data-area-captura="${area}">＋ Anotar</button>`}</div></div>
-    <nav class="area-tabs" aria-label="Seções de ${label}"><a href="${overview}"${!registros ? ' aria-current="page"' : ''}>Visão geral</a><a href="${index}"${registros ? ' aria-current="page"' : ''}>Registros escritos</a></nav>${body}`;
+  const head = `<a class="area-back" href="#areas"><span aria-hidden="true">←</span> Todas as áreas</a>
+    <div class="area-heading"><h1 tabindex="-1">${label}</h1><div class="area-tools">${hide}${gate ? '' : `<button class="btn ghost" data-area-captura="${area}">＋ Anotar</button>`}</div></div>`;
+  let markup;
+  if (gate) {
+    markup = head + `<div class="area-gate">${ICON.lock}<h2>Área reservada</h2><p>O modo discreto está ativo.</p><button class="btn" data-reveal-area="${area}">Mostrar esta área</button></div>`;
+  } else {
+    const C = contextoDaArea(area, base), T = topicosDaArea(C);
+    let titulo, corpo;
+    if (route.vista === 'nota') {
+      const f = C.notas.find(file => file.path === route.path);
+      titulo = f ? (f === C.principal ? 'Nota principal' : plain(f.title)) : 'Nota';
+      corpo = f ? leituraDaNota(f, secoesDeLeitura(f.body)) : `<p class="area-card">${S.head ? 'Esta nota não foi encontrada.' : 'Carregando a nota…'}</p>`;
+    } else {
+      const t = TOPICOS.find(x => x.id === route.vista);
+      titulo = t ? `${t.emoji} ${t.nome}` : route.vista === 'dias' ? '📅 Registros diários' : `📅 ${diaLongo(route.dia)}`;
+      corpo = S.head || Object.keys(S.files).length ? corpoDoTopico(C, T, route) : '<p class="area-card">Carregando suas notas…</p>';
+    }
+    markup = head + `<div class="area-shell"><div class="area-sumario-col">${sumarioDaArea(C, T, route)}</div>
+      <div class="area-main"><h2 class="topico-titulo">${titulo}</h2>${corpo}</div></div>
+      <button type="button" class="sumario-fab" data-sumario="abrir" aria-controls="areaSumario" aria-expanded="${S.sumario ? 'true' : 'false'}">${SUMARIO_ICON}<span>Sumário</span></button>
+      <div class="sumario-scrim" data-sumario="fechar" aria-hidden="true"></div>`;
+  }
+  el.classList.toggle('sumario-on', !!S.sumario && !gate);
   if (same && markup === lastAreaMarkup) return;
   lastAreaMarkup = markup;
   el.innerHTML = markup;
   for (const node of $$('details', el)) if (openDetails.has(detailKey(node))) node.open = openDetails.get(detailKey(node));
+}
+function sumario(abrir) {
+  S.sumario = abrir;
+  const el = $('#areaPage');
+  el.classList.toggle('sumario-on', abrir);
+  $('.sumario-fab', el)?.setAttribute('aria-expanded', String(abrir));
+  if (abrir) requestAnimationFrame(() => ($('.sumario [aria-current="page"]', el) || $('.sm-fechar', el))?.focus({ preventScroll: false }));
+  else $('.sumario-fab', el)?.focus({ preventScroll: true });
 }
 
 function renderCases() {
@@ -1239,7 +1454,7 @@ function openNote(path) {
   const area = path.split('/')[1];
   if (path.startsWith('areas/') && AREA_ORDER.includes(area)) {
     if (S.open) { closeNote(); if (S.open) return; }
-    const target = path === `areas/${area}/${area}.md` ? `#area/${area}` : linkDeRegistro(path);
+    const target = path === `areas/${area}/${area}.md` ? linkDeNota(area) : linkDeRegistro(path);
     if (location.hash !== target) location.hash = target;
     return;
   }
@@ -2047,8 +2262,8 @@ function renderRegistrar() {
 }
 
 /* ─────────────── Finanças (o conteúdo do "Meus gastos", lendo o espelho da planilha) ─────────────── */
-import { brl, brl0, c2, addM, dim, pnum, valorCapturado, calcularFinancas, orcamentoDoMes, filtrarLancamentos } from './financas.mjs?v=c0273d90ee1f';
-import { lancamentosRealizados, graficoLancamentos } from './financas-visao.mjs?v=c0273d90ee1f';
+import { brl, brl0, c2, addM, dim, pnum, valorCapturado, calcularFinancas, orcamentoDoMes, filtrarLancamentos } from './financas.mjs?v=6e8bf3eb68dd';
+import { lancamentosRealizados, graficoLancamentos } from './financas-visao.mjs?v=6e8bf3eb68dd';
 const FCAT = { 'Moradia': ['🏠', '#7B61FF'], 'Mercado': ['🛒', '#22B07D'], 'Alimentação fora': ['🍔', '#FF8A3D'], 'Transporte': ['🚗', '#3D8BFF'], 'Saúde': ['💊', '#FF5C7A'], 'Educação': ['📚', '#A35CF7'], 'Família': ['👨‍👩‍👧', '#F2B705'], 'Bebê': ['🍼', '#38BDF8'], 'Lazer': ['🎉', '#E05CD0'], 'Assinaturas': ['📺', '#5B6BF5'], 'Contas fixas': ['💡', '#F59E0B'], 'Revenda': ['📦', '#A0785A'], 'Outros': ['🛍️', '#8E949C'], 'Uber e 99': ['🚕', '#3D8BFF'], 'Delivery': ['🛵', '#FF8A3D'], 'Comer fora': ['🍔', '#FF5C7A'], 'Compras avulsas (Outros)': ['🛍️', '#8E949C'], 'Receita': ['💰', '#22B07D'], 'Conta': ['🧾', '#F59E0B'], 'Fatura': ['💳', '#7C3AED'], 'Pix e boleto': ['⚡', '#3D8BFF'] };
 const fic = n => FCAT[n] || ['•', '#8E949C'];
 const CARTAO_COR = { 'Nubank': 'linear-gradient(135deg,#6A06B0,#A855F7)', 'Mercado Pago': 'linear-gradient(135deg,#0077C8,#22C1F5)', 'Bradesco Amazon': 'linear-gradient(135deg,#A30825,#F0435F)', 'XP': 'linear-gradient(135deg,#1f2937,#4B5563)' };
@@ -2183,7 +2398,7 @@ function cabecalhoFinanceiro(reveladaLocalmente) {
   const gerado = S.fin?.gerado ? new Date(S.fin.gerado) : null;
   const data = gerado && !isNaN(gerado) ? gerado.toLocaleString('pt-BR', { dateStyle:'short', timeStyle:'short', timeZone:'America/Sao_Paulo' }) : '';
   return `<div class="fin-contexto"><a class="fin-voltar" href="#areas">‹ Áreas</a>
-    <a class="fin-escritos" href="#area/financas/registros">Registros escritos <span aria-hidden="true">↗</span></a></div>
+    <a class="fin-escritos" href="#area/financas/resumo">Sumário da área <span aria-hidden="true">↗</span></a></div>
     <header class="fin-heading"><div class="page-h"><div class="fin-titulo"><h1>Finanças</h1>
     ${reveladaLocalmente ? `<button type="button" class="fin-ocultar" data-ocultar-area="financas" aria-label="Ocultar finanças">${ICON.lock} Ocultar</button>` : ''}</div>
     <p class="source-date">${data ? 'Planilha atualizada em ' + h(data) : 'Aguardando o espelho da planilha'}</p></div>
@@ -2694,9 +2909,10 @@ function copiar(txt, ok) {
 }
 function bind() {
   document.addEventListener('click', ev => {
-    const t = ev.target.closest('[data-commit],[data-open],[data-task],[data-compra],[data-cxdel],[data-tab],[data-mdt],[data-reveal],[data-find],[data-reg],[data-mood],[data-emo],#copyAsk,[data-act],[data-st],[data-day],[data-wk],[data-pick],[data-ficha],[data-regficha],[data-fmes],[data-ftab],[data-fo],[data-fcart],[data-fvenc],[data-fdia],[data-fcat],[data-alitab],[data-pessoa],[data-dias],[data-pego],[data-trocagrupo],[data-ref],[data-trocap],[data-close],[data-reveal-area],[data-ocultar-area],[data-area-captura],[data-anotar-nota],[data-box-remove]');
+    const t = ev.target.closest('[data-commit],[data-open],[data-task],[data-compra],[data-cxdel],[data-tab],[data-mdt],[data-reveal],[data-find],[data-reg],[data-mood],[data-emo],#copyAsk,[data-act],[data-st],[data-day],[data-wk],[data-pick],[data-ficha],[data-regficha],[data-fmes],[data-ftab],[data-fo],[data-fcart],[data-fvenc],[data-fdia],[data-fcat],[data-alitab],[data-pessoa],[data-dias],[data-pego],[data-trocagrupo],[data-ref],[data-trocap],[data-close],[data-reveal-area],[data-ocultar-area],[data-area-captura],[data-anotar-nota],[data-box-remove],[data-sumario]');
     if (!t) return;
     const d = t.dataset;
+    if (d.sumario) { ev.preventDefault(); sumario(d.sumario === 'abrir' && !S.sumario); return; }
     if (d.boxRemove !== undefined) { const it = S.cx[Number(d.boxRemove)]; if (it && !it.pending) delCaixa(it, 'Registro retirado da caixa.'); return; }
     if (t.id === 'copyAsk') { copiar('oi assessor, organiza a caixa do painel', 'Copiado. Cole no Claude: "oi assessor, organiza a caixa do painel"'); return; }
     const privacyArea = d.revealArea || d.ocultarArea;
@@ -2882,6 +3098,7 @@ function bind() {
       else if (sheetOpen()) closeSheet();
       else if (!$('#cfg').hidden) $('#cfg').hidden = true;
       else if (S.open) closeNote();
+      else if (S.sumario) sumario(false);
     }
   });
   addEventListener('hashchange', route);
