@@ -1,15 +1,15 @@
 /* ─────────────── utilidades ─────────────── */
-import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDaNota, linkDeRegistro, metasDaTabela, notaSolta, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=c563e9fef2d3';
-import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=c563e9fef2d3';
-import { visaoBemEstar } from './bem-estar.mjs?v=c563e9fef2d3';
-import { blocosDaSemanaModelo, casosEmAndamento, pontoDeParada, textoDaBusca } from './memoria.mjs?v=c563e9fef2d3';
-import { APPS, agendaPorDia, idadeDoEspelho, momento, resumoFinanceiro, tarefasEmGrupos } from './espelho.mjs?v=c563e9fef2d3';
-import { linhasCaptura, lerCaptura, tipoAnexo, extAudio, lerOrganizados, destinoLegivel } from './captura.mjs?v=c563e9fef2d3';
+import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDaNota, linkDeRegistro, metasDaTabela, notaSolta, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=0c2eb376f006';
+import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=0c2eb376f006';
+import { visaoBemEstar } from './bem-estar.mjs?v=0c2eb376f006';
+import { blocosDaSemanaModelo, casosEmAndamento, pontoDeParada, textoDaBusca } from './memoria.mjs?v=0c2eb376f006';
+import { APPS, agendaPorDia, idadeDoEspelho, momento, resumoFinanceiro, tarefasEmGrupos } from './espelho.mjs?v=0c2eb376f006';
+import { linhasCaptura, lerCaptura, tipoAnexo, extAudio, lerOrganizados, destinoLegivel } from './captura.mjs?v=0c2eb376f006';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const h = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=c563e9fef2d3';
+import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=0c2eb376f006';
 const DOW = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 const DOWL = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
 const MON = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
@@ -839,7 +839,7 @@ function route() {
 
 const isChecked = g => { const o = taskOv(g); return o ? o.kind === 'feita' : g.checked; };
 const byDue = (a, b) => (a.due || '9').localeCompare(b.due || '9') || (b.prio === 'alta') - (a.prio === 'alta');
-import { organizarTarefas, primeiroPasso, prioridadesDoDia } from './tarefas.mjs?v=c563e9fef2d3';
+import { organizarTarefas, primeiroPasso, prioridadesDoDia } from './tarefas.mjs?v=0c2eb376f006';
 function estadoTarefa(g) {
   if (g.nova) return { feita:false, data:'' };
   const item = taskOv(g);
@@ -2277,7 +2277,7 @@ function enviarCaptura(f) {
 }
 
 /* ─────────────── Finanças: o resumo do Minhas Economias (espelho gravado pelo assessor) ─────────────── */
-import { brl, pnum } from './financas.mjs?v=c563e9fef2d3';
+import { brl, pnum } from './financas.mjs?v=0c2eb376f006';
 const V = (v, cls = '') => `<span class="veil${cls ? ' ' + cls : ''}">${brl(v)}</span>`;
 const corSegura = c => /^#[0-9a-f]{3,8}$/i.test(String(c || '')) ? c : /^[0-9a-f]{6}$/i.test(String(c || '')) ? '#' + c : 'var(--ink3)';
 function renderFinancas() {
