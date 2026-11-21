@@ -16,16 +16,17 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Baskervville:ital@0;1&display=swap" rel="stylesheet">
-<script src="./tema.js?v=8787cb127060"></script>
-<link rel="stylesheet" href="./painel.css?v=8787cb127060">
-<link rel="stylesheet" href="./layout.css?v=8787cb127060">
-<link rel="stylesheet" href="./areas.css?v=8787cb127060">
-<link rel="stylesheet" href="./bem-estar.css?v=8787cb127060">
-<link rel="stylesheet" href="./financas-ui.css?v=8787cb127060">
-<link rel="stylesheet" href="./hoje.css?v=8787cb127060">
-<link rel="stylesheet" href="./tarefas.css?v=8787cb127060">
-<link rel="stylesheet" href="./alimentacao-ui.css?v=8787cb127060">
-<link rel="stylesheet" href="./captura.css?v=8787cb127060">
+<script src="./tema.js?v=c563e9fef2d3"></script>
+<link rel="stylesheet" href="./painel.css?v=c563e9fef2d3">
+<link rel="stylesheet" href="./layout.css?v=c563e9fef2d3">
+<link rel="stylesheet" href="./areas.css?v=c563e9fef2d3">
+<link rel="stylesheet" href="./bem-estar.css?v=c563e9fef2d3">
+<link rel="stylesheet" href="./financas-ui.css?v=c563e9fef2d3">
+<link rel="stylesheet" href="./hoje.css?v=c563e9fef2d3">
+<link rel="stylesheet" href="./tarefas.css?v=c563e9fef2d3">
+<link rel="stylesheet" href="./alimentacao-ui.css?v=c563e9fef2d3">
+<link rel="stylesheet" href="./captura.css?v=c563e9fef2d3">
+<link rel="stylesheet" href="./espelho.css?v=c563e9fef2d3">
 </head>
 <body class="discreet">
 
@@ -46,23 +47,13 @@
     <div class="home" id="home"></div>
   </main>
 
-  <!-- TAREFAS -->
+  <!-- TAREFAS: só leitura, do TickTick -->
   <main class="page" id="p-tarefas" data-page="tarefas" hidden>
-    <div class="tarefa-pagina" id="secTasks">
-      <header class="tarefa-topo"><div class="page-h"><h1>Tarefas</h1><p id="tasksDate"></p></div>
-        <button type="button" class="btn" id="criarTarefa" aria-controls="taskFormBox" aria-expanded="false">＋ Nova tarefa</button></header>
-      <section id="taskFormBox" class="tarefa-form-box" aria-label="Nova tarefa" hidden>
-        <form id="addTask" autocomplete="off"><label class="tarefa-texto">O que você precisa fazer?
-          <input id="addTxt" type="text" placeholder="Escreva o primeiro passo" required></label>
-          <label>Prazo opcional<input type="date" id="addDue"></label>
-          <label class="tarefa-reservada"><input type="checkbox" id="addPrivada"> Tarefa reservada</label>
-          <div class="tarefa-salvar"><button class="btn" type="submit">Guardar na caixa</button>
-            <span>O assessor cria a tarefa no TickTick ao organizar a caixa.</span></div>
-        </form>
-      </section>
-      <nav id="tabs" class="tarefa-abas" aria-label="Grupos de tarefas"></nav>
+    <div class="es-pagina" id="secTasks">
+      <header class="es-topo"><div class="page-h"><h1>Tarefas</h1><p id="tasksDate"></p></div>
+        <a class="btn es-app" href="https://ticktick.com/webapp/" target="_blank" rel="noopener noreferrer">Abrir TickTick <span aria-hidden="true">↗</span></a></header>
       <div id="tasks"></div>
-      <footer class="tarefa-rodape"><span>As marcações entram na caixa para atualizar o TickTick.</span><a href="#alimentacao/compras">Lista de compras ↗</a></footer>
+      <p class="es-rodape">Marcar, criar e mudar tarefas: no TickTick. Aqui é só pra bater o olho.</p>
     </div>
   </main>
 
@@ -83,28 +74,15 @@
   <!-- REGISTRAR -->
   <main class="page" id="p-registrar" data-page="registrar" hidden>
     <div class="capture-workspace chat-capture">
-      <header class="workspace-head"><h1>Capturar</h1><a class="desk-link" href="#caixa">Caixa de entrada <span aria-hidden="true">↗</span></a></header>
+      <header class="workspace-head"><h1>Capturar</h1></header>
       <ol id="regLog" class="chat-log" aria-live="polite" aria-label="Capturas de hoje"></ol>
       <section id="regBody" class="chat-dock"></section>
     </div>
   </main>
 
-  <!-- CAIXA -->
-  <main class="page" id="p-caixa" data-page="caixa" hidden>
-    <div class="capture-workspace box-workspace">
-      <header class="workspace-head"><h1>Caixa de entrada</h1><a class="btn box-create" href="#registrar/nota">＋ Capturar</a></header>
-      <nav class="box-tabs" aria-label="Seções da caixa">
-        <a href="#caixa" data-inbox-tab="fila">Para organizar <span id="cxCount"></span></a>
-        <a href="#caixa/inbox" data-inbox-tab="inbox">Notas soltas <span id="inboxCount"></span></a>
-        <a href="#caixa/historico" data-inbox-tab="historico">Onde ficou</a>
-      </nav>
-      <section class="desk-box" id="secCaixa"><header class="box-heading"><h2>À espera do assessor</h2></header>
-        <div id="cxList"></div>
-        <div id="org" class="box-organizar"></div></section>
-      <section class="desk-box" id="secInbox" hidden><header class="box-heading"><h2>Notas soltas</h2></header><ul class="inbox" id="inbox"></ul></section>
-      <section class="desk-box" id="secFeed" hidden><header class="box-heading"><h2>Onde cada coisa ficou</h2></header><ul class="org-list" id="orgList"></ul>
-        <details class="box-feed"><summary>Todas as alterações na memória</summary><ol class="feed" id="feed"></ol></details></section>
-    </div>
+  <!-- COMO ESTOU: diário emocional, gravado direto no journal do mês -->
+  <main class="page" id="p-sentir" data-page="sentir" hidden>
+    <div class="es-pagina" id="sentir"></div>
   </main>
 
   <!-- ÁREAS -->
@@ -157,6 +135,6 @@
 <div class="sheet-wrap" id="sheet" hidden><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="shTitle"><div class="sheet-h"><h2 id="shTitle"></h2><button class="ib" id="shClose" aria-label="Fechar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div><div class="sheet-b" id="shBody"></div></div></div>
 <div class="toasts" id="toasts" aria-live="polite"></div>
 
-<script type="module" src="./painel.mjs?v=8787cb127060"></script>
+<script type="module" src="./painel.mjs?v=c563e9fef2d3"></script>
 </body>
 </html>

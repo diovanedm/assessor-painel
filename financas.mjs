@@ -1,4 +1,4 @@
-import { norm, pad, ymd } from './datas.mjs?v=8787cb127060';
+import { norm, pad, ymd } from './datas.mjs?v=c563e9fef2d3';
 
 export const brl = v => (v < 0 ? '−' : '') + 'R$ ' + Math.abs(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 export const brl0 = v => (v < 0 ? '−' : '') + 'R$ ' + Math.round(Math.abs(v)).toLocaleString('pt-BR');

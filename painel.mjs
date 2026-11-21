@@ -1,14 +1,15 @@
 /* ─────────────── utilidades ─────────────── */
-import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDaNota, linkDeRegistro, metasDaTabela, notaSolta, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=8787cb127060';
-import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=8787cb127060';
-import { visaoBemEstar } from './bem-estar.mjs?v=8787cb127060';
-import { blocosDaSemanaModelo, casosEmAndamento, pontoDeParada, textoDaBusca } from './memoria.mjs?v=8787cb127060';
-import { linhasCaptura, lerCaptura, tipoAnexo, extAudio, lerOrganizados, destinoLegivel } from './captura.mjs?v=8787cb127060';
+import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDaNota, linkDeRegistro, metasDaTabela, notaSolta, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=c563e9fef2d3';
+import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=c563e9fef2d3';
+import { visaoBemEstar } from './bem-estar.mjs?v=c563e9fef2d3';
+import { blocosDaSemanaModelo, casosEmAndamento, pontoDeParada, textoDaBusca } from './memoria.mjs?v=c563e9fef2d3';
+import { APPS, agendaPorDia, idadeDoEspelho, momento, resumoFinanceiro, tarefasEmGrupos } from './espelho.mjs?v=c563e9fef2d3';
+import { linhasCaptura, lerCaptura, tipoAnexo, extAudio, lerOrganizados, destinoLegivel } from './captura.mjs?v=c563e9fef2d3';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const h = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=8787cb127060';
+import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=c563e9fef2d3';
 const DOW = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 const DOWL = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
 const MON = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
@@ -27,7 +28,7 @@ const PAGES = [
   { id: 'financas', nome: 'Finanças', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="6" width="17" height="13" rx="3"/><path d="M3.5 10.5h17"/><path d="M15 15h2.5"/></svg>' },
   { id: 'alimentacao', nome: 'Refeições e compras', mais: true, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5h16a8 8 0 0 1-16 0Z"/><path d="M9.5 9c0-1.6 1.2-2 1.2-3.6M13.5 9c0-1.6 1.2-2 1.2-3.6"/></svg>' },
   { id: 'registrar', nome: 'Capturar', mais: true, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/></svg>' },
-  { id: 'caixa', nome: 'Caixa de entrada', mais: true, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 13.5 6 5h12l2.5 8.5V19H3.5v-5.5Z"/><path d="M3.5 13.5h5l1.5 2h4l1.5-2h5"/></svg>' },
+  { id: 'sentir', nome: 'Como estou', mais: true, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z"/></svg>' },
   { id: 'areas', nome: 'Memória', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="m15.5 8.5-2 5-5 2 2-5 5-2Z"/></svg>' },
 ];
 const MAIS_ICON = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5.5" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="18.5" cy="12" r="1.9"/></svg>';
@@ -121,7 +122,7 @@ const VEIL = new Set(['emocional', 'saude', 'financas']);
 const SEMANA_MODELO = 'eu/plano.md';
 const COMPRAS = 'areas/casa-familia/compras.md';
 const CAIXA = 'painel/caixa.md', RESERVADA = 'painel/caixa-reservada.md';
-const FIN = 'painel/financas.json', FICHAS = 'painel/fichas.md';
+const FIN = 'painel/espelho.json', FICHAS = 'painel/fichas.md';
 const PLANO_D = 'areas/saude/plano-alimentar.md', PLANO_M = 'areas/casa-familia/plano-alimentar-michele.md', SUBS_M = 'areas/casa-familia/substituicoes-michele.md', CASAL = 'areas/casa-familia/alimentacao-casal.md';
 const STATUS = { bem: 'bem', atencao: 'atenção', alerta: 'alerta', parado: 'parado' };
 const STATUS_PRIORITARIOS = ['parado', 'alerta', 'atencao'];
@@ -770,18 +771,16 @@ function render() {
   document.body.classList.toggle('discreet', !!cfg.discreet);
   $('#eye').setAttribute('aria-pressed', String(!cfg.discreet));
   $('#eyeSlash').style.display = cfg.discreet ? '' : 'none';
-  renderNav(); renderInicio(); renderTasks(); renderFinancas(); renderAlimentacao(); renderRegistrar(); renderCaixa(); renderFeed(); renderInbox(); renderRhythm(); renderAreas(); renderCases(); renderAreaPage();
+  renderNav(); renderInicio(); renderTasks(); renderFinancas(); renderSentir(); renderAlimentacao(); renderRegistrar(); renderRhythm(); renderAreas(); renderCases(); renderAreaPage();
   renderNotaPage();
   if (S.open) renderDrawer();
 }
 function renderNav() {
   const active = S.page === 'area' ? (S.areaRoute.area === 'financas' ? 'financas' : 'areas') : S.page === 'nota' ? 'areas' : S.page;
-  const n = S.cx.length;
-  const badge = p => p.id === 'caixa' && n ? `<span class="badge" aria-label="${n} na caixa">${n}</span>` : '';
-  $('#nav').innerHTML = PAGES.map(p => `<a href="#${p.id}"${active === p.id ? ' aria-current="page"' : ''}>${p.icon}<span>${p.nome}</span>${badge(p)}</a>`).join('');
+  $('#nav').innerHTML = PAGES.map(p => `<a href="#${p.id}"${active === p.id ? ' aria-current="page"' : ''}>${p.icon}<span>${p.nome}</span></a>`).join('');
   const naMais = PAGES.some(p => p.mais && p.id === active);
   $('#tabbar').innerHTML = PAGES.filter(p => !p.mais).map(p => `<a href="#${p.id}"${active === p.id ? ' aria-current="page"' : ''}>${p.icon}<span>${p.nome}</span></a>`).join('') +
-    `<a href="#" data-act="mais"${naMais ? ' aria-current="page"' : ''} aria-label="Mais opções">${MAIS_ICON}<span>Mais</span>${n ? `<span class="badge" aria-label="${n} na caixa">${n}</span>` : ''}</a>`;
+    `<a href="#" data-act="mais"${naMais ? ' aria-current="page"' : ''} aria-label="Mais opções">${MAIS_ICON}<span>Mais</span></a>`;
 }
 function route() {
   let [id, sub] = location.hash.slice(1).split('/');
@@ -806,15 +805,13 @@ function route() {
   if (changed) S.sumario = false;
   const saiDeTarefas = S.page === 'tarefas' && p !== 'tarefas';
   if (saiDeTarefas) S.reveal.delete('#tarefas');
-  if (p === 'tarefas') S.tab = ['proximas', 'semdata', 'feitas'].includes(sub) ? sub : 'hoje';
+  if (S.page === 'sentir' && p !== 'sentir') S.reveal.delete('#sentir');
   if (S.page === 'alimentacao' && p !== 'alimentacao') {
     S.reveal.delete('#alimentacao');
     $('#ali').replaceChildren();
   }
   if (p === 'alimentacao') S.aliTab = ['compras', 'trocas'].includes(sub) ? sub : 'plano';
-  if (p === 'financas') S.finTab = FIN_TABS.some(t => t[0] === sub) ? sub : 'resumo';
   if (p === 'registrar') S.reg = 'captura';
-  if (p === 'caixa') S.boxTab = ['inbox', 'historico'].includes(sub) ? sub : 'fila';
   if (changed && p === 'alimentacao') S.aliRef = null;
   S.page = p;
   closeSheet();
@@ -826,7 +823,7 @@ function route() {
   if (p === 'alimentacao') renderAlimentacao();
   if (p === 'financas' || (previousArea === 'financas' && nextArea !== previousArea)) renderFinancas();
   if (p === 'registrar') renderRegistrar();
-  if (p === 'caixa') renderCaixa();
+  if (p === 'sentir') renderSentir();
   const notaAberta = S.files[area?.path || S.notaPath];
   document.title = `${notaAberta ? plain(notaAberta.title) : area ? AREAS[area.area].nome : PAGES.find(page => page.id === p)?.nome || 'Hoje'} · Meu Assessor`;
   if (changed) {
@@ -842,7 +839,7 @@ function route() {
 
 const isChecked = g => { const o = taskOv(g); return o ? o.kind === 'feita' : g.checked; };
 const byDue = (a, b) => (a.due || '9').localeCompare(b.due || '9') || (b.prio === 'alta') - (a.prio === 'alta');
-import { organizarTarefas, primeiroPasso, prioridadesDoDia } from './tarefas.mjs?v=8787cb127060';
+import { organizarTarefas, primeiroPasso, prioridadesDoDia } from './tarefas.mjs?v=c563e9fef2d3';
 function estadoTarefa(g) {
   if (g.nova) return { feita:false, data:'' };
   const item = taskOv(g);
@@ -900,82 +897,27 @@ function grupoTarefas(titulo, itens, chave, expandidos, mostrar) {
 }
 
 function renderTasks() {
-  const grupos = gruposDeTarefas(), d = ymd(now());
-  const abas = { hoje:'Meu dia', proximas:'Próximas', semdata:'Sem prazo', feitas:'Concluídas' };
-  const mostrar = g => !cfg.discreet || S.reveal.has('#tarefas') || !tarefaReservada(g);
-  const meuDia = [...grupos.atrasadas, ...grupos.hoje];
-  const selecionadas = S.tab === 'hoje' ? meuDia : grupos[S.tab] || [];
-  const reservadas = selecionadas.filter(tarefaReservada).length;
-  // O número da aba é o que a lista mostra; as reservadas escondidas aparecem só no aviso de baixo.
-  const contagem = Object.fromEntries(Object.entries({ ...grupos, hoje:meuDia }).map(([k, v]) => [k, v.filter(mostrar)]));
-  $('#tasksDate').textContent = now().toLocaleDateString('pt-BR', {weekday:'long', day:'numeric', month:'long'});
-  $('#tabs').innerHTML = Object.entries(abas).map(([id,titulo]) => `<a href="#tarefas/${id}" ${S.tab === id ? 'aria-current="page"' : ''}>${titulo}<span>${contagem[id].length}</span></a>`).join('');
-  const expandidos = new Set($$('#tasks details[open]').map(el => el.dataset.taskLista));
-  const grupo = (titulo,itens,chave) => grupoTarefas(titulo,itens,chave,expandidos,mostrar);
-  let html;
-  if (S.tab === 'hoje') {
-    const primeiro = primeiroPasso(grupos, mostrar);
-    const prontas = grupos.feitas.filter(g => g.due === d).length, total = prontas + grupos.hoje.length;
-    const foco = primeiro ? `<div class="tarefa-foco"><h2>Próximo passo</h2><ul class="tasks">${taskLi(primeiro)}</ul></div>` : '';
-    const andamento = `<div class="tarefa-progresso"><h2>Prazos de hoje</h2>
-      ${total ? `<p><strong>${prontas}</strong> de ${total} ${total === 1 ? 'concluída' : 'concluídas'}</p>
-      <progress max="${total}" value="${prontas}" aria-label="Tarefas com prazo hoje concluídas"></progress>` : '<p>Nenhuma tarefa vence hoje.</p>'}
-      </div>`;
-    html = `<div class="tarefa-dia${foco ? '' : ' sem-foco'}">${foco}${andamento}</div>`;
-    html += grupo('Em atraso', grupos.atrasadas.filter(t => t !== primeiro),'atrasadas');
-    html += grupo('Para hoje', grupos.hoje.filter(t => t !== primeiro),'hoje');
-  } else if (S.tab === 'proximas') {
-    const limite = ymd(addDays(now(), 7));
-    html = grupo('Nos próximos 7 dias', grupos.proximas.filter(g => g.due <= limite),'semana') +
-      grupo('Mais adiante', grupos.proximas.filter(g => g.due > limite),'adiante');
-  } else if (S.tab === 'semdata') {
-    html = grupo('Sem prazo definido', grupos.semdata,'semdata');
-  } else {
-    html = grupo('Histórico de conclusões', grupos.feitas,'feitas');
-  }
-  const vazias = { proximas:'Nenhuma tarefa com prazo futuro.', semdata:'Nenhuma tarefa sem prazo.', feitas:'Nenhuma tarefa concluída.' };
-  if (!selecionadas.length && S.tab !== 'hoje') html = `<div class="tarefa-vazia">${vazias[S.tab]}</div>`;
-  if (cfg.discreet && (reservadas || S.reveal.has('#tarefas'))) {
+  const el = $('#tasks');
+  if (!el) return;
+  const hoje = ymd(now());
+  $('#tasksDate').innerHTML = fonteTxt('tarefas');
+  if (!S.fin) { el.innerHTML = semEspelho('tarefas'); return; }
+  const G = tarefasEmGrupos(S.fin, hoje);
+  const reservadas = Object.values(G).flat().filter(t => VEIL.has(t.area)).length;
+  const grupo = (titulo, itens) => {
+    const vis = itens.filter(tarefaVisivel);
+    return vis.length ? `<section class="es-grupo"><h2>${titulo} <span>${vis.length}</span></h2><ul class="es-lista">${vis.map(t => tarefaLi(t, hoje)).join('')}</ul></section>` : '';
+  };
+  let html = grupo('Atrasadas', G.atrasadas) + grupo('Hoje', G.hoje) + grupo('Próximos 7 dias', G.semana) + grupo('Mais adiante', G.depois) + grupo('Sem prazo', G.semPrazo);
+  if (!html) html = '<p class="hj-empty">Nada aberto no TickTick.</p>';
+  if (cfg.discreet && reservadas) {
     const aberta = S.reveal.has('#tarefas');
-    html += `<div class="tarefa-privacidade">${ICON.lock}<span>${reservadas ? reservadas + (reservadas === 1 ? ' tarefa reservada' : ' tarefas reservadas') : 'Tarefas reservadas'}</span>
+    html += `<div class="tarefa-privacidade">${ICON.lock}<span>${reservadas === 1 ? '1 tarefa reservada' : reservadas + ' tarefas reservadas'}</span>
       <button type="button" data-tarefa-privacidade aria-pressed="${aberta}">${aberta ? 'Ocultar' : 'Mostrar'}</button></div>`;
   }
-  $('#tasks').innerHTML = html;
+  el.innerHTML = html;
 }
 
-function vincularTarefas() {
-  const criar = $('#criarTarefa'), caixa = $('#taskFormBox'), form = $('#addTask');
-  criar.addEventListener('click', () => {
-    caixa.hidden = !caixa.hidden;
-    criar.setAttribute('aria-expanded', String(!caixa.hidden));
-    if (!caixa.hidden) $('#addTxt').focus();
-  });
-  $('#tasks').addEventListener('click', ev => {
-    if (!ev.target.closest('[data-tarefa-privacidade]')) return;
-    if (S.reveal.has('#tarefas')) S.reveal.delete('#tarefas');
-    else S.reveal.add('#tarefas');
-    renderTasks();
-    $('#tasks [data-tarefa-privacidade]')?.focus();
-  });
-  form.addEventListener('submit', async ev => {
-    ev.preventDefault();
-    const texto = oneLine($('#addTxt').value), prazo = $('#addDue').value;
-    const botao = form.querySelector('[type="submit"]');
-    if (!texto || botao.disabled) return;
-    for (const campo of form.elements) campo.disabled = true;
-    const salva = await addCaixa([`➕ Tarefa nova: ${texto}${prazo ? ' 📅 ' + prazo : ''}`], {
-      sens:$('#addPrivada').checked, msg:`nova tarefa — ${short(texto, 50)}`, ok:'Tarefa na caixa. O assessor cria no TickTick.'
-    });
-    for (const campo of form.elements) campo.disabled = false;
-    if (!salva) return;
-    form.reset(); caixa.hidden = true; criar.setAttribute('aria-expanded','false');
-    if (S.page === 'tarefas') {
-      const destino = !prazo ? 'semdata' : prazo > ymd(now()) ? 'proximas' : 'hoje';
-      location.hash = '#tarefas/' + destino;
-      criar.focus({preventScroll:true});
-    }
-  });
-}
 function cxCompraLi(it) {
   return `<li class="task${it.pending ? ' busy' : ''}"><button class="rm" data-cxdel="${h(it.path + '\n' + it.block)}" aria-label="Tirar da caixa: ${h(it.text)}" title="Tirar da caixa">${ICON.x}</button><div class="tx"><div class="t">${inline(it.text)}</div><div class="meta"><span class="tag">nova, na caixa</span></div></div></li>`;
 }
@@ -1007,48 +949,6 @@ function cxLabel(it, compact) {
   const body = compact ? short(plain(t), 70) : plain(t);
   return `<span class="k">${h(k)}</span>${body ? ' ' + h(body) : ''}${extra.length ? ` <span class="muted">· </span>${extra.join(' ')}` : ''}${!compact && it.cont.length ? `<span class="c">${h(it.cont.map(c => c.replace(/^>\s?/, '')).join('\n'))}</span>` : ''}`;
 }
-function lastOrg() {
-  const c = S.commits.find(c => /^painel: caixa organizada/i.test(c.msg));
-  return c ? { when: whenTxt(new Date(c.date)), txt: c.msg.split('\n')[0].replace(/^painel: /, '') } : null;
-}
-function renderCaixa() {
-  const items = S.cx, tab = S.boxTab || 'fila';
-  $('#cxCount').textContent = items.length || '';
-  const sections = { fila: 'secCaixa', inbox: 'secInbox', historico: 'secFeed' };
-  for (const [id, section] of Object.entries(sections)) $('#' + section).hidden = id !== tab;
-  for (const a of $$('.box-tabs a')) {
-    if (a.dataset.inboxTab === tab) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
-  }
-  const lo = lastOrg();
-  $('#org').innerHTML = `<span>${lo ? `Última organização ${h(lo.when)}` : ''}</span>${items.length ? `<div><button type="button" class="btn" id="copyAsk">Copiar pedido de organização</button><a class="desk-link" href="https://claude.ai/new" target="_blank" rel="noopener noreferrer">Abrir Claude ↗</a></div>` : ''}`;
-  if (!items.length) {
-    $('#cxList').innerHTML = `<div class="desk-empty"><span aria-hidden="true">✓</span><p>Tudo organizado por aqui.</p><a class="desk-link" href="#registrar/nota">Fazer uma captura →</a></div>`;
-    return;
-  }
-  const groups = new Map(), today = ymd(now()), yesterday = ymd(addDays(now(), -1));
-  for (let i = items.length - 1; i >= 0; i--) {
-    const it = items[i];
-    if (!groups.has(it.date)) groups.set(it.date, []);
-    groups.get(it.date).push([i, it]);
-  }
-  const container = $('#cxList');
-  const opened = new Set($$('details[data-box-day][open]',container).map(d => d.dataset.boxDay));
-  container.innerHTML = [...groups].map(([day, rows], index) => {
-    const title = day === today ? 'Hoje' : day === yesterday ? 'Ontem' : dayLabel(day);
-    const list = `<ul class="cx">${rows.map(([i,it]) => {
-      const preview = cxLabel(it, true), full = cxLabel(it, false);
-      const content = preview === full ? full : `<details class="item-text"><summary>${preview}</summary><div>${full}</div></details>`;
-      return `<li class="${it.pending ? 'pending' : ''}"><time>${h(it.time)}</time><div class="body">${content}</div>${it.pending ? '<span class="muted">Salvando…</span>' : `<button class="x" type="button" data-box-remove="${i}" aria-label="Tirar registro das ${h(it.time)} da caixa">${ICON.x}</button>`}</li>`;
-    }).join('')}</ul>`;
-    return index === 0 ? `<section class="box-day"><h3>${h(title)}</h3>${list}</section>` : `<details class="box-day" data-box-day="${h(day)}"${opened.has(day) ? ' open' : ''}><summary>${h(title)} <small>${rows.length}</small></summary>${list}</details>`;
-  }).join('');
-}
-function renderInbox() {
-  const items = [...S.inbox].reverse();
-  $('#inboxCount').textContent = items.length || '';
-  $('#inbox').innerHTML = items.length ? items.map(it => `<li>${inline(it.text)}<small>${it.date ? dayLabel(it.date) : ''}${it.time ? ' às ' + it.time : ''}</small></li>`).join('') : '<li class="muted">Vazio.</li>';
-}
-
 function renderRhythm() {
   const n = now(), days = [];
   for (let k = 6; k >= 0; k--) days.push(ymd(addDays(n, -k)));
@@ -1101,23 +1001,6 @@ function whenTxt(d) {
   if (t === ymd(n)) { const m = (n - d) / 60000; return m < 1 ? 'agora' : m < 60 ? `há ${Math.floor(m)} min` : 'hoje ' + hm(d); }
   if (t === ymd(addDays(n, -1))) return 'ontem ' + hm(d);
   return dayLabel(t) + ' ' + hm(d);
-}
-let feedSeen = null;
-function renderOndeFicou() {
-  const el = $('#orgList');
-  if (!el) return;
-  const lista = organizados().slice(0, 20);
-  el.innerHTML = lista.length
-    ? lista.map(o => `<li><span class="org-o">${textoOrganizado(o)}<small>${h(o.data === ymd(now()) ? 'hoje ' + o.hora : dm(o.data) + ' ' + o.hora)}</small></span><span class="org-d">✅ ${destinoHtml(o.destino) ? 'Guardado ' + destinoHtml(o.destino) : 'Organizado'}</span></li>`).join('')
-    : '<li class="muted">Quando o assessor organizar a caixa, aparece aqui onde cada coisa ficou.</li>';
-}
-function renderFeed() {
-  renderOndeFicou();
-  const items = S.commits.map(feedItem).filter(Boolean).slice(0, 14);
-  const fresh = feedSeen && S.lastSync ? new Set(items.filter(i => !feedSeen.has(i.sha)).map(i => i.sha)) : new Set();
-  if (S.lastSync) feedSeen = new Set(items.map(i => i.sha));
-  S.feedIdx = Object.fromEntries(items.map(i => [i.sha, i]));
-  $('#feed').innerHTML = items.length ? items.map(i => `<li class="fl${fresh.has(i.sha) ? ' new' : ''}"><button class="fd" data-commit="${h(i.sha)}" aria-label="Ver o que foi registrado: ${h(i.label)} ${h(i.txt)}"><time>${h(whenTxt(i.date).replace(/^hoje /, '').replace(/^há /, ''))}</time><span><b>${h(i.label)}</b> ${h(i.txt)}${i.via ? '<span class="via">pelo painel</span>' : ''}</span><span class="go" aria-hidden="true">›</span></button></li>`).join('') : '<li><span></span><span class="muted">Ainda sem mudanças.</span></li>';
 }
 function relDay(s) {
   if (!s || !/^\d{4}-\d{2}-\d{2}/.test(s)) return '';
@@ -1233,9 +1116,8 @@ function topicosDaArea(C) {
   const esperando = abertasL.filter(g => /^esperando\b/.test(norm(plain(g.text))));
   const compromissos = S.agenda.events.filter(e => e.area === area && e.date >= C.hoje).sort((a, b) => (a.date + (a.start || '')).localeCompare(b.date + (b.start || '')));
   const fixos = S.agenda.series.filter(x => x.area === area && (!x.until || x.until >= C.hoje));
-  const M = finModel(), mes = C.hoje.slice(0, 7);
-  const custos = M ? custosDaArea(M.desp, area, mes) : { itens: [], total: 0 };
-  const custosAntes = M ? custosDaArea(M.desp, area, ymd(addDays(pymd(mes + '-01'), -1)).slice(0, 7)) : { itens: [], total: 0 };
+  // Gastos agora ficam no Minhas Economias: a área não calcula mais custos pela planilha.
+  const custos = { itens: [], total: 0 }, custosAntes = custos;
   const links = linksDasNotas(notas);
   const metasSec = secoes('metas');
   const extras = { decisoes: decisoesFora, numeros: docs };
@@ -1246,7 +1128,7 @@ function topicosDaArea(C) {
     custos: custos.itens.length, materiais: secoes('materiais').length + links.length,
   };
   for (const id of ['combinados', 'decisoes', 'numeros', 'perguntas', 'conquistas', 'ideias', 'motivo']) n[id] = secoes(id).length + (extras[id]?.length || 0);
-  return { n, secoes, decisoesFora, docs, padroes, pessoas: [...pessoas].map(p => S.files[p]).filter(Boolean), metasSec, esperando, compromissos, fixos, custos, custosAntes, links, temFin: !!M };
+  return { n, secoes, decisoesFora, docs, padroes, pessoas: [...pessoas].map(p => S.files[p]).filter(Boolean), metasSec, esperando, compromissos, fixos, custos, custosAntes, links, temFin: false };
 }
 
 const SM_CARET = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -1399,7 +1281,7 @@ function corpoDoTopico(C, T, vista) {
     if (area === 'financas') return `<a class="area-card fin-atalho" href="#financas"><b>💰 Abrir Finanças</b><span>Orçamento por categoria, extrato e cartões →</span></a>`;
     const regra = CUSTOS_DA_AREA[area];
     if (!regra) return `<div class="area-card topico-vazio"><p>Nenhuma categoria da planilha está ligada a ${h(AREAS[area].nome)}.</p></div>`;
-    if (!T.temFin) return `<div class="area-card topico-vazio"><p>Aguardando o espelho da planilha.</p></div>`;
+    if (!T.temFin) return `<div class="area-card topico-vazio"><p>Os gastos agora ficam no Minhas Economias. Veja em <a href="#financas">Finanças</a>.</p></div>`;
     const { itens, total } = T.custos;
     return `<section class="area-card"><div class="area-card-head"><h3>${MESES[+C.hoje.slice(5, 7) - 1]} até agora</h3><a class="area-link" href="#financas">Finanças →</a></div>
       <p class="custo-total">${V(total)} <small>em ${itens.length} ${itens.length === 1 ? 'gasto' : 'gastos'} · mês passado ${V(T.custosAntes.total)}</small></p>
@@ -1753,14 +1635,10 @@ function showCfg() {
     <label for="cInt">Intervalo de sincronização</label><select id="cInt">${[10,15,30,60].map(s => `<option value="${s}"${cfg.interval === s ? ' selected' : ''}>${s} segundos</option>`).join('')}</select>
     <details class="capture-extra"><summary>Conexão com o GitHub</summary><label for="cRepo">Repositório conectado</label><input id="cRepo" value="${h(cfg.repo)}" disabled>
       <p class="hint">Token terminado em ${h(cfg.token.slice(-4))}.</p><button class="btn ghost signout" type="button" id="cOut">Desconectar deste aparelho</button></details>
-    <details class="capture-extra"><summary>Edição da planilha</summary><p class="hint">${appPlanilha() ? 'Conectada neste aparelho. Em Finanças, toque numa linha para editar ou apagar.' : 'Desconectada. Em Finanças, as linhas ficam só para leitura.'}</p>
-      <button class="btn ghost" type="button" id="cFin">${appPlanilha() ? 'Trocar link ou senha' : 'Conectar edição'}</button>${appPlanilha() ? ' <button class="btn ghost" type="button" id="cFinOut">Desconectar</button>' : ''}</details>
     <div class="form-foot"><button class="btn" type="submit">Salvar ajustes</button></div>
   </form></div>`;
   $('#cfgForm').onsubmit = ev => { ev.preventDefault(); cfg.interval = +$('#cInt').value; cfg.theme = $('#cTheme').value; saveCfg(); applyTheme(); o.hidden = true; };
   $('#cClose').onclick = () => { o.hidden = true; };
-  $('#cFin').onclick = () => { o.hidden = true; openSheet('Conectar edição da planilha', formConectarPlanilha(), { focus: '#feUrl' }); };
-  if ($('#cFinOut')) $('#cFinOut').onclick = () => { cfg.finUrl = ''; cfg.finToken = ''; saveCfg(); o.hidden = true; renderFinancas(); toast('Edição da planilha desconectada deste aparelho.'); };
   $('#cOut').onclick = () => {
     cfg.token = ''; cfg.branch = ''; saveCfg();
     Blobs.clear(); LS.del(K + 'snap'); capturePanes.clear(); $('#regBody').replaceChildren();
@@ -1794,15 +1672,12 @@ function announce(prev, changed) {
   const it = ext.map(feedItem).filter(Boolean);
   const first = changed.find(p => S.files[p] && !S.files[p].sens && !p.startsWith('painel/'));
   if (it.length) toast(`<b>${h(it[0].label)}</b><small>${h(it[0].txt)}${it.length > 1 ? ` (e mais ${it.length - 1})` : ''}</small>`, { html: true, open: first });
-  const secs = new Set(['#secFeed']);
+  const secs = new Set();
   for (const p of changed) {
     if (p.startsWith('casos/')) secs.add('#secCases');
     if (p.startsWith('areas/')) secs.add('#secAreas');
     if (p === 'agenda.md') secs.add('#wAgenda');
-    if (p === SEMANA_MODELO) secs.add('#wPlano');
-    if (p.startsWith('painel/')) { secs.add('#secCaixa'); secs.add('#wCaixa'); }
-    if (p === 'eu/habitos.md') { secs.add('#secRhythm'); secs.add('#wAgenda'); }
-    if (S.files[p]?.tasks.length) { secs.add('#secTasks'); secs.add('#wTarefas'); }
+    if (p === 'eu/habitos.md') secs.add('#secRhythm');
   }
   for (const s of secs) { const el = $(s); if (!el || el.closest('.page')?.hidden) continue; el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
 }
@@ -1821,96 +1696,91 @@ function setLive() {
   el.title = S.head ? `Último commit lido: ${S.head.slice(0, 7)}` : '';
 }
 
-/* ─────────────── Início: widgets ─────────────── */
 const MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
-function itemsOn(d) {
-  const items = [];
-  for (const s of seriesOn(d)) items.push({ ...s, kind: 'serie', date: d });
-  for (const e of S.agenda.events) if (e.date === d) items.push({ ...e, kind: 'evento', date: d });
-  return items.sort((a, b) => (a.allDay ? -1 : 0) - (b.allDay ? -1 : 0) || (a.start || '').localeCompare(b.start || ''));
-}
-function itemName(it) {
-  if (cfg.discreet && (VEIL.has(it.area) || sensIt(it))) return 'Compromisso reservado';
-  return it.name;
-}
-const emo = it => AREAS[it.area]?.emoji || '•';
-const comEmoji = it => cfg.discreet && (VEIL.has(it.area) || sensIt(it)) ? 'Compromisso reservado'
-  : /^\p{Extended_Pictographic}/u.test(it.name) ? h(it.name) : `${emo(it)} ${h(it.name)}`;
-const hArea = it => it.area || 'geral';
-const hKey = it => `${it.date}|${hArea(it)}|${kw(it.name)}|${it.allDay ? 'dia todo' : it.start}`;
+/* ─────────────── Início: o dia num olhar (agenda, tarefas e dinheiro vêm do espelho) ─────────────── */
 const sensIt = it => SENS.has(it.area) || /🧠|🩺|psic[oó]|psiq|terap/i.test(it.name);
-const ST_ICON = {
-  feito: ICON.check,
-  nao: ICON.x,
-  cancelado: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M7 17 17 7"/></svg>',
-};
-const ST_TXT = { feito: 'fiz', nao: 'não fiz', cancelado: 'cancelado' };
-function habitState(it) {
-  const o = S.ov && S.ov.habit.get(hKey(it));
-  if (o) return { st: o.st, motivo: o.motivo, item: o, box: true };
-  const k = kw(it.name);
-  const r = S.habits.find(r => r.date === it.date && (r.area === hArea(it) || !AREAS[r.area]) && k && norm(r.oque).includes(k));
-  return r && r.st ? { st: r.st, motivo: r.motivo && r.motivo !== '—' ? r.motivo : '', box: false } : null;
+const maiusc = s => String(s || '').charAt(0).toUpperCase() + String(s || '').slice(1);
+const safeUrl = u => (/^https:\/\/[^\s"'<>]+$/.test(String(u || '')) ? String(u) : '');
+function quandoEspelho() {
+  const t = Date.parse(S.fin?.atualizado || '');
+  if (!Number.isFinite(t)) return '';
+  const d = new Date(t), dia = ymd(d);
+  return dia === ymd(now()) ? `hoje às ${hm(d)}` : dia === ymd(addDays(now(), -1)) ? `ontem às ${hm(d)}` : `em ${dm(dia)} às ${hm(d)}`;
 }
-function habitLine(it, st, motivo) {
-  const mot = oneLine(motivo).replace(/\|/g, '/');
-  const lab = st === 'feito' ? 'Fez' : st === 'nao' ? 'Não fez' : 'Cancelado';
-  const dd = it.date !== ymd(now()) ? `, ${dm(it.date)}` : '';
-  return `🔁 ${lab}: ${it.name} (${hArea(it)}, ${it.allDay ? 'dia todo' : it.start}${dd})${st !== 'feito' && mot ? ' — motivo: ' + mot : ''}`;
+function fonteTxt(app) {
+  const q = quandoEspelho(), idade = idadeDoEspelho(S.fin, now());
+  const velho = idade != null && idade > 12 * 60;
+  return `Do ${APPS[app].nome}${q ? `, atualizado ${q}` : ''}${velho ? ' · <b class="es-velho">pode estar desatualizado</b>' : ''}`;
 }
-function setHabit(it, st, motivo) {
-  const hs = habitState(it);
-  const line = habitLine(it, st, motivo);
-  const opts = { sens: sensIt(it), msg: `${short(it.name, 40)} ${ST_TXT[st]}`, ok: st === 'feito' ? 'Marcado. Ficou na caixa pro assessor.' : st === 'cancelado' ? 'Cancelado anotado. Não conta como falta.' : 'Anotado. Ficou na caixa pro assessor.' };
-  if (hs && hs.box) replaceCaixa(hs.item, [line], opts);
-  else addCaixa([line], opts);
-}
-function weekDays() {
-  const base = addDays(pymd(ymd(now())), S.wk * 7);
-  const ini = addDays(base, -base.getDay());
-  return [...Array(7)].map((_, i) => ymd(addDays(ini, i)));
-}
+const abrirApp = app => `<a class="btn es-app" href="${APPS[app].url}" target="_blank" rel="noopener noreferrer">Abrir ${APPS[app].nome} <span aria-hidden="true">↗</span></a>`;
+const semEspelho = app => `<div class="es-vazio"><p>O assessor ainda não puxou os dados do ${APPS[app].nome}. Peça a ele: <b>“atualiza o painel”</b>.</p>${abrirApp(app)}</div>`;
+const cabecaCard = (titulo, app) => `<header class="hj-section-head"><div><h2>${titulo}</h2><p>${fonteTxt(app)}</p></div>
+  <a href="${APPS[app].url}" target="_blank" rel="noopener noreferrer">Abrir <span aria-hidden="true">↗</span></a></header>`;
 function wAgenda() {
-  const n = now(), hoje = ymd(n), nm = n.getHours() * 60 + n.getMinutes();
-  const dias = weekDays();
-  if (!dias.includes(S.sel)) S.sel = dias.includes(hoje) ? hoje : dias[0];
-  const sel = S.sel, data = pymd(sel);
-  const strip = dias.map(d => {
-    const x = pymd(d), total = itemsOn(d).length;
-    return `<button type="button" data-day="${d}" aria-pressed="${d === sel}" ${d === hoje ? 'aria-current="date"' : ''} aria-label="${DOWL[x.getDay()]}, ${x.getDate()}, ${total} na agenda">
-      <span>${DOW[x.getDay()]}</span><b>${x.getDate()}</b><i class="${total ? 'tem-evento' : ''}" aria-hidden="true"></i></button>`;
-  }).join('');
-  const items = itemsOn(sel), anteriores = [], proximos = [];
-  S._idx = {};
-  for (const [i, it] of items.entries()) {
-    const passado = sel < hoje || (sel === hoje && !it.allDay && toMin(it.end) <= nm);
-    const emCurso = sel === hoje && !it.allDay && toMin(it.start) <= nm && nm < toMin(it.end);
-    const privado = cfg.discreet && (VEIL.has(it.area) || sensIt(it));
-    const key = hKey(it), id = privado ? 'turno-' + sel + '-' + i : key;
-    S._idx[id] = it;
-    S._idx[key] = it; // O formulário de status usa a chave estável da caixa.
-    const hs = habitState(it), st = hs?.st || '';
-    const futuro = !hs && (sel > hoje || (sel === hoje && !it.allDay && toMin(it.start) > nm));
-    const lab = hs ? `${itemName(it)}: ${ST_TXT[st]}. Toque para mudar.` : `Marcar ${itemName(it)}. Toque para marcar como feito ou segure para ver as opções.`;
-    const motivo = !privado && hs?.motivo && st !== 'feito' ? `<small>${h(short(hs.motivo, 80))}</small>` : '';
-    const status = hs ? ST_TXT[st] : emCurso ? 'Em andamento' : '';
-    const row = `<li class="hj-event${emCurso ? ' em-curso' : ''}" style="--c:${privado ? 'var(--ink3)' : areaColor(it.area)}">
-      <span class="hj-time">${it.allDay ? 'Dia todo' : it.start}${it.allDay ? '' : `<small>${it.end}</small>`}</span>
-      <span class="hj-event-name">${h(itemName(it))}${status ? `<small>${status}</small>` : ''}${motivo}</span>
-      <button class="st ${st}${hs?.box ? ' box' : ''}${futuro ? ' fut' : ''}${hs?.item?.pending ? ' busy' : ''}" data-st="${h(id)}" aria-label="${h(lab)}"><i>${ST_ICON[st] || ICON.check}</i></button>
-    </li>`;
-    (passado && sel === hoje ? anteriores : proximos).push(row);
-  }
-  const titulo = sel === hoje ? 'Hoje' : sel === ymd(addDays(n, 1)) ? 'Amanhã' : sel === ymd(addDays(n, -1)) ? 'Ontem' : DOWL[data.getDay()];
-  return `<section id="wAgenda" class="hj-card hj-agenda" aria-labelledby="hj-agenda">
-    <header class="hj-section-head"><div><h2 id="hj-agenda">Agenda</h2><p>${MESES[data.getMonth()]} de ${data.getFullYear()}</p></div>
-    <div class="hj-week-controls">${S.wk || sel !== hoje ? '<button type="button" data-act="hoje">Hoje</button>' : ''}<button type="button" data-wk="-1" aria-label="Semana anterior">‹</button><button type="button" data-wk="1" aria-label="Próxima semana">›</button></div></header>
-    <div class="hj-week">${strip}</div>
-    <h3 class="hj-day-heading">${h(titulo)}, ${dm(sel)}</h3>
-    ${anteriores.length ? `<details class="hj-fold" data-home-fold="passados-${sel}"><summary>${anteriores.length === 1 ? '1 compromisso anterior' : anteriores.length+' compromissos anteriores'}</summary><ol class="hj-events">${anteriores.join('')}</ol></details>` : ''}
-    ${proximos.length ? `<ol class="hj-events">${proximos.join('')}</ol>` : `<p class="hj-empty">${anteriores.length ? 'Os horários de hoje terminaram.' : 'Nenhum compromisso registrado para este dia.'}</p>`}
-    ${items.length ? '<p class="hj-hint">Toque no círculo para marcar como feito. Segure para ver as outras opções.</p>' : ''}
+  const n = now(), hoje = ymd(n), minuto = n.getHours() * 60 + n.getMinutes();
+  if (!S.fin) return `<section id="wAgenda" class="hj-card hj-agenda">${cabecaCard('Agenda', 'agenda')}${semEspelho('agenda')}</section>`;
+  const dias = agendaPorDia(S.fin, hoje, 7);
+  const linha = (it, dia) => {
+    const privado = cfg.discreet && (VEIL.has(it.area) || sensIt({ area: it.area, name: it.titulo }));
+    const quando = momento(it, dia, hoje, minuto), link = privado ? '' : safeUrl(it.link);
+    const miolo = `<span class="hj-time">${it.diaTodo ? 'Dia todo' : h(it.inicio)}${!it.diaTodo && it.fim ? `<small>${h(it.fim)}</small>` : ''}</span>
+      <span class="hj-event-name">${h(privado ? 'Compromisso reservado' : it.titulo)}${quando === 'agora' ? '<small>Agora</small>' : ''}</span>`;
+    return `<li class="hj-event es-ev ${quando}" style="--c:${privado ? 'var(--ink3)' : areaColor(it.area)}">${link
+      ? `<a href="${h(link)}" target="_blank" rel="noopener noreferrer">${miolo}</a>` : `<div>${miolo}</div>`}</li>`;
+  };
+  const bloco = (titulo, d) => `<h3 class="hj-day-heading">${titulo}</h3>${d.itens.length
+    ? `<ol class="hj-events">${d.itens.map(it => linha(it, d.dia)).join('')}</ol>` : '<p class="hj-empty">Nada na agenda.</p>'}`;
+  const [d0, d1, ...resto] = dias, outros = resto.filter(d => d.itens.length);
+  const total = outros.reduce((s, d) => s + d.itens.length, 0);
+  return `<section id="wAgenda" class="hj-card hj-agenda">${cabecaCard('Agenda', 'agenda')}
+    ${bloco(`Hoje, ${dm(hoje)}`, d0)}${bloco(`Amanhã, ${dm(d1.dia)}`, d1)}
+    ${outros.length ? `<details class="hj-fold" data-home-fold="semana"><summary>Resto da semana (${total})</summary>
+      ${outros.map(d => bloco(`${maiusc(DOWL[pymd(d.dia).getDay()])}, ${dm(d.dia)}`, d)).join('')}</details>` : ''}
   </section>`;
+}
+function tarefaLi(t, hoje) {
+  const quando = !t.prazo ? 'Sem prazo' : t.prazo < hoje ? `Atrasada desde ${dm(t.prazo)}`
+    : t.prazo === hoje ? (t.hora ? `Hoje, ${t.hora}` : 'Hoje') : `${dayLabel(t.prazo)}${t.hora ? ', ' + t.hora : ''}`;
+  const meta = [quando, t.prioridade === 'alta' ? 'Prioridade alta' : '', t.lista || ''].filter(Boolean).join(' · ');
+  const link = safeUrl(t.link);
+  const miolo = `<span class="es-nome">${h(t.titulo)}<small>${h(meta)}</small></span>${link ? '<span class="es-abrir" aria-hidden="true">↗</span>' : ''}`;
+  return `<li class="${t.prazo && t.prazo < hoje ? 'atrasada' : ''}" style="--c:${areaColor(t.area)}">${link
+    ? `<a class="es-item" href="${h(link)}" target="_blank" rel="noopener noreferrer">${miolo}</a>` : `<div class="es-item">${miolo}</div>`}</li>`;
+}
+const tarefaVisivel = t => !cfg.discreet || S.reveal.has('#tarefas') || !VEIL.has(t.area);
+function wTarefas() {
+  const hoje = ymd(now());
+  if (!S.fin) return `<section id="wTarefas" class="hj-card hj-prioridades">${cabecaCard('Tarefas', 'tarefas')}${semEspelho('tarefas')}</section>`;
+  const G = tarefasEmGrupos(S.fin, hoje);
+  const todas = [...G.atrasadas, ...G.hoje], agora = todas.filter(tarefaVisivel);
+  const prox = G.semana.filter(tarefaVisivel)[0];
+  const vazio = prox ? `<p class="hj-empty">Nada atrasado nem pra hoje. Próxima: <strong>${h(short(prox.titulo, 70))}</strong> · ${dayLabel(prox.prazo)}</p>`
+    : '<p class="hj-empty">Nada atrasado nem pra hoje.</p>';
+  const ocultas = todas.length - agora.length;
+  return `<section id="wTarefas" class="hj-card hj-prioridades">${cabecaCard('Tarefas', 'tarefas')}
+    ${agora.length ? `<ul class="es-lista">${agora.slice(0, 5).map(t => tarefaLi(t, hoje)).join('')}</ul>` : vazio}
+    ${ocultas ? `<p class="hj-hint">${ocultas === 1 ? '1 tarefa reservada' : ocultas + ' tarefas reservadas'} (modo discreto).</p>` : ''}
+    <a class="hj-more" href="#tarefas">${agora.length > 5 ? `Mais ${agora.length - 5} · ` : ''}Ver todas as tarefas</a></section>`;
+}
+function wDinheiro() {
+  const R = resumoFinanceiro(S.fin), head = cabecaCard('Dinheiro', 'financas');
+  if (!R) return `<section id="wDinheiro" class="hj-card hj-dinheiro">${head}${semEspelho('financas')}</section>`;
+  const mes = R.mes ? maiusc(MESES[Number(R.mes.slice(5)) - 1]) : 'Mês';
+  const fat = R.proximaFatura;
+  return `<section id="wDinheiro" class="hj-card hj-dinheiro">${head}
+    <dl class="es-kpis">
+      <div><dt>Saldo nas contas</dt><dd>${R.saldoTotal == null ? '—' : V(R.saldoTotal)}</dd></div>
+      <div><dt>Resultado de ${mes.toLowerCase()}</dt><dd>${R.resultado == null ? '—' : V(R.resultado, R.resultado < 0 ? 'neg' : 'pos')}</dd></div>
+      ${fat ? `<div><dt>Próxima fatura</dt><dd>${V(fat.valor)}<small>${h(fat.cartao)} · vence ${dm(fat.vence)}</small></dd></div>` : ''}
+    </dl><a class="hj-more" href="#financas">Ver finanças</a></section>`;
+}
+function humorBotoes() {
+  return `<div class="es-humor" role="group" aria-label="Como você está agora, de 1 a 5">${HUMOR.map(([e, l], i) =>
+    `<button type="button" data-humor="${i + 1}" aria-label="${i + 1} de 5, ${l}"><span aria-hidden="true">${e}</span><small>${l}</small></button>`).join('')}</div>`;
+}
+function wSentir() {
+  return `<section class="hj-card hj-sentir" id="wSentir"><header class="hj-section-head"><h2>Como você está?</h2><a href="#sentir">Meus registros <span aria-hidden="true">↗</span></a></header>
+    ${humorBotoes()}<p class="hj-hint">Um toque e, se quiser, conte o que aconteceu. Vai direto pro seu diário emocional.</p></section>`;
 }
 function proximaRefeicao() {
   if (cfg.discreet) return null;
@@ -1922,38 +1792,11 @@ function fichasAll() {
   if (!lista.length) { const t = regTool(); lista = [{ id: 'regulacao', emoji: '🧭', nome: t.title, desc: '', campos: t.qs.map(q => ({ q, tipo: 'texto' })), semArquivo: true }]; }
   return [est, ...lista];
 }
-function wEmocional() {
-  return `<section class="hj-channel hj-journal" id="wEmo"><header><span class="hj-channel-icon" aria-hidden="true">💭</span><h3><a href="#area/emocional">Cuidado emocional</a></h3></header>
-    <div class="hj-actions"><button type="button" data-ficha="estou">Fazer check-in</button></div>
-    <details class="hj-fold" data-home-fold="fichas"><summary>Exercícios de terapia</summary><div class="hj-actions">
-      ${cfg.discreet ? '' : fichasAll().filter(f => !f.builtin).map(f => `<button type="button" data-ficha="${h(f.id)}">${h(f.nome)}</button>`).join('')}
-      <button type="button" data-act="ficha-nova">Criar exercício</button></div></details></section>`;
-}
 function wRefeicao() {
   const ref = cfg.discreet ? null : proximaRefeicao();
   const hora = ref ? `<p>${ref.amanha ? 'Amanhã' : 'Próxima refeição'}, ${ref.meal.t} · ${h(ref.meal.nome)}</p>` : '';
   return `<section class="hj-channel" id="wRef"><header><span class="hj-channel-icon" aria-hidden="true">🍽️</span><h3><a href="#alimentacao">Refeições e compras</a></h3></header>
     ${hora}<div class="hj-actions"><a href="#alimentacao/plano">Ver plano</a><a id="wCompras" href="#alimentacao/compras">Lista de compras</a></div></section>`;
-}
-function wTarefas() {
-  const visivel = g => (g.nova || !isChecked(g)) && (!cfg.discreet || !tarefaReservada(g));
-  const grupos = gruposDeTarefas(), hoje = ymd(now());
-  // Atrasadas primeiro, depois as de hoje, depois as de prioridade alta sem prazo.
-  const pendentes = prioridadesDoDia(grupos).filter(visivel);
-  const quando = g => !g.due ? 'Sem prazo' : g.due < hoje ? `Atrasada desde ${dm(g.due)}` : 'Prazo hoje';
-  const rows = pendentes.slice(0,3).map(g => {
-    const acao = g.nova ? `<a class="hj-pending" href="#caixa" aria-label="Ver tarefa na caixa">↗</a>` : `<button class="chk" role="checkbox" aria-checked="false" data-task="${h(g.key)}" aria-label="Concluir ${h(plain(g.text))}">${ICON.check}</button>`;
-    return `<li class="${g.due && g.due < hoje ? 'atrasada' : ''}">${acao}<span>${h(plain(g.text))}<small>${quando(g)}${g.prio === 'alta' ? ' · Prioridade alta' : ''}${g.nova ? ' · Na caixa' : ''}</small></span></li>`;
-  }).join('');
-  // Sem nada pra hoje, mostra o próximo prazo: "nenhuma tarefa" sozinho passava falsa calma.
-  const prox = rows ? null : grupos.proximas.filter(visivel)[0];
-  const vazio = prox
-    ? `<p class="hj-empty">Nada atrasado nem pra hoje. Próximo prazo: <strong>${h(short(plain(prox.text), 70))}</strong> · ${dayLabel(prox.due)}</p>`
-    : '<p class="hj-empty">Nada atrasado, pra hoje ou de prioridade alta.</p>';
-  return `<section id="wTarefas" class="hj-card hj-prioridades">
-    <header class="hj-section-head"><h2>Prioridades</h2><a href="#tarefas">Ver tarefas <span aria-hidden="true">↗</span></a></header>
-    ${rows ? `<ul class="hj-tasks">${rows}</ul>` : vazio}
-    ${pendentes.length > 3 ? `<a class="hj-more" href="#tarefas">Mais ${pendentes.length-3} na lista</a>` : ''}</section>`;
 }
 function wRetomar() {
   const casos = casosEmAndamento(S.files).filter(f => !cfg.discreet || (!f.sens && !VEIL.has(f.area)));
@@ -1975,48 +1818,23 @@ function atalhosDaMemoria() {
     `<button type="button" class="btn ghost" data-open="${h(p)}">${nome}</button>`).join('');
 }
 
-function wCaixa() {
-  const visiveis = S.cx.filter(it => !cfg.discreet || (it.path !== RESERVADA && !VEIL.has(it.area) && !['compra','comprovante','receita','transferencia'].includes(it.kind)));
-  const n = visiveis.length;
-  return `<a class="hj-inbox" href="${n ? '#caixa' : '#caixa/historico'}" id="wCaixa"><span><strong>Caixa de entrada</strong><small>${n ? `${n} ${n === 1 ? 'item esperando o assessor' : 'itens esperando o assessor'}` : 'Nada esperando o assessor · ver onde ficou'}</small></span><span aria-hidden="true">→</span></a>`;
-}
-function wPlano(hoje) {
-  const plano = S.files[SEMANA_MODELO];
-  if (!plano) return '';
-  const blocos = blocosDaSemanaModelo(plano.body, hoje).map(b => ({ ...b, area: areaKey(b.area) }));
-  const visiveis = blocos.filter(b => !cfg.discreet || !VEIL.has(b.area));
-  const lista = visiveis.map(b => `<li><time datetime="${h(b.hora)}">${h(b.hora)}</time><span><b>${h(AREAS[b.area]?.nome || b.area)}</b> · ${h(plain(b.texto))}</span></li>`).join('');
-  const areas = AREA_ORDER.map(id => ({ id, nota: S.files[`areas/${id}/${id}.md`] }))
-    .filter(({ id, nota }) => nota && (!cfg.discreet || (!nota.sens && !VEIL.has(id))))
-    .map(({ id, nota }) => ({ id, status: norm(nota.meta.status).trim() }));
-  const pior = STATUS_PRIORITARIOS.find(status => areas.some(a => a.status === status));
-  const foco = areas.filter(a => a.status === pior).map(({ id }) =>
-    `<a href="${id === 'financas' ? '#area/financas/resumo' : '#area/' + id}">${h(AREAS[id].nome)}</a>`).join(', ');
-  return `<section class="hj-card hj-plan" id="wPlano">
-    <header class="hj-section-head"><h2>Plano de hoje</h2><a href="${h(linkDaNota(SEMANA_MODELO, plano.area, null, AREA_ORDER))}">Ver semana-modelo <span aria-hidden="true">↗</span></a></header>
-    ${lista ? `<ul>${lista}</ul>` : !blocos.length ? '<p class="hj-empty">Sem blocos previstos para hoje.</p>' : ''}
-    ${blocos.length > visiveis.length ? '<p class="hj-hint">Há blocos em modo discreto.</p>' : ''}
-    ${foco ? `<p class="hj-plan-focus"><span>${pior === 'parado' ? 'Em pausa no plano' : 'Pedem atenção no plano'}</span> ${foco}</p>` : ''}
-  </section>`;
-}
 function renderInicio() {
   const el = $('#home');
   if (!el) return;
   const n = now(), hr = n.getHours();
   const sauda = hr < 5 || hr >= 18 ? 'Boa noite' : hr < 12 ? 'Bom dia' : 'Boa tarde';
-  const abertos = new Set($$('details[data-home-fold][open]',el).map(section => section.dataset.homeFold));
+  const abertos = new Set($$('details[data-home-fold][open]', el).map(section => section.dataset.homeFold));
   S.minute = hr * 60 + n.getMinutes(); S.day = ymd(n);
   const pronto = Boolean(S.head || Object.keys(S.files).length);
   const saudacao = `<header class="hj-heading"><div><p>${DOWL[n.getDay()]}, ${n.getDate()} de ${MESES[n.getMonth()]}</p>
-    <h1>${sauda}${S.name ? ', '+h(S.name) : ''}.</h1></div><a class="hj-capture" href="#registrar/nota"><span aria-hidden="true">＋</span> Capturar</a></header>`;
+    <h1>${sauda}${S.name ? ', ' + h(S.name) : ''}.</h1></div><a class="hj-capture" href="#registrar"><span aria-hidden="true">＋</span> Capturar</a></header>`;
   if (!pronto) {
     el.innerHTML = `${saudacao}<p class="hj-loading" role="status">${S.err ? 'Não foi possível carregar suas notas.' : 'Carregando suas notas…'}</p>`;
     return;
   }
-  el.innerHTML = `${saudacao}<div class="hj-board">${wAgenda()}${wTarefas()}${wPlano(S.day)}${wRetomar()}</div>
-    <section class="hj-tools"><header class="hj-section-head"><h2>Acessos rápidos</h2></header>
-      <div class="hj-channels">${wRefeicao()}${wEmocional()}${wCaixa()}</div></section>`;
-  for (const section of $$('details[data-home-fold]',el)) section.open = abertos.has(section.dataset.homeFold);
+  el.innerHTML = `${saudacao}<div class="hj-board es-board">${wAgenda()}${wTarefas()}${wDinheiro()}${wSentir()}${wRetomar()}</div>
+    <section class="hj-tools"><div class="hj-channels es-canais">${wRefeicao()}</div></section>`;
+  for (const section of $$('details[data-home-fold]', el)) section.open = abertos.has(section.dataset.homeFold);
 }
 
 /* ─────────────── folha (bottom sheet) ─────────────── */
@@ -2041,32 +1859,10 @@ function closeSheet() {
   setTimeout(() => { if (!w.classList.contains('on')) { w.hidden = true; $('#shBody').innerHTML = ''; } }, 200);
 }
 const sheetOpen = () => !$('#sheet').hidden;
-function sheetStatus(it) {
-  const hs = habitState(it);
-  if (hs && !hs.box) { toast('Esse já foi organizado pelo assessor. Pra mudar, anote na caixa.'); return; }
-  const x = pymd(it.date);
-  const quando = `${it.allDay ? 'dia todo' : it.start + '–' + it.end} · ${DOW[x.getDay()]} ${dm(it.date)}`;
-  const cur = hs ? hs.st : '';
-  openSheet('Como foi?', `<form class="f2" data-form="status" data-key="${h(hKey(it))}" autocomplete="off">
-    <p class="stitle"><b>${comEmoji(it)}</b><br>${quando}</p>
-    <div class="sts" role="radiogroup" aria-label="Como foi">${['feito', 'nao', 'cancelado'].map(v => `<button type="button" role="radio" data-pick="st" data-v="${v}" aria-checked="${cur === v || (!cur && v === 'nao')}"><b>${v === 'feito' ? '✓' : v === 'nao' ? '✕' : '⊘'}</b>${v === 'feito' ? 'Fiz' : v === 'nao' ? 'Não fiz' : 'Cancelado'}</button>`).join('')}</div>
-    <div class="field" data-motivo><label>Motivo (opcional)</label><input type="text" name="motivo" value="${h(hs && hs.motivo || '')}" placeholder="Ex.: a psicóloga desmarcou" enterkeyhint="done"></div>
-    <p class="small-note">Cancelado é quando não dependeu de você. Não conta como falta.</p>
-    <div class="form-foot"><button class="btn big" type="submit">Guardar</button>${hs && hs.box ? '<button class="btn ghost big" type="button" data-act="status-desfazer">Desfazer</button>' : ''}</div>
-  </form>`, { item: it });
-  syncStatusForm($('#shBody form'));
-}
-function syncStatusForm(f) {
-  if (!f) return;
-  const v = picked(f, 'st');
-  const m = f.querySelector('[data-motivo]');
-  if (m) m.hidden = v === 'feito';
-}
 function sheetMais() {
-  const n = S.cx.length;
   openSheet('Mais', `<ul class="menu">
     <li><a href="#registrar" data-close><span class="e">📝</span>Capturar</a></li>
-    <li><a href="#caixa" data-close><span class="e">📥</span>Caixa de entrada${n ? `<span class="badge">${n}</span>` : ''}</a></li>
+    <li><a href="#sentir" data-close><span class="e">💭</span>Como estou</a></li>
     <li><a href="#alimentacao" data-close><span class="e">🥗</span>Refeições e compras</a></li>
   </ul>
 `);
@@ -2101,7 +1897,7 @@ function formFicha(fi) {
   }
   return `<form class="f2" data-form="ficha" data-id="${h(fi.id)}" autocomplete="off">
     ${!fi.builtin && fi.desc ? `<p class="hint">${h(fi.desc)}</p>` : ''}${corpo}
-    <div class="form-foot"><button class="btn big" type="submit">Guardar na caixa</button>${!fi.builtin && !fi.semArquivo ? `<button class="btn ghost big" type="button" data-act="ficha-editar" data-id="${h(fi.id)}">Editar exercício</button>` : ''}<p class="hint">Vai para a caixa reservada.</p></div>
+    <div class="form-foot"><button class="btn big" type="submit">Guardar</button>${!fi.builtin && !fi.semArquivo ? `<button class="btn ghost big" type="button" data-act="ficha-editar" data-id="${h(fi.id)}">Editar exercício</button>` : ''}<p class="hint">Vai direto pro seu diário emocional.</p></div>
   </form>`;
 }
 const TIPOS_CAMPO = [['texto', 'Texto'], ['escala', 'Escala 0 a 10'], ['humor', 'Humor 1 a 5'], ['emocoes', 'Emoções']];
@@ -2109,43 +1905,13 @@ const campoRow = (c = { q: '', tipo: 'texto' }) => `<div class="ed-f" data-campo
 function formFichaEd(fi) {
   const campos = fi ? fi.campos : [{ q: '', tipo: 'texto' }, { q: '', tipo: 'texto' }];
   return `<form class="f2" data-form="ficha-ed" data-id="${fi ? h(fi.id) : ''}" autocomplete="off">
-    <p class="hint" style="margin-top:0">Pra quando a psicóloga passar algo novo: dê um nome e escreva as perguntas. O que você preencher vai pra caixa reservada.</p>
+    <p class="hint" style="margin-top:0">Pra quando a psicóloga passar algo novo: dê um nome e escreva as perguntas. O que você preencher vai direto pro seu diário emocional.</p>
     <div class="field" style="display:grid;grid-template-columns:64px 1fr;gap:8px"><div><label>Emoji</label><input type="text" name="emoji" value="${h(fi ? fi.emoji : '🧭')}" maxlength="4" style="text-align:center"></div><div><label>Nome do exercício</label><input type="text" name="nome" value="${h(fi ? fi.nome : '')}" placeholder="Ex.: Registro de pensamentos"></div></div>
     <div class="field"><label>Explicação (opcional)</label><input type="text" name="desc" value="${h(fi ? fi.desc : '')}" placeholder="Ex.: usar quando bater ansiedade"></div>
     <div class="field"><span class="lbl">Campos</span><div data-campos>${campos.map(campoRow).join('')}</div><button type="button" class="btn ghost" data-act="campo-add" style="margin-top:10px">＋ Campo</button></div>
     <div class="form-foot"><button class="btn big" type="submit">Salvar exercício</button>${fi ? '<button class="btn ghost big" type="button" data-act="ficha-del" style="color:var(--alert)">Apagar exercício</button>' : ''}</div>
   </form>`;
 }
-const PAGTOS = ['Crédito', 'Pix', 'Débito', 'Dinheiro', 'Boleto', 'Alimentação'];
-const CARTOES = ['Nubank', 'Mercado Pago', 'Bradesco Amazon', 'XP'];
-function formCompra(soComprovante) {
-  const pg = LS.get(K + 'pg', 'Crédito');
-  const cadastrados = finModel()?.cartoes.map(c => c.cartao) || [];
-  const opcoes = cadastrados.length ? cadastrados : CARTOES;
-  const ultimo = LS.get(K + 'cartao', '');
-  const ct = opcoes.includes(ultimo) ? ultimo : opcoes[0];
-  const campos = `<div class="purchase-basics">
-    <label class="field"><span>Valor</span><span class="money"><span>R$</span><input name="valor" inputmode="decimal" placeholder="0,00" aria-label="Valor em reais"></span></label>
-    <label class="field"><span>O que foi</span><input type="text" name="oque" placeholder="Ex.: padaria" enterkeyhint="next"></label></div>`;
-  const arquivo = `<div class="file capture-file"><label><input type="file" name="arq" accept="image/*,application/pdf"${soComprovante ? ' required' : ''}>
-      <span class="attach-plus" aria-hidden="true">＋</span><span>${soComprovante ? 'Escolher comprovante' : 'Anexar comprovante'}<small>Imagem ou PDF</small></span></label><div class="prev" data-prev></div></div>`;
-  return `<form class="f2 receipt-form" data-form="compra" autocomplete="off">
-    ${soComprovante ? arquivo + '<details class="capture-extra"><summary>Adicionar valor e descrição</summary>' + campos + '</details>' : campos}
-    <details class="capture-extra pay-options"><summary>Pagamento e data <span data-pay-label>${h(pg)} · Hoje</span></summary>
-      <div class="field"><span class="lbl">Forma de pagamento</span><div class="chips" role="radiogroup" aria-label="Como pagou">${PAGTOS.map(p => `<button type="button" role="radio" data-pick="pg" data-v="${p}" aria-checked="${pg === p}">${p === 'Alimentação' ? 'Cartão alimentação' : p}</button>`).join('')}</div><p class="small-note" data-va ${pg === 'Alimentação' ? '' : 'hidden'}>Benefício da empresa.</p></div>
-      <div class="field" data-cartoes ${pg === 'Crédito' ? '' : 'hidden'}><span class="lbl">Cartão</span><div class="chips" role="radiogroup" aria-label="Cartão">${opcoes.map(c => `<button type="button" role="radio" data-pick="cartao" data-v="${h(c)}" aria-checked="${ct === c}">${h(c)}</button>`).join('')}</div></div>
-      <label class="field"><span>Data do gasto</span><input type="date" name="data" value="${ymd(now())}" max="${ymd(now())}"></label></details>
-    ${soComprovante ? '' : `<details class="capture-extra"><summary>Comprovante opcional</summary>${arquivo}</details>`}
-    <div class="form-foot"><button class="btn big" type="submit">${soComprovante ? 'Guardar comprovante' : 'Guardar gasto'}</button></div>
-  </form>`;
-}
-function resumoPagamento(f) {
-  const label = f.querySelector('[data-pay-label]');
-  if (!label) return;
-  const pg = picked(f, 'pg') || 'Crédito', dia = f.elements.data.value;
-  label.textContent = pg + ' · ' + (!dia || dia === ymd(now()) ? 'Hoje' : dm(dia));
-}
-const parseValor = valorCapturado;
 const blobB64 = b => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1]); r.onerror = () => rej(erro('arquivo')); r.readAsDataURL(b); });
 async function shrinkImage(file) {
   const bmp = await createImageBitmap(file);
@@ -2211,56 +1977,32 @@ async function concluirCaptura(f, gravar) {
 }
 
 const arquivosCapturados = new WeakMap();
-function submitCompra(f) {
-  const oque = oneLine(f.oque.value), valor = parseValor(f.valor.value);
-  const pg = picked(f, 'pg') || 'Crédito', ct = pg === 'Crédito' ? picked(f, 'cartao') : '';
-  const data = f.data.value || ymd(now()), arq = f.arq.files?.[0];
-  if (Number.isNaN(valor)) { f.valor.closest('details')?.setAttribute('open',''); toast('Confira o valor em reais.'); f.valor.focus(); return; }
-  if (!arq && (!oque || valor == null)) { toast('Preencha a descrição e o valor ou anexe um comprovante.'); (oque ? f.valor : f.oque).focus(); return; }
-  LS.set(K + 'pg', pg); if (ct) LS.set(K + 'cartao', ct);
-  return concluirCaptura(f, async () => {
-    let caminho = '';
-    if (arq) {
-      caminho = arquivosCapturados.get(arq) || await uploadComprovante(arq, oque);
-      arquivosCapturados.set(arq, caminho);
-    }
-    const hoje = ymd(now()), pagamento = pg === 'Alimentação' ? 'cartão alimentação (benefício da empresa, não sai do saldo)' : pg;
-    const linha = oque || valor != null
-      ? `💳 Compra: ${oque || 'sem descrição'}${valor != null ? ' — ' + brl(valor) : ''} · ${pagamento}${ct ? ' ' + ct : ''}${data !== hoje ? ' · em ' + data : ''}${caminho ? ' · comprovante: ' + caminho : ''}`
-      : `🧾 Comprovante: ${caminho} · ${pagamento}${ct ? ' ' + ct : ''}${data !== hoje ? ' · de ' + dm(data) : ''}`;
-    return addCaixa([linha], { msg: 'registro financeiro', ok: 'Guardado na caixa para lançar na planilha.' });
-  });
-}
 function submitFicha(f) {
   const fi = fichasAll().find(x => x.id === f.dataset.id);
   if (!fi) return;
-  let lines;
+  const n = now(), diaTxt = `${ymd(n)} ${DOW[n.getDay()]}`;
   if (fi.id === 'estou') {
     const emos = [...pressed(f, 'emo'), ...(f.emo_outra.value.trim() ? [f.emo_outra.value.trim()] : [])];
-    const parts = [];
-    const hu = picked(f, 'humor');
-    if (hu) parts.push(`humor ${hu}/5`);
-    if (emos.length) parts.push(`emoção: ${emos.join(', ')}`);
-    if (f.intens.dataset.set) parts.push(`intensidade ${f.intens.value}/10`);
-    if (f.gatilho.value.trim()) parts.push(`gatilho: ${oneLine(f.gatilho.value)}`);
-    if (f.ajudou.value.trim()) parts.push(`ajudou: ${oneLine(f.ajudou.value)}`);
-    const livre = f.livre.value.trim();
-    if (!parts.length && !livre) { toast('Preencha pelo menos uma coisa.'); return; }
-    lines = [`💭 Como estou: ${parts.join(' · ') || '(só texto)'}`, ...livre.split(/\n+/).filter(Boolean).map(l => '> ' + l)];
-  } else {
-    const ans = [];
-    fi.campos.forEach((c, i) => {
-      let v = '';
-      if (c.tipo === 'escala') { const r = f.elements['c' + i]; if (r && r.dataset.set) v = `${r.value}/10`; }
-      else if (c.tipo === 'humor') { const x = picked(f, 'c' + i); if (x) v = `${x}/5`; }
-      else if (c.tipo === 'emocoes') { const o = f.elements[`c${i}_outra`]; v = [...pressed(f, 'c' + i), ...(o && o.value.trim() ? [o.value.trim()] : [])].join(', '); }
-      else v = (f.elements['c' + i]?.value || '').trim();
-      if (v) ans.push(`${i + 1}. ${short(c.q, 60)} → ${oneLine(v)}`);
-    });
-    if (!ans.length) { toast('Responda pelo menos um campo.'); return; }
-    lines = [`🧭 ${fi.nome}:`, ...ans];
+    const hu = picked(f, 'humor'), intens = f.intens.dataset.set ? f.intens.value : '';
+    const gatilho = f.gatilho.value.trim(), ajudou = f.ajudou.value.trim(), livre = f.livre.value.trim();
+    const estruturado = hu || emos.length || intens || gatilho || ajudou;
+    if (!estruturado && !livre) { toast('Preencha pelo menos uma coisa.'); return; }
+    const linha = estruturado ? `| ${diaTxt} | ${hu || '—'} | ${celula(emos.join(', '))} | ${intens || '—'} | ${celula(gatilho)} | ${celula(ajudou)} |` : '';
+    const secao = livre ? `## ${diaTxt} · ${hm(n)} · 💭 Como estou (palavras dele)\n${livre.split(/\n+/).map(l => l.trim()).filter(Boolean).map(l => '- ' + l).join('\n')}` : '';
+    return concluirCaptura(f, () => gravarJournal({ linha, secao }));
   }
-  return concluirCaptura(f, () => addCaixa(lines, { sens:true, ok:'Guardado na caixa reservada.' }));
+  const ans = [];
+  fi.campos.forEach((c, i) => {
+    let v = '';
+    if (c.tipo === 'escala') { const r = f.elements['c' + i]; if (r && r.dataset.set) v = `${r.value}/10`; }
+    else if (c.tipo === 'humor') { const x = picked(f, 'c' + i); if (x) v = `${x}/5`; }
+    else if (c.tipo === 'emocoes') { const o = f.elements[`c${i}_outra`]; v = [...pressed(f, 'c' + i), ...(o && o.value.trim() ? [o.value.trim()] : [])].join(', '); }
+    else v = (f.elements['c' + i]?.value || '').trim();
+    if (v) ans.push(`- ${c.q} → ${oneLine(v)}`);
+  });
+  if (!ans.length) { toast('Responda pelo menos um campo.'); return; }
+  const secao = `## ${diaTxt} · ${hm(n)} · ${fi.emoji || '🧭'} ${fi.nome}\n${ans.join('\n')}`;
+  return concluirCaptura(f, () => gravarJournal({ secao }));
 }
 /* fichas: lidas de painel/fichas.md; o painel cria, edita e apaga ali */
 function parseFichas(f) {
@@ -2290,7 +2032,7 @@ function parseFichas(f) {
     return { ...x, id, desc: x.desc.join(' ') };
   });
 }
-const FICHAS_INTRO = `---\ntipo: config\narea: emocional\nstatus: ativo\ntags: [painel, fichas, emocional, terapia, psicologa, ferramenta, registro, formulario]\npessoas: []\nresumo: Fichas de saúde emocional do painel — o que a psicóloga passa para ele registrar. Cada ficha vira um formulário no painel; o que ele preenche vai para a caixa reservada.\natualizado: ${ymd(now())}\n---\n\n# Fichas de saúde emocional\n\nCada \`##\` é uma ficha do widget "Saúde emocional" do painel; cada item da lista é um campo (\`- Pergunta\` ou \`- Pergunta · escala|humor|emocoes\`).\n\n`;
+const FICHAS_INTRO = `---\ntipo: config\narea: emocional\nstatus: ativo\ntags: [painel, fichas, emocional, terapia, psicologa, ferramenta, registro, formulario]\npessoas: []\nresumo: Fichas de saúde emocional do painel — o que a psicóloga passa para ele registrar. Cada ficha vira um formulário no painel; o que ele preenche vai direto para o journal do mês.\natualizado: ${ymd(now())}\n---\n\n# Fichas de saúde emocional\n\nCada \`##\` é uma ficha do widget "Saúde emocional" do painel; cada item da lista é um campo (\`- Pergunta\` ou \`- Pergunta · escala|humor|emocoes\`).\n\n`;
 function fichasTexto(base, op) {
   const pf = base ? parseFile(FICHAS, '', base) : null;
   let lista = pf ? parseFichas(pf) : [];
@@ -2534,547 +2276,79 @@ function enviarCaptura(f) {
   });
 }
 
-/* ─────────────── Finanças (o conteúdo do "Meus gastos", lendo o espelho da planilha) ─────────────── */
-import { brl, brl0, c2, addM, dim, pnum, valorCapturado, calcularFinancas, orcamentoDoMes, filtrarLancamentos } from './financas.mjs?v=8787cb127060';
-import { lancamentosRealizados, graficoLancamentos } from './financas-visao.mjs?v=8787cb127060';
-import { ABAS_EDITAVEIS, colunasDaAba, linhaDoEspelho, linhaNova, linhasDaAba, paraCampo, paraPlanilha, pedidoPlanilha } from './financas-edicao.mjs?v=8787cb127060';
-const FCAT = { 'Moradia': ['🏠', '#7B61FF'], 'Mercado': ['🛒', '#22B07D'], 'Alimentação fora': ['🍔', '#FF8A3D'], 'Transporte': ['🚗', '#3D8BFF'], 'Saúde': ['💊', '#FF5C7A'], 'Educação': ['📚', '#A35CF7'], 'Família': ['👨‍👩‍👧', '#F2B705'], 'Bebê': ['🍼', '#38BDF8'], 'Lazer': ['🎉', '#E05CD0'], 'Assinaturas': ['📺', '#5B6BF5'], 'Contas fixas': ['💡', '#F59E0B'], 'Revenda': ['📦', '#A0785A'], 'Outros': ['🛍️', '#8E949C'], 'Uber e 99': ['🚕', '#3D8BFF'], 'Delivery': ['🛵', '#FF8A3D'], 'Comer fora': ['🍔', '#FF5C7A'], 'Compras avulsas (Outros)': ['🛍️', '#8E949C'], 'Receita': ['💰', '#22B07D'], 'Conta': ['🧾', '#F59E0B'], 'Fatura': ['💳', '#7C3AED'], 'Pix e boleto': ['⚡', '#3D8BFF'] };
-const fic = n => FCAT[n] || ['•', '#8E949C'];
-const CARTAO_COR = { 'Nubank': 'linear-gradient(135deg,#6A06B0,#A855F7)', 'Mercado Pago': 'linear-gradient(135deg,#0077C8,#22C1F5)', 'Bradesco Amazon': 'linear-gradient(135deg,#A30825,#F0435F)', 'XP': 'linear-gradient(135deg,#1f2937,#4B5563)' };
-const BANCO_COR = { 'nubank': '#820AD1', 'inter': '#FF7A00', 'caixa': '#005CA9', 'mercado pago': '#009EE3', 'bradesco': '#CC092F', 'xp': '#2B2B2B' };
-const corBanco = n => { const t = norm(n); for (const k in BANCO_COR) if (t.includes(k)) return BANCO_COR[k]; return '#6B7280'; };
-function grupoEvit(r) {
-  const d = r.descricao;
-  if (r.categoria === 'Transporte' && /uber|99 ?ride|dl\*99/i.test(d)) return 'Uber e 99';
-  if (/ifood|ifd\*|99food|delivery/i.test(d)) return 'Delivery';
-  if (r.categoria === 'Alimentação fora') return 'Comer fora';
-  if (r.categoria === 'Outros') return 'Compras avulsas (Outros)';
-  if (r.categoria === 'Lazer') return 'Lazer';
-  if (r.categoria === 'Assinaturas') return 'Assinaturas';
-  return null;
-}
-function finModel() {
-  if (!S.fin?.abas) return null;
-  const key = S.finSha + '|' + ymd(now());
-  if (S._fm?.key !== key) S._fm = { key, modelo: calcularFinancas(S.fin, now()) };
-  return S._fm.modelo;
-}
-function finKpi(M, mes) {
-  const d = M.desp.filter(r => r.data.startsWith(mes));
-  const total = d.reduce((s, r) => s + r.valor, 0);
-  const cur = ymd(now()).slice(0, 7), [y, m] = mes.split('-').map(Number);
-  const nd = mes === cur ? now().getDate() : dim(y, m);
-  const dias = {}; for (const r of d) dias[r.data] = (dias[r.data] || 0) + r.valor;
-  let maior = null, mv = 0; for (const k in dias) if (dias[k] > mv) { mv = dias[k]; maior = k; }
-  return { total: c2(total), media: c2(total / nd), nd, maior, dias };
-}
+/* ─────────────── Finanças: o resumo do Minhas Economias (espelho gravado pelo assessor) ─────────────── */
+import { brl, pnum } from './financas.mjs?v=c563e9fef2d3';
 const V = (v, cls = '') => `<span class="veil${cls ? ' ' + cls : ''}">${brl(v)}</span>`;
-const FIN_TABS = [['resumo', 'Visão geral'], ['extrato', 'Lançamentos'], ['orcamento', 'Orçamento'], ['cartoes', 'Cartões'], ['contas', 'Contas a pagar'], ['previsao', 'Fluxo de caixa'], ['categorias', 'Categorias'], ['dias', 'Dias'], ['alerta', 'Análise'], ['planilha', 'Editar planilha']];
-const ST_FAT = { aberta: 'Aberta', fechada: 'Fechada', futura: 'Futura', atrasada: 'Atrasada', paga: 'Paga' };
-const frow = (ic, cor, nome, meta, dir, attrs = '') => `<${attrs ? 'button type="button" class="row" ' + attrs : 'div class="row"'}><span class="ico" style="--c:${cor}">${ic}</span><span class="mid"><div class="nm">${nome}</div>${meta ? `<div class="mt">${meta}</div>` : ''}</span>${dir}</${attrs ? 'button' : 'div'}>`;
-const fsub = list => `<div class="sub">${list.map(r => `<button type="button" ${fedit('Lançamentos', r.linha)}><span class="d">${dm(r.data)}</span><span class="n">${h(r.descricao)}</span><span class="v veil">${brl(r.valor)}</span></button>`).join('') || '<div><span class="n muted">Nada aqui.</span></div>'}</div>`;
-function formMovimento(tipo) {
-  const transferir = tipo === 'transferencia';
-  const contas = (finModel()?.saldos || []).map(c => `<option value="${h(c.conta)}"></option>`).join('');
-  return `<form class="f2" data-form="${tipo}">
-    <div class="field"><label for="mvValor">Valor em reais</label><input id="mvValor" name="valor" inputmode="decimal" placeholder="0,00" required></div>
-    ${transferir ? `<div class="field"><label for="mvOrigem">Conta de origem</label><input id="mvOrigem" name="origem" list="mvContas" required></div>` :
-      `<div class="field"><label for="mvDescricao">Descrição da receita</label><input id="mvDescricao" name="descricao" required placeholder="Ex.: aula de bateria"></div>
-       <div class="field"><label for="mvForma">Forma de recebimento</label><select id="mvForma" name="forma"><option>Pix</option><option>Dinheiro</option><option>Transferência bancária</option></select></div>`}
-    <div class="field"><label for="mvDestino">${transferir ? 'Conta de destino' : 'Conta ou carteira que recebe'}</label><input id="mvDestino" name="destino" list="mvContas" required></div>
-    <datalist id="mvContas">${contas}</datalist>
-    <div class="field"><label for="mvData">${transferir ? 'Data da transferência' : 'Data do recebimento'}</label><input id="mvData" name="data" type="date" value="${ymd(now())}" ${transferir ? `max="${ymd(now())}"` : ''} required></div>
-    <div class="form-foot"><button type="submit" class="btn big">Guardar na caixa</button>
-    <p class="hint">O assessor confere a movimentação na planilha quando organizar a caixa.</p></div>
-  </form>`;
-}
-
-async function guardarMovimento(form) {
-  const valor = parseValor(form.elements.valor.value);
-  if (!Number.isFinite(valor) || valor <= 0) {
-    toast('Informe um valor maior que zero.', { err:true });
-    form.elements.valor.focus();
-    return;
-  }
-  const tipo = form.dataset.form;
-  const dados = new FormData(form);
-  const campo = nome => oneLine(dados.get(nome));
-  const destino = campo('destino');
-  const origem = campo('origem');
-  const descricao = campo('descricao');
-  if (!destino || !(tipo === 'receita' ? descricao : origem)) {
-    toast('Preencha a descrição e as contas indicadas.', { err:true });
-    return;
-  }
-  if (tipo === 'transferencia' && norm(origem) === norm(destino)) {
-    toast('Escolha contas diferentes para origem e destino.', { err:true });
-    return;
-  }
-  const nome = tipo === 'receita' ? 'Receita' : 'Transferência';
-  const linha = tipo === 'receita'
-    ? `💰 Receita: ${descricao} — ${brl(valor)} · ${campo('forma')} · conta: ${destino} · em ${campo('data')}`
-    : `🔄 Transferência: ${brl(valor)} · de ${origem} · para ${destino} · em ${campo('data')}`;
-  const botao = form.querySelector('[type=submit]');
-  if (botao.disabled) return;
-  botao.disabled = true;
-  const salva = await addCaixa([linha], { msg:'movimentação financeira', ok:`${nome} na caixa para conferência.` });
-  if (salva && form.isConnected) closeSheet();
-  botao.disabled = false;
-}
-
-function linhaFinanceira(r, hoje) {
-  const receita = r.tipo === 'Receita';
-  const estado = r.data > hoje ? 'Previsto' : r.pagamento === 'Crédito' ? 'Na fatura' : receita ? 'Recebido' : 'Pago';
-  const [ic, cor] = fic(receita ? 'Receita' : r.categoria);
-  const meta = [dm(r.data), r.categoria, r.pagamento, estado].filter(Boolean).map(h).join(' · ');
-  return `<li>${frow(ic, cor, h(r.descricao || r.categoria || r.tipo), meta,
-    `<span class="vl veil ${receita ? 'grn' : ''}">${receita && r.valor > 0 ? '+' : ''}${brl(receita ? r.valor : -r.valor)}</span>`, fedit('Lançamentos', r.linha))}</li>`;
-}
-
-function linhasDoExtrato(M, mes) {
-  const lancamentos = filtrarLancamentos(M, mes, S.extratoTipo, S.extratoBusca), hoje = ymd(now());
-  return lancamentos.map(item => linhaFinanceira(item, hoje)).join('') || '<li class="empty">Nenhum lançamento com esses filtros neste mês.</li>';
-}
-
-function verExtrato(M, mes) {
-  const opcoes = [['', 'Todos os tipos'], ['Despesa', 'Despesas'], ['Receita', 'Receitas']];
-  return `<section class="fsec"><h2>Lançamentos do mês</h2><div class="money-filters">
-    <input type="search" id="extratoBusca" aria-label="Buscar lançamentos" placeholder="Buscar descrição, categoria ou pagamento" value="${h(S.extratoBusca)}">
-    <select id="extratoTipo" aria-label="Tipo de lançamento">${opcoes.map(([v, nome]) => `<option value="${v}" ${v === S.extratoTipo ? 'selected' : ''}>${nome}</option>`).join('')}</select>
-    <button type="button" class="btn" data-fnova="Lançamentos">＋ Novo lançamento</button></div>
-    <p class="hint">Toque num lançamento para editar ou apagar.</p><ul class="rows" id="extratoLinhas">${linhasDoExtrato(M, mes)}</ul></section>`;
-}
-
-function verOrcamento(M, mes) {
-  const linhas = orcamentoDoMes(M, mes).map(c => {
-    const excedeu = c.restante != null && c.restante < 0;
-    const status = c.restante == null ? 'Sem limite definido' : excedeu ? `Acima do limite em ${brl(-c.restante)}` : `Restam ${brl(c.restante)}`;
-    const tag = c.linha ? 'button' : 'div';
-    return `<li class="budget-row${excedeu ? ' excesso' : ''}"><${tag} class="budget-item"${c.linha ? ` type="button" ${fedit('Orçamento', c.linha)}` : ''}><span class="budget-h"><b>${h(c.categoria)}</b><span class="veil">${brl(c.gasto)}</span></span>
-      ${c.limite > 0 ? `<progress max="${c.limite}" value="${Math.max(0, c.gasto)}" aria-label="Orçamento de ${h(c.categoria)}"></progress>` : ''}
-      <span class="budget-p ${c.limite == null ? '' : 'veil'}">${c.limite == null ? '' : 'Limite mensal ' + brl(c.limite) + ' · '}${status}</span></${tag}></li>`;
-  });
-  return `<section class="fsec"><header class="fe-secao"><h2>Orçamento por categoria</h2><button type="button" class="btn ghost" data-fnova="Orçamento">＋ Categoria</button></header><p class="hint">Gastos pela data da compra e limites mensais cadastrados na planilha.</p>
-    <ul class="rows">${linhas.join('') || '<li class="empty">Sem categorias de orçamento neste mês.</li>'}</ul></section>`;
-}
-
-function resumoDaPlanilha() {
-  const valores = S.fin?.indicadores;
-  if (!valores) return '';
-  const campos = [['saldoEstimado', 'Saldo estimado'], ['sobraProximoMes', 'Previsão até o fim do próximo mês']];
-  const linhas = campos.map(([chave, nome]) => {
-    const valor = pnum(valores[chave]);
-    if (valor == null) return '';
-    return `<li>${frow('•', 'var(--signal)', nome, '', `<span class="vl veil">${brl(valor)}</span>`)}</li>`;
-  }).join('');
-  return linhas ? `<section class="fsec"><h2>Resumo da planilha</h2><p class="hint">Valores da última leitura indicada no topo.</p><ul class="rows">${linhas}</ul></section>` : '';
-}
-
-function cabecalhoFinanceiro(reveladaLocalmente) {
-  const gerado = S.fin?.gerado ? new Date(S.fin.gerado) : null;
-  const data = gerado && !isNaN(gerado) ? gerado.toLocaleString('pt-BR', { dateStyle:'short', timeStyle:'short', timeZone:'America/Sao_Paulo' }) : '';
-  return `<div class="fin-contexto"><a class="fin-voltar" href="#areas">‹ Áreas</a>
-    <a class="fin-escritos" href="#area/financas/resumo">Notas de finanças <span aria-hidden="true">↗</span></a></div>
-    <header class="fin-heading"><div class="page-h"><div class="fin-titulo"><h1>Finanças</h1>
-    ${reveladaLocalmente ? `<button type="button" class="fin-ocultar" data-ocultar-area="financas" aria-label="Ocultar finanças">${ICON.lock} Ocultar</button>` : ''}</div>
-    <p class="source-date">${data ? 'Planilha atualizada em ' + h(data) : 'Aguardando o espelho da planilha'}</p></div>
-    <div class="fin-acts"><button type="button" class="btn" data-act="compra">＋ Despesa</button>
-    <details class="fin-menu"><summary>Outras ações</summary><div class="fin-pop">
-      <button type="button" data-act="receita">Adicionar receita</button>
-      <button type="button" data-act="transferencia">Transferir entre contas</button>
-      <button type="button" data-act="comprovante">Enviar comprovante</button>
-      <a href="#financas/planilha">Editar a planilha</a></div></details></div></header>`;
-}
-
-function navegacaoFinanceira() {
-  const links = lista => lista.map(([id, nome]) => `<a href="#financas/${id}" ${S.finTab === id ? 'aria-current="page"' : ''}>${nome}</a>`).join('');
-  const principais = FIN_TABS.slice(0, 3), outras = FIN_TABS.slice(3);
-  const ativa = outras.find(([id]) => id === S.finTab);
-  return `<nav class="fin-links" aria-label="Seções de finanças">${links(principais)}
-    <details class="fin-menu"><summary${ativa ? ' class="fin-ativa"' : ''}>${ativa ? ativa[1] : 'Mais'}</summary>
-    <div class="fin-pop">${links(outras)}</div></details></nav>`;
-}
-
+const corSegura = c => /^#[0-9a-f]{3,8}$/i.test(String(c || '')) ? c : /^[0-9a-f]{6}$/i.test(String(c || '')) ? '#' + c : 'var(--ink3)';
 function renderFinancas() {
   const el = $('#fin');
   if (!el) return;
   const revelada = cfg.discreet && S.reveal.has('#area/financas');
-  const M = finModel(), cabecalho = cabecalhoFinanceiro(revelada), links = navegacaoFinanceira();
-  el.classList.toggle('fin-revelada', revelada);
-  if (!M) { el.innerHTML = `${cabecalho}${setupFin(true)}`; return; }
+  const R = resumoFinanceiro(S.fin);
+  const topo = `<header class="es-topo"><div class="page-h"><div class="fin-titulo"><h1>Finanças</h1>
+    ${revelada ? `<button type="button" class="fin-ocultar" data-ocultar-area="financas" aria-label="Ocultar finanças">${ICON.lock} Ocultar</button>` : ''}</div>
+    <p>${fonteTxt('financas')}</p></div>${abrirApp('financas')}</header>`;
+  if (!R) { el.innerHTML = topo + semEspelho('financas'); return; }
   if (cfg.discreet && !revelada) {
-    el.innerHTML = `${cabecalho}${links}<div id="finBody" class="fin-privado">${ICON.lock}<h2>Finanças em modo discreto</h2>
+    el.innerHTML = `${topo}<div class="fin-privado">${ICON.lock}<h2>Finanças em modo discreto</h2>
       <button type="button" class="btn" data-reveal-area="financas">Mostrar finanças</button></div>`;
     return;
   }
-  const cx = S.cx.filter(i => ['compra', 'comprovante', 'receita', 'transferencia'].includes(i.kind));
-  const cxHtml = cx.length ? `<div class="fin-cx"><a href="#caixa">${cx.length} ${cx.length === 1 ? 'registro financeiro aguardando' : 'registros financeiros aguardando'} conferência na caixa</a></div>` : '';
-  const mesAtual = ymd(now()).slice(0, 7);
-  if (!M.meses.includes(S.finMes)) S.finMes = M.meses.includes(mesAtual) ? mesAtual : M.meses.at(-1);
-  const mes = S.finMes, i = M.meses.indexOf(mes), pj = M.proj[i];
-  const nomeMes = MESES[Number(mes.slice(5)) - 1] + ' de ' + mes.slice(0, 4);
-  const seletor = `<div class="fin-periodo" aria-label="Mês selecionado"><button type="button" data-fmes="${i - 1}" ${i <= 0 ? 'disabled' : ''} aria-label="Mês anterior">‹</button>
-    <strong>${nomeMes}</strong><button type="button" data-fmes="${i + 1}" ${i >= M.meses.length - 1 ? 'disabled' : ''} aria-label="Próximo mês">›</button></div>`;
-  el.innerHTML = `${cabecalho}${links}${seletor}${cxHtml}<div id="finBody">${finTab(M, mes, pj, finKpi(M, mes))}</div>${setupFin(false)}`;
+  const valor = v => v == null ? '—' : V(v);
+  const nomeMes = R.mes ? maiusc(MESES[Number(R.mes.slice(5)) - 1]) : 'Este mês';
+  const contas = R.contas.map(c => `<li><span class="es-dot" style="--c:${corSegura(c.cor)}"></span><span>${h(c.nome)}</span><b>${V(c.saldo)}</b></li>`).join('');
+  const cats = R.categorias.map(c => `<li><span>${h(c.nome)}</span><b>${V(c.valor)}</b><i style="--p:${Math.max(2, Math.round(c.parte * 100))}%;--c:${corSegura(c.cor)}"></i></li>`).join('');
+  const fats = R.faturas.map(f => `<li><span class="es-dot" style="--c:${corSegura(f.cor)}"></span><span>${h(f.cartao)}<small>${f.fecha ? `fecha ${dm(f.fecha)} · ` : ''}vence ${dm(f.vence)}</small></span><b>${V(f.valor)}</b></li>`).join('');
+  const ult = R.ultimos.map(u => `<li><time>${dm(u.data)}</time><span>${h(u.descricao)}<small>${h([u.categoria, u.onde].filter(Boolean).join(' · '))}</small></span>${V(u.tipo === 'ganho' ? u.valor : -u.valor, u.tipo === 'ganho' ? 'pos' : '')}</li>`).join('');
+  el.innerHTML = `${topo}<div class="es-fin">
+    <section class="es-bloco"><h2>Saldo nas contas</h2><p class="es-grande">${valor(R.saldoTotal)}</p>${contas ? `<ul class="es-linhas">${contas}</ul>` : ''}</section>
+    <section class="es-bloco"><h2>${nomeMes}</h2><dl class="es-kpis"><div><dt>Entrou</dt><dd>${valor(R.ganhos)}</dd></div><div><dt>Saiu</dt><dd>${valor(R.gastos)}</dd></div>
+      <div><dt>Resultado</dt><dd>${R.resultado == null ? '—' : V(R.resultado, R.resultado < 0 ? 'neg' : 'pos')}</dd></div></dl>
+      ${cats ? `<h3>Gastos por categoria</h3><ul class="es-barras">${cats}</ul>` : ''}</section>
+    ${fats ? `<section class="es-bloco"><h2>Faturas abertas</h2><ul class="es-linhas">${fats}</ul></section>` : ''}
+    ${ult ? `<section class="es-bloco"><h2>Últimos lançamentos</h2><ul class="es-linhas es-extrato">${ult}</ul></section>` : ''}
+  </div><p class="es-rodape">Para lançar, corrigir ou apagar, use o Minhas Economias ou fale com o assessor. <a href="#area/financas/resumo">Notas de finanças</a></p>`;
 }
 
-const planilhaUrl = () => { const m = (S.files['areas/financas/financas.md']?.text || '').match(/Google Sheets `([\w-]{25,})`/); return m ? `https://docs.google.com/spreadsheets/d/${m[1]}/edit` : 'https://docs.google.com/spreadsheets/'; };
-function setupFin(vazio) {
-  const auto = /apps script/i.test(S.fin?.fonte || '');
-  const url = h(planilhaUrl());
-  const fonte = `<a href="${url}" target="_blank" rel="noopener noreferrer">Abrir a planilha</a>`;
-  if (auto && !vazio) return `<p class="source-date">O espelho é atualizado quando a planilha muda. ${fonte}</p>`;
-  const caminho = `https://github.com/${cfg.repo}/blob/${encodeURIComponent(cfg.branch || 'main')}/ferramentas/espelho-planilha.gs`;
-  return `<details class="setup-fin"${vazio ? ' open' : ''}><summary><b>${vazio ? 'Conectar a planilha' : 'Ativar atualização automática da planilha'}</b></summary>
-    <ol><li>Na planilha, abra <b>Extensões → Apps Script</b>. Use um arquivo de script para o espelho.</li>
-    <li>Copie o <a href="${h(caminho)}" target="_blank" rel="noopener noreferrer">código do espelho</a>. Em <b>Configurações do projeto → Propriedades do script</b>, adicione <b>GITHUB_TOKEN</b> com acesso de escrita ao repositório privado da memória.</li>
-    <li>Execute <b>instalar</b> e autorize. O primeiro espelho é enviado na instalação. O acionador confere as mudanças a cada dez minutos.</li></ol>${fonte}</details>`;
+/* ─────────────── Como estou: o diário emocional, gravado direto no journal do mês ─────────────── */
+const JOURNAL_CAB = '| Data | Humor (1–5) | Emoção | Intensidade (0–10) | Gatilho | O que ajudou |';
+const celula = s => oneLine(s).replace(/\|/g, '/') || '—';
+function journalTemplate(mes) {
+  return `---\ntipo: registro\narea: emocional\nstatus: ativo\ntags: [journal, check-in]\npessoas: []\nresumo: Check-ins emocionais de ${MESES[Number(mes.slice(5)) - 1]} de ${mes.slice(0, 4)}.\natualizado: ${ymd(now())}\n---\n\n# Diário emocional — ${mes}\n\n${JOURNAL_CAB}\n|---|---|---|---|---|---|\n`;
 }
-
-/* ─────────────── edição direta da planilha ─────────────── */
-const NOME_LINHA = { 'Lançamentos': 'lançamento', 'Contas': 'conta a pagar', 'Orçamento': 'limite do orçamento', 'Cartões': 'cartão', 'Recorrentes': 'cobrança recorrente', 'Saldos': 'saldo da conta', 'Saldos mensais': 'saldo do mês', 'Config': 'configuração' };
-const APP_URL = /^https:\/\/script\.google\.com\/(?:a\/macros\/[^/]+|macros)\/s\/[\w-]+\/exec$/;
-const appPlanilha = () => APP_URL.test(cfg.finUrl || '') && !!cfg.finToken;
-const ERRO_PLANILHA = {
-  offline: 'Sem conexão com a planilha agora. Confira a internet e tente de novo.',
-  bloqueado: 'A planilha não deixou o painel entrar. Confira se o link termina em /exec e se a implantação está para "Qualquer pessoa".',
-  resposta: 'A planilha não respondeu como esperado. Publique uma nova versão da implantação do script e tente de novo.',
-  senha: 'A planilha recusou a senha. Confira em Ajustes › Edição da planilha.',
-  mudou: 'Essa linha mudou na planilha desde a última leitura. Atualizei a tela: confira e tente de novo.',
-  aba: 'Essa aba não está mais na planilha.',
-  acao: 'O script da planilha está desatualizado. Publique uma nova versão da implantação.',
-};
-const erroPlanilha = (code, mensagem) => Object.assign(new Error(mensagem || code), { code });
-
-async function pedirPlanilha(pedido, url = cfg.finUrl, token = cfg.finToken) {
-  let r;
-  try {
-    r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ ...pedido, token }), redirect: 'follow', cache: 'no-store', credentials: 'omit' });
-  } catch { throw erroPlanilha(navigator.onLine === false ? 'offline' : 'bloqueado'); }
-  let j;
-  try { j = await r.json(); } catch { throw erroPlanilha('resposta'); }
-  if (j?.espelho?.abas) { S.fin = j.espelho; S._fm = null; }
-  if (!j?.ok) throw erroPlanilha(j?.erro || 'falha', j?.mensagem);
-  return j;
-}
-
-function campoPlanilha(c, valor) {
-  const id = 'fe' + c.i, nome = 'c' + c.i, req = c.obrigatoria ? ' required' : '';
-  const rotulo = `<label for="${id}">${h(c.nome)}${c.obrigatoria ? ' <span class="fe-obr">*</span>' : ''}</label>`;
-  if (c.calculada) return `<div class="field fe-calc"><span class="lbl">${h(c.nome)}</span><p>${h(valor) || '—'} <small>calculado pela planilha</small></p></div>`;
-  const v = h(paraCampo(valor, c.tipo));
-  if (c.tipo === 'data') return `<div class="field">${rotulo}<input id="${id}" name="${nome}" type="date" value="${v}"${req}></div>`;
-  if (c.tipo === 'valor' || c.tipo === 'numero') return `<div class="field">${rotulo}<input id="${id}" name="${nome}" type="text" inputmode="decimal" placeholder="${c.tipo === 'valor' ? '0,00' : '0'}" value="${v}"${req}></div>`;
-  if (c.tipo === 'mes') return `<div class="field">${rotulo}<input id="${id}" name="${nome}" type="text" inputmode="numeric" placeholder="mm/aaaa" value="${v}"${req}></div>`;
-  if (c.opcoes.length && c.opcoes.length <= 6) {
-    const opcoes = [...c.opcoes];
-    if (valor && !opcoes.includes(valor)) opcoes.unshift(valor);
-    return `<div class="field">${rotulo}<select id="${id}" name="${nome}" data-outro${req}>${c.obrigatoria ? '' : `<option value=""${valor ? '' : ' selected'}>—</option>`}${opcoes.map(o => `<option${o === valor ? ' selected' : ''}>${h(o)}</option>`).join('')}<option value="__outro">Outro…</option></select></div>`;
-  }
-  const lista = c.opcoes.length ? `<datalist id="${id}l">${c.opcoes.map(o => `<option value="${h(o)}"></option>`).join('')}</datalist>` : '';
-  return `<div class="field">${rotulo}<input id="${id}" name="${nome}" type="text" value="${v}"${lista ? ` list="${id}l"` : ''}${req}>${lista}</div>`;
-}
-
-function abrirEdicao(aba, linha) {
-  if (!S.fin?.abas?.[aba]) { toast('Essa aba não está no espelho da planilha.', { err: true }); return; }
-  const cols = colunasDaAba(S.fin, aba), nova = !linha, conectado = appPlanilha();
-  const atual = nova ? linhaNova(cols, aba, ymd(now())) : linhaDoEspelho(S.fin, aba, linha);
-  if (!nova && !atual.some(v => v.trim())) { toast('Essa linha não está mais na planilha.', { err: true }); return; }
-  const titulo = (nova ? 'Novo: ' : 'Editar ') + NOME_LINHA[aba];
-  openSheet(titulo.charAt(0).toUpperCase() + titulo.slice(1), `<form class="f2 fin-edit" data-form="fin-edit" data-aba="${h(aba)}" data-linha="${linha || ''}" autocomplete="off">
-    ${conectado ? '' : `<div class="fe-aviso"><p><b>Conecte a planilha para editar daqui.</b> É uma vez só em cada aparelho.</p><button type="button" class="btn" data-act="fin-conectar">Conectar edição</button></div>`}
-    <fieldset class="fe-campos"${conectado ? '' : ' disabled'}>${cols.map(c => campoPlanilha(c, atual[c.i] ?? '')).join('')}</fieldset>
-    ${conectado ? `<div class="form-foot"><button class="btn big" type="submit">${nova ? 'Adicionar na planilha' : 'Salvar na planilha'}</button>${nova ? '' : '<button class="btn ghost big fe-apagar" type="button" data-act="fin-apagar">Apagar</button>'}</div>
-    <p class="hint">${nova ? `Entra no fim da aba ${h(aba)}.` : `Linha ${linha} da aba ${h(aba)}.`} A mudança vai direto para a planilha.</p>` : ''}
-  </form>`, { focus: conectado && nova ? '.fe-campos input[inputmode=decimal]' : undefined });
-}
-
-async function enviarEdicao(f, pedido, ok) {
-  if (f.dataset.enviando) return;
-  f.dataset.enviando = '1';
-  const botoes = $$('button', f), sub = f.querySelector('[type=submit]'), texto = sub?.textContent;
-  botoes.forEach(b => { b.disabled = true; });
-  if (sub) sub.textContent = 'Salvando…';
-  try {
-    const j = await pedirPlanilha(pedido);
-    closeSheet();
-    renderFinancas(); renderAreaPage();
-    toast(j.aviso ? ok + ' Os outros aparelhos veem a mudança em até 10 minutos.' : ok);
-  } catch (e) {
-    if (e.code === 'mudou') { closeSheet(); renderFinancas(); }
-    toast(ERRO_PLANILHA[e.code] || 'A planilha respondeu com erro: ' + e.message, { err: true });
-  } finally {
-    delete f.dataset.enviando;
-    if (f.isConnected) { botoes.forEach(b => { b.disabled = false; }); if (sub) sub.textContent = texto; }
-  }
-}
-
-function salvarEdicao(f) {
-  const aba = f.dataset.aba, linha = Number(f.dataset.linha) || null;
-  const cols = colunasDaAba(S.fin, aba), campos = {};
-  for (const c of cols) { const el = f.elements['c' + c.i]; if (el) campos[c.i] = el.value === '__outro' ? '' : el.value; }
-  const { valores, erros } = paraPlanilha(cols, campos);
-  if (erros.length) { toast(erros[0], { err: true }); return; }
-  const antes = linha ? linhaDoEspelho(S.fin, aba, linha) : null;
-  enviarEdicao(f, pedidoPlanilha(linha ? 'editar' : 'criar', aba, linha, antes, valores), linha ? 'Salvo na planilha.' : 'Adicionado na planilha.');
-}
-
-function apagarLinha(f) {
-  const aba = f.dataset.aba, linha = Number(f.dataset.linha);
-  if (!linha) return;
-  enviarEdicao(f, pedidoPlanilha('apagar', aba, linha, linhaDoEspelho(S.fin, aba, linha)), 'Apagado da planilha.');
-}
-
-function formConectarPlanilha() {
-  return `<form class="f2" data-form="fin-conectar" autocomplete="off">
-    <ol class="fe-passos"><li>Na planilha, abra <b>Extensões → Apps Script</b> e cole a versão nova do <a href="https://github.com/${h(cfg.repo)}/blob/${encodeURIComponent(cfg.branch || 'main')}/ferramentas/espelho-planilha.gs" target="_blank" rel="noopener noreferrer">código do espelho</a>.</li>
-    <li>Execute <b>instalar</b>. A senha do painel aparece no <b>Registro de execução</b>.</li>
-    <li><b>Implantar → Nova implantação → App da Web</b>: executar como <b>eu</b>, acesso <b>Qualquer pessoa</b>. Copie o link que termina em <b>/exec</b>.</li></ol>
-    <div class="field"><label for="feUrl">Link do app da Web</label><input id="feUrl" name="url" type="text" inputmode="url" placeholder="https://script.google.com/macros/s/…/exec" value="${h(cfg.finUrl || '')}" required></div>
-    <div class="field"><label for="feSenha">Senha do painel</label><input id="feSenha" name="senha" type="password" value="${h(cfg.finToken || '')}" required></div>
-    <div class="form-foot"><button class="btn big" type="submit">Testar e conectar</button></div>
-    <p class="hint">O link e a senha ficam só neste aparelho.</p></form>`;
-}
-
-async function conectarPlanilha(f) {
-  const url = f.elements.url.value.trim(), senha = f.elements.senha.value.trim();
-  if (!APP_URL.test(url)) { toast('O link precisa ser o do app da Web, terminando em /exec.', { err: true }); f.elements.url.focus(); return; }
-  const sub = f.querySelector('[type=submit]');
-  if (sub.disabled) return;
-  sub.disabled = true; sub.textContent = 'Testando…';
-  try {
-    await pedirPlanilha({ acao: 'ping' }, url, senha);
-    cfg.finUrl = url; cfg.finToken = senha; saveCfg();
-    closeSheet(); renderFinancas();
-    toast('Edição da planilha conectada. Toque numa linha para editar ou apagar.');
-  } catch (e) {
-    toast(ERRO_PLANILHA[e.code] || 'A planilha respondeu com erro: ' + e.message, { err: true });
-  } finally { if (sub.isConnected) { sub.disabled = false; sub.textContent = 'Testar e conectar'; } }
-}
-
-const fedit = (aba, linha) => linha ? `data-fedit="${h(aba)}:${linha}"` : '';
-
-function resumoDaLinhaGenerica(aba, cols, valores) {
-  const v = i => String(valores[i] ?? '').trim();
-  if (aba === 'Lançamentos') {
-    const receita = v(1) === 'Receita';
-    return { titulo: v(4) || v(3) || v(1), meta: [v(0), v(3), v(5)].filter(Boolean).join(' · '), dir: `<span class="vl veil ${receita ? 'grn' : ''}">${receita ? '+' : ''}${h(v(2))}</span>` };
-  }
-  const dinheiro = cols.find(c => c.i > 0 && c.tipo === 'valor' && v(c.i));
-  const resto = cols.filter(c => c.i > 0 && c !== dinheiro && v(c.i) && !/observ/i.test(c.nome)).slice(0, 4).map(c => `${c.nome}: ${short(v(c.i), 40)}`);
-  return { titulo: v(0) || '(sem nome)', meta: resto.join(' · '), dir: dinheiro ? `<span class="vl veil">${h(v(dinheiro.i))}</span>` : '' };
-}
-
-function linhasPlanilha() {
-  const aba = S.planAba, cols = colunasDaAba(S.fin, aba);
-  const todas = linhasDaAba(S.fin, aba, S.planBusca), lista = todas.slice(0, 150);
-  const itens = lista.map(l => { const r = resumoDaLinhaGenerica(aba, cols, l.valores); return `<li>${frow('✎', 'var(--signal)', h(r.titulo), h(r.meta), r.dir, fedit(aba, l.linha))}</li>`; }).join('');
-  return (itens || '<li class="empty">Nenhuma linha encontrada.</li>') + (todas.length > lista.length ? `<li class="empty">Mostrando ${lista.length} de ${todas.length}. Use a busca para achar as outras.</li>` : '');
-}
-
-function abaPlanilha() {
-  const abas = ABAS_EDITAVEIS.filter(a => S.fin?.abas?.[a]);
-  if (!abas.includes(S.planAba)) S.planAba = abas[0];
-  if (!S.planAba) return '<section class="fsec"><h2>Editar planilha</h2><p class="empty">O espelho ainda não trouxe as abas da planilha.</p></section>';
-  return `<section class="fsec"><h2>Editar planilha</h2>
-    <p class="hint">${appPlanilha() ? 'Toque numa linha para editar ou apagar. As mudanças vão direto para a planilha.' : 'Para editar daqui, conecte a planilha uma vez neste aparelho.'}</p>
-    ${appPlanilha() ? '' : '<button type="button" class="btn" data-act="fin-conectar">Conectar edição</button>'}
-    <div class="mchips fe-abas">${abas.map(a => `<button type="button" data-faba="${h(a)}" aria-pressed="${a === S.planAba}">${h(a)}</button>`).join('')}</div>
-    <div class="money-filters"><input type="search" id="planBusca" aria-label="Buscar nesta aba" placeholder="Buscar em ${h(S.planAba)}" value="${h(S.planBusca)}">
-    <button type="button" class="btn" data-fnova="${h(S.planAba)}">＋ Nova linha</button></div>
-    <ul class="rows" id="planLinhas">${linhasPlanilha()}</ul></section>`;
-}
-
-function cartaoSaldo(M, pj) {
-  const atual = pj.tipo === 'atual', futuro = pj.tipo === 'futuro';
-  const saldo = atual ? pj.saldo_atual : pj.saldo_final;
-  const titulo = atual ? 'Saldo estimado hoje' : futuro ? 'Saldo previsto no fim do mês' : 'Saldo no fim do mês';
-  const proximo = atual ? pj.saldo_final : pj.saldo_inicial;
-  const rcm = M.rc[pj.mes];
-  const bancos = M.saldos.map(r => `<li>${frow(r.reserva ? '◉' : '▤', corBanco(r.conta), h(r.conta),
-    `${r.atualizado ? 'Saldo em ' + dm(r.atualizado) : 'Sem data de atualização'}${r.reserva ? ' · Reserva' : ''}`,
-    `<span class="vl">${r.saldo == null ? '—' : brl(r.saldo)}</span>`, fedit('Saldos', r.linha))}</li>`).join('');
-  return `<section class="fin-saldo"><div><h2>${titulo}</h2>
-    ${saldo == null ? '<p class="fin-ausente">Saldo indisponível</p>' : `<p class="fin-quantia">${brl(saldo)}</p>`}
-    ${atual ? '<p class="fin-saldo-info">Disponível nas contas, sem as reservas</p>' : ''}</div>
-    <div class="fin-projecao"><span>${atual ? 'Previsão para o fim do mês' : futuro ? 'Saldo inicial previsto' : 'Saldo inicial'}</span>
-    <strong>${proximo == null ? 'Sem registro' : brl(proximo)}</strong></div>
-    <a href="#financas/previsao">Ver fluxo de caixa <span aria-hidden="true">→</span></a></section>
-    ${atual ? `<details class="fin-detalhes"><summary>Saldos, reservas e cartões</summary><div class="fin-detalhes-conteudo">
-    <h3>Saldo em cada conta</h3><ul class="rows">${bancos || '<li class="empty">Sem saldos registrados.</li>'}</ul>
-    <dl class="fin-lista-valores"><div><dt>Saldo inicial do mês</dt><dd>${pj.saldo_inicial == null ? 'Sem registro' : brl(pj.saldo_inicial)}</dd></div>
-    ${rcm ? `<div><dt>No cartão, a pagar</dt><dd>${brl(rcm.ja_no_cartao)}</dd></div><div><dt>Recorrentes até o fechamento</dt><dd>${brl(rcm.vai_entrar)}</dd></div>` : ''}</dl>
-    <a href="#financas/cartoes">Ver faturas →</a>${resumoDaPlanilha()}</div></details>` : ''}`;
-}
-
-function visaoMensal(M, mes, pj) {
-  const hoje = ymd(now()), movimento = lancamentosRealizados(M.lanc, mes, hoje);
-  const recentes = movimento.itens.slice(0, 4);
-  const tituloRegistro = pj.tipo === 'futuro' ? 'Lançamentos previstos' : 'Últimos lançamentos';
-  const lista = pj.tipo === 'futuro' ? filtrarLancamentos(M, mes, '', '').reverse().slice(0, 4) : recentes;
-  return `<div class="fin-visao"><div class="fin-col-saldo">${cartaoSaldo(M, pj)}</div>
-    <section class="fsec fin-fluxo"><h2>Receitas e despesas</h2>
-    <p class="fin-legenda">Por data do lançamento${pj.tipo === 'atual' ? ', até ' + dm(hoje) : ''}. Inclui compras no crédito e no vale.</p>
-    ${graficoLancamentos(movimento)}</section>
-    <section class="fsec fin-recentes"><header><h2>${tituloRegistro}</h2><a href="#financas/extrato">Ver extrato <span aria-hidden="true">→</span></a></header>
-    <ul class="rows">${lista.map(r => linhaFinanceira(r, hoje)).join('') || '<li class="empty">Sem lançamentos para mostrar.</li>'}</ul></section></div>`;
-}
-
-function finTab(M, mes, pj, k) {
-  const t = S.finTab, O = S.finOpen;
-  if (t === 'extrato') return verExtrato(M, mes);
-  if (t === 'orcamento') return verOrcamento(M, mes);
-  if (t === 'planilha') return abaPlanilha();
-  const lancMes = M.desp.filter(r => r.data.startsWith(mes));
-  if (t === 'resumo') return visaoMensal(M, mes, pj);
-  if (t === 'alerta') {
-    const gr = {}; let evit = 0, evitN = 0, total = 0, cred = 0, credN = 0, form = 0, formN = 0;
-    for (const r of lancMes) { total += r.valor; if (r.pagamento === 'Crédito') { cred += r.valor; credN++; if (r.valor <= 30) { form += r.valor; formN++; } } const g2 = grupoEvit(r); if (g2) { evit += r.valor; evitN++; const x = gr[g2] || (gr[g2] = { t: 0, n: 0 }); x.t += r.valor; x.n++; } }
-    const ant = addM(mes, -1); let evAnt = null;
-    if (M.meses.includes(ant) || M.desp.some(r => r.data.startsWith(ant))) { evAnt = 0; for (const r of M.desp) if (r.data.startsWith(ant) && Number(r.data.slice(8)) <= k.nd && grupoEvit(r)) evAnt += r.valor; }
-    const dif = evAnt == null ? null : evit - evAnt;
-    const lista = Object.entries(gr).sort((a, b) => b[1].t - a[1].t);
-    const max = lista.length ? lista[0][1].t : 1;
-    const vil = lista.map(([nome, x]) => { const key = 'v|' + nome; const [ic, cor] = fic(nome); return `<li>${frow(ic, cor, h(nome), `${x.n} ${x.n > 1 ? 'vezes' : 'vez'} · toque para ${O[key] ? 'fechar' : 'ver'}<div class="bar" style="--c:${cor};width:100%"><i style="width:${Math.max(3, 100 * x.t / max)}%"></i></div>`, `<span class="vl red veil">${brl(x.t)}</span>`, `data-fo="${h(key)}"`)}${O[key] ? fsub(lancMes.filter(r => grupoEvit(r) === nome).sort((a, b) => a.data < b.data ? 1 : -1)) : ''}</li>`; }).join('');
-    const limCats = ['Mercado', 'Alimentação fora', 'Transporte'];
-    const lim = limCats.map(cat => { const o = M.orc.find(x => x.categoria === cat); if (!o || o.limite == null) return ''; const gasto = lancMes.filter(r => r.categoria === cat).reduce((s, r) => s + r.valor, 0); const sobra = o.limite - gasto; const [ic, cor] = fic(cat); return `<li>${frow(ic, cor, cat, `<span class="veil">${brl(gasto)}</span> de <span class="veil">${brl(o.limite)}</span><div class="bar" style="--c:${sobra < 0 ? 'var(--alert)' : 'var(--ok)'};width:100%"><i style="width:${Math.min(100, Math.max(2, 100 * gasto / (o.limite || 1)))}%"></i></div>`, `<span class="vl ${sobra < 0 ? 'red' : 'grn'}"><small>${sobra < 0 ? 'passou' : 'sobram'}</small><span class="veil">${brl(Math.abs(sobra))}</span></span>`)}</li>`; }).join('');
-    const vl = lista[0];
-    return `<div class="alert-hero"><p>Gastos nas categorias acompanhadas</p><div class="v veil">${brl(evit)}</div><p>Isso é <b>${total ? Math.round(100 * evit / total) : 0}%</b> de tudo que saiu no mês, em <b>${evitN}</b> compras.</p>${dif != null ? `<span class="cmp">${dif > 0 ? '▲' : '▼'} <span class="veil">${brl(Math.abs(dif))}</span> ${dif > 0 ? 'a mais' : 'a menos'} que em ${MESES[+ant.slice(5) - 1]} até o dia ${k.nd}</span>` : ''}</div>
-      <section class="fsec"><h2>Categorias com maior gasto</h2>${vl ? `<p class="hint">A maior categoria é <b style="color:var(--ink)">${h(vl[0])}</b>: <span class="veil">${brl(vl[1].t)}</span> em ${vl[1].n} vezes. Corridas, delivery, comer fora, compras avulsas, lazer e assinaturas.</p>` : ''}<ul class="rows">${vil || '<li class="empty">Nada por aqui neste mês.</li>'}</ul></section>
-      <section class="fsec"><h2>Seus limites do mês</h2><p class="hint">Os três limites combinados: mercado, alimentação fora e transporte.</p><ul class="rows">${lim || '<li class="empty">Sem limites na planilha.</li>'}</ul></section>
-      <section class="fsec"><h2>Peso do cartão de crédito</h2><p class="hint">Compras no crédito entram no ciclo de fechamento de cada cartão.</p><div class="tiles"><div class="tile"><div class="l">💳 No crédito</div><div class="v veil">${brl(cred)}</div><div class="s">${total ? Math.round(100 * cred / total) : 0}% do mês · ${credN} compras</div></div><div class="tile"><div class="l">🐜 Compras de até R$ 30</div><div class="v veil">${brl(form)}</div><div class="s">em ${formN} compras no crédito</div></div></div></section>`;
-  }
-  if (t === 'previsao') {
-    const its = M.movs.filter(x => x.mes === mes);
-    const lst = its.map(x => { const [ic, cor] = fic(x.origem); return `<li>${frow(ic, cor, h(x.descricao), `${dm(x.data)} · ${x.origem}${x.situacao !== 'feito' ? ` <span class="pill${x.situacao === 'atrasada' ? ' atr' : ''}">${x.situacao}</span>` : ''}`, `<span class="vl${x.valor >= 0 ? ' grn' : ''} veil">${x.valor >= 0 ? '+ ' : ''}${brl(x.valor)}</span>`, x.fonte === 'lancamento' ? fedit('Lançamentos', x.linha) : x.fonte === 'conta' ? fedit('Contas', x.linha) : '')}</li>`; }).join('');
-    return `<section class="fsec"><h2>Entradas e saídas do mês</h2><p class="hint">O que entra e sai da conta. Compras no crédito aparecem dentro da fatura, no vencimento. Cartão alimentação não entra.</p>
-      <div class="tiles"><div class="tile"><div class="l">⬆️ Entradas</div><div class="v veil">${brl(pj.entradas)}</div><div class="s">falta entrar <span class="veil">${brl(pj.a_entrar)}</span></div></div><div class="tile"><div class="l">⬇️ Saídas</div><div class="v veil">${brl(pj.saidas)}</div><div class="s">falta sair <span class="veil">${brl(pj.a_sair)}</span></div></div></div>
-      <ul class="rows">${lst || '<li class="empty">Nada previsto para este mês.</li>'}</ul>
-      <p class="hint">O saldo previsto não conta os gastos do dia a dia que ainda não aconteceram, como mercado e Uber. Nos meses seguintes, o salário entra pelo valor de referência da planilha até ser lançado.</p></section>`;
-  }
-  if (t === 'cartoes') return abaCartoes(M, mes);
-  if (t === 'dias') {
-    const [y, m] = mes.split('-').map(Number), first = new Date(y, m - 1, 1).getDay(), nd = dim(y, m), hj = ymd(now());
-    const vals = k.dias, max = Math.max(1, ...Object.values(vals));
-    if (!S.finDia || !S.finDia.startsWith(mes)) S.finDia = k.maior || mes + '-01';
-    let cal = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map(d => `<span class="dw">${d}</span>`).join('') + '<span></span>'.repeat(first);
-    for (let d = 1; d <= nd; d++) {
-      const iso = mes + '-' + pad(d), v = vals[iso];
-      const pct = v ? Math.round(16 + 58 * Math.sqrt(v / max)) : 0;
-      cal += `<button type="button" data-fdia="${iso}" aria-pressed="${iso === S.finDia}" class="${iso === hj ? 'hj' : ''}" aria-label="Dia ${d}: ${v ? brl(v) : 'sem gasto'}"><span class="c" style="${v ? `background:color-mix(in srgb,var(--signal) ${pct}%,transparent);${pct > 46 ? 'color:#fff' : ''}` : ''}">${d}</span><span class="vv veil">${v ? Math.round(v).toLocaleString('pt-BR') : ''}</span></button>`;
+/* linha: nova linha da tabela do mês; secao: bloco "## aaaa-mm-dd ddd · hh:mm · …" no fim do arquivo */
+function gravarJournal({ linha, secao }) {
+  const dia = ymd(now()), path = `areas/emocional/journal-${dia.slice(0, 7)}.md`;
+  return write(path, base => {
+    let t = (base ?? journalTemplate(dia.slice(0, 7))).replace(/\s+$/, '') + '\n';
+    if (linha) {
+      const ls = t.split('\n');
+      const ini = ls.findIndex(l => /^\|\s*Data\s*\|/i.test(l));
+      if (ini >= 0) {
+        let fim = ini;
+        while (fim + 1 < ls.length && /^\|/.test(ls[fim + 1])) fim++;
+        ls.splice(fim + 1, 0, linha);
+        t = ls.join('\n');
+      } else t += `\n${JOURNAL_CAB}\n|---|---|---|---|---|---|\n${linha}\n`;
     }
-    const doDia = lancMes.filter(r => r.data === S.finDia).sort((a, b) => b.valor - a.valor);
-    // semana a semana
-    const sem = {}; for (const r of lancMes) { const [yy, mm, dd] = r.data.split('-').map(Number); const t0 = new Date(yy, mm - 1, dd); t0.setDate(dd - t0.getDay()); const ini = ymd(t0); sem[ini] = (sem[ini] || 0) + r.valor; }
-    const sl = Object.entries(sem).sort((a, b) => a[0] < b[0] ? -1 : 1), smax = Math.max(1, ...sl.map(x => x[1]));
-    const semanas = sl.map(([ini, v]) => { const a = ini.startsWith(mes) ? Number(ini.slice(8)) : 1; const f = Math.min(nd, (ini.startsWith(mes) ? a : a - first) + 6); return `<li>${frow('', 'transparent', `Dia ${pad(a)} a ${pad(f)}`, `<div class="bar" style="width:100%"><i style="width:${Math.max(3, 100 * v / smax)}%;${v === smax ? '' : 'opacity:.5'}"></i></div>`, `<span class="vl veil">${brl(v)}</span>`).replace('<span class="ico" style="--c:transparent"></span>', '')}</li>`; }).join('');
-    // dia da semana
-    const dw = [0, 0, 0, 0, 0, 0, 0]; for (const r of lancMes) dw[pymd(r.data).getDay()] += r.valor;
-    const dmax = Math.max(1, ...dw);
-    return `<section class="fsec"><h2>Calendário de gastos</h2><p class="hint">Quanto mais forte o dia, mais você gastou. Toque num dia para ver as compras.</p><div class="hm">${cal}</div></section>
-      <section class="fsec"><h2>Compras de ${dm(S.finDia)}</h2><ul class="rows">${doDia.map(r => { const [ic, cor] = fic(r.categoria); return `<li>${frow(ic, cor, h(r.descricao), `${h(r.categoria)} · ${h(r.pagamento)}`, `<span class="vl veil">${brl(r.valor)}</span>`, fedit('Lançamentos', r.linha))}</li>`; }).join('') || '<li class="empty">Nenhum gasto lançado neste dia.</li>'}</ul></section>
-      <section class="fsec"><h2>Semana a semana</h2><p class="hint">Total de cada semana do mês, de domingo a sábado.</p><ul class="rows">${semanas || '<li class="empty">Nenhuma despesa neste mês.</li>'}</ul></section>
-      <section class="fsec"><h2>Ritmo do mês</h2><p class="hint">Quanto você já tinha gasto, somando dia após dia. Passe o dedo no gráfico para ver cada dia.</p>${ritmoSvg(M, mes)}</section>
-      <section class="fsec"><h2>Em que dia da semana pesa mais</h2><div class="wds">${dw.map((v, d) => `<div><span class="v veil">${v ? Math.round(v).toLocaleString('pt-BR') : ''}</span><span class="b"><i class="${v === dmax && v ? 'mx' : ''}" style="height:${v ? Math.max(4, 100 * v / dmax) : 0}%"></i></span><span class="l">${['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][d]}</span></div>`).join('')}</div></section>`;
-  }
-  if (t === 'categorias') {
-    const cat = {}; for (const r of lancMes) cat[r.categoria] = (cat[r.categoria] || 0) + r.valor;
-    const rows = Object.entries(cat).filter(x => x[1] > 0).sort((a, b) => b[1] - a[1]);
-    const tot = rows.reduce((s, x) => s + x[1], 0) || 1;
-    const sel = S.finCat && cat[S.finCat] ? S.finCat : null;
-    const max = rows.length ? rows[0][1] : 1;
-    const lista = rows.map(([nome, v]) => { const [ic, cor] = fic(nome); const open = sel === nome; return `<li>${frow(ic, cor, h(nome), `${Math.round(100 * v / tot)}% do mês · toque para ${open ? 'fechar' : 'ver'}<div class="bar" style="--c:${cor};width:100%"><i style="width:${Math.max(3, 100 * v / max)}%"></i></div>`, `<span class="vl veil">${brl(v)}</span>`, `data-fcat="${h(nome)}"`)}${open ? fsub(lancMes.filter(r => r.categoria === nome).sort((a, b) => a.data < b.data ? 1 : -1)) : ''}</li>`; }).join('');
-    const top = lancMes.slice().sort((a, b) => b.valor - a.valor).slice(0, 5);
-    return `<section class="fsec"><h2>Despesas por categoria</h2><p class="hint">Toque numa fatia ou numa categoria para ver as compras dela.</p>${rows.length ? donutSvg(rows, tot, sel) : ''}<ul class="rows">${lista || '<li class="empty">Nenhuma despesa neste mês.</li>'}</ul></section>
-      <section class="fsec"><h2>As 5 maiores compras</h2><ul class="rows">${top.map((r, n) => { const [ic, cor] = fic(r.categoria); return `<li>${frow(String(n + 1), 'var(--signal)', h(r.descricao), `${dm(r.data)} · ${h(r.categoria)} · ${h(r.pagamento)}`, `<span class="vl veil">${brl(r.valor)}</span>`, fedit('Lançamentos', r.linha))}</li>`; }).join('') || '<li class="empty">Nenhuma despesa neste mês.</li>'}</ul></section>`;
-  }
-  return abaContas(M, mes);
+    if (secao) t = t.replace(/\s+$/, '') + '\n\n' + secao + '\n';
+    return t;
+  }, 'emocional: registro atualizado', {
+    onOk() { toast('Guardado no seu diário emocional.'); renderSentir(); },
+    onErr(e) { toastErr(e, 'Não guardei'); },
+  });
 }
-function abaCartoes(M, mes) {
-  const nomes = [...new Set([...M.cartoes.map(c => c.cartao), ...M.faturas.map(f => f.cartao)])];
-  if (!nomes.length) return '<section class="fsec"><h2>Cartões</h2><p class="empty">Nenhum cartão cadastrado na planilha.</p></section>';
-  const doMes = M.faturas.filter(f => f.mes === mes);
-  const nome = nomes.includes(S.fcart) ? S.fcart : doMes[0]?.cartao || nomes[0];
-  const fatura = doMes.find(f => f.cartao === nome);
-  const cartoes = nomes.map(c => {
-    const fat = doMes.find(f => f.cartao === c);
-    return `<button type="button" class="ccard" style="--cg:${CARTAO_COR[c] || 'linear-gradient(135deg,#255647,#3d7867)'}" data-fcart="${h(c)}" aria-pressed="${c === nome}">
-      <span class="n">${h(c)}</span><span class="v veil">${fat ? brl(fat.total) : '—'}</span>
-      <span class="q">${fat ? `${fat.fechamento ? 'Vence' : 'Previsão'} em ${dm(fat.vencimento)} · ${ST_FAT[fat.status]}` : 'Sem fatura neste mês'}</span></button>`;
-  }).join('');
-  const ciclos = M.faturas.filter(f => f.cartao === nome && M.meses.includes(f.mes)).map(f =>
-    `<button type="button" data-fvenc="${f.vencimento}" aria-pressed="${f.mes === mes}">${MON[+f.mes.slice(5) - 1]}/${f.mes.slice(2, 4)} · ${ST_FAT[f.status]}</button>`).join('');
-  let detalhe = '<p class="empty">Nenhuma fatura deste cartão com vencimento no mês selecionado.</p>';
-  if (fatura) {
-    const itens = M.fatItens.filter(x => x.cartao === nome && x.vencimento === fatura.vencimento);
-    detalhe = `<p class="hint">Vencimento ${fatura.fechamento ? '' : 'estimado '}${dm(fatura.vencimento)} · ${ST_FAT[fatura.status]}</p>
-      <div class="tiles"><div class="tile"><div class="l">Compras lançadas</div>${V(fatura.lancado, 'v')}</div>
-      <div class="tile"><div class="l">Cobranças previstas</div>${V(fatura.previsto, 'v')}</div></div>
-      ${fatura.credito ? `<p class="hint">Crédito a abater ${V(fatura.credito)}</p>` : ''}
-      <ul class="rows">${itens.map(x => { const [icone, cor] = fic(x.categoria);
-        return `<li>${frow(icone, cor, h(x.descricao), `${dm(x.data)} · ${h(x.categoria)} · ${x.origem}`, V(x.valor, 'vl'), fedit(x.aba, x.linha))}</li>`;
-      }).join('')}</ul>`;
-  }
-  return `<section class="fsec"><h2>Meus cartões</h2><p class="hint">Faturas com vencimento no mês selecionado.</p>
-    <div class="ccards">${cartoes}</div></section><section class="fsec"><header class="fe-secao"><h2>Faturas · ${h(nome)}</h2>${(() => { const c = M.cartoes.find(x => x.cartao === nome); return c?.linha ? `<button type="button" class="btn ghost" ${fedit('Cartões', c.linha)}>Editar cartão</button>` : ''; })()}</header>
-    <div class="mchips">${ciclos}</div>${detalhe}</section>`;
-}
-
-function abaContas(M, mes) {
-  const pendentes = M.movs.filter(c => c.fonte === 'conta' && c.mes === mes);
-  const pagas = M.contas.filter(c => norm(c.status) === 'pago' && (c.pagoEm || c.venc).slice(0,7) === mes);
-  const assinatura = M.desp.filter(c => c.data.startsWith(mes) && (c.categoria === 'Assinaturas' || /parcela|recorrente/i.test(c.descricao)));
-  const linhas = pendentes.map(c => `<li>${frow('◷', 'var(--warn)', h(c.descricao), `${dm(c.data)} · ${c.situacao === 'atrasada' ? 'Atrasada' : 'A pagar'}`, V(-c.valor, 'vl'), fedit('Contas', c.linha))}</li>`);
-  linhas.push(...pagas.map(c => `<li>${frow('✓','var(--ok)', h(c.conta), `${dm(c.pagoEm || c.venc)} · Paga`, c.valor == null ? '—' : V(c.valor, 'vl'), fedit('Contas', c.linha))}</li>`));
-  return `<section class="fsec"><header class="fe-secao"><h2>Contas do mês</h2><button type="button" class="btn ghost" data-fnova="Contas">＋ Conta</button></header><p class="hint">${pendentes.length} pendente(s) · total a pagar ${V(pendentes.reduce((s, c) => s - c.valor, 0))}</p>
-    <ul class="rows">${linhas.join('') || '<li class="empty">Nenhuma conta para este mês.</li>'}</ul></section>
-    <section class="fsec"><h2>Assinaturas e parcelas lançadas</h2><ul class="rows">${assinatura.map(c =>
-      `<li>${frow('↻', 'var(--signal)', h(c.descricao), `${dm(c.data)} · ${h(c.categoria)}`, V(c.valor, 'vl'), fedit('Lançamentos', c.linha))}</li>`
-    ).join('') || '<li class="empty">Nenhuma cobrança lançada neste mês.</li>'}</ul></section>`;
-}
-
-function ritmoSvg(M, mes) {
-  const acum = mm => { const d = {}; for (const r of M.desp) if (r.data.startsWith(mm)) d[r.data] = (d[r.data] || 0) + r.valor; const [y, m] = mm.split('-').map(Number); const nd = mm === ymd(now()).slice(0, 7) ? now().getDate() : dim(y, m); const out = []; let ac = 0; for (let i = 1; i <= nd; i++) { ac += d[mm + '-' + pad(i)] || 0; out.push([i, ac]); } return out; };
-  const cur = acum(mes), ant = M.desp.some(r => r.data.startsWith(addM(mes, -1))) ? acum(addM(mes, -1)) : [];
-  if (!cur.length || !cur[cur.length - 1][1]) return '<p class="empty">Nenhuma despesa neste mês.</p>';
-  const W = 640, H = 220, ml = 6, mr = 12, mt = 22, mb = 26;
-  const ymax = Math.max(1, ...cur.map(p => p[1]), ...ant.map(p => p[1])) * 1.08;
-  const X = d => ml + (d - 1) / 30 * (W - ml - mr), Y = v => H - mb - v / ymax * (H - mt - mb);
-  const path = pts => pts.map((p, i) => (i ? 'L' : 'M') + X(p[0]).toFixed(1) + ' ' + Y(p[1]).toFixed(1)).join('');
-  const grid = [1, 2, 3].map(i => { const v = ymax / 1.08 * i / 3; return `<line x1="${ml}" x2="${W - mr}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}" stroke="var(--line)"/><text x="${ml}" y="${(Y(v) - 5).toFixed(1)}" fill="var(--ink3)" font-size="12" class="veil">R$ ${Math.round(v).toLocaleString('pt-BR')}</text>`; }).join('');
-  const ticks = [1, 8, 15, 22, 29].map(d => `<text x="${X(d).toFixed(1)}" y="${H - 7}" fill="var(--ink3)" font-size="12" text-anchor="${d === 1 ? 'start' : 'middle'}">${d}</text>`).join('');
-  const last = cur[cur.length - 1];
-  const area = path(cur) + `L${X(last[0]).toFixed(1)} ${H - mb}L${X(1)} ${H - mb}Z`;
-  S._ritmo = { cur, ant, mes, W, ml, mr };
-  return `<div class="chart" data-ritmo><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Gasto acumulado dia a dia, comparado com o mês anterior"><defs><linearGradient id="rg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--signal)" stop-opacity=".32"/><stop offset="1" stop-color="var(--signal)" stop-opacity="0"/></linearGradient></defs>${grid}${ticks}${ant.length ? `<path d="${path(ant)}" fill="none" stroke="var(--ink3)" stroke-width="2" stroke-dasharray="5 5"/>` : ''}<path d="${area}" fill="url(#rg)"/><path d="${path(cur)}" fill="none" stroke="var(--signal)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${X(last[0]).toFixed(1)}" cy="${Y(last[1]).toFixed(1)}" r="5" fill="var(--signal)" stroke="var(--bg)" stroke-width="2"/><line data-vl x1="0" x2="0" y1="${mt}" y2="${H - mb}" stroke="var(--ink3)" style="display:none"/></svg><div class="tip" hidden></div></div><div class="leg"><span><i></i>${MESES[+mes.slice(5) - 1]}</span>${ant.length ? `<span><i class="d"></i>${MESES[+addM(mes, -1).slice(5) - 1]}</span>` : ''}</div>`;
-}
-function ritmoTip(ev, box) {
-  const R = S._ritmo; if (!R) return;
-  const svg = box.querySelector('svg'), rect = svg.getBoundingClientRect();
-  const px = (ev.clientX - rect.left) / rect.width * R.W;
-  const d = Math.max(1, Math.min(31, Math.round((px - R.ml) / (R.W - R.ml - R.mr) * 30 + 1)));
-  const c = R.cur.find(p => p[0] === d), a = R.ant.find(p => p[0] === d);
-  const tip = box.querySelector('.tip'), vl = box.querySelector('[data-vl]');
-  if (!c && !a) { tip.hidden = true; vl.style.display = 'none'; return; }
-  const x = R.ml + (d - 1) / 30 * (R.W - R.ml - R.mr);
-  vl.setAttribute('x1', x); vl.setAttribute('x2', x); vl.style.display = '';
-  tip.innerHTML = `<b>Até o dia ${d}</b>${c ? `<div>${MESES[+R.mes.slice(5) - 1]}: <span class="veil">${brl(c[1])}</span></div>` : ''}${a ? `<div class="muted">${MESES[+addM(R.mes, -1).slice(5) - 1]}: <span class="veil">${brl(a[1])}</span></div>` : ''}`;
-  tip.hidden = false;
-  tip.style.left = Math.max(0, Math.min(rect.width - 160, x / R.W * rect.width - 80)) + 'px';
-}
-function donutSvg(rows, tot, sel) {
-  const R = 100, r0 = 66; let a0 = -Math.PI / 2;
-  const pt = (r, a) => [r * Math.cos(a), r * Math.sin(a)];
-  const segs = rows.map(([nome, v]) => {
-    const a1 = a0 + v / tot * Math.PI * 2, gap = rows.length > 1 ? 0.025 : 0;
-    const s = a0 + gap, e = Math.max(s + 0.001, a1 - gap), big = e - s > Math.PI ? 1 : 0, ro = sel === nome ? R + 6 : R;
-    const [x1, y1] = pt(ro, s), [x2, y2] = pt(ro, e), [x3, y3] = pt(r0, e), [x4, y4] = pt(r0, s);
-    a0 = a1;
-    const dd = rows.length === 1 ? `M0 ${-ro}A${ro} ${ro} 0 1 1 -0.01 ${-ro}ZM0 ${-r0}A${r0} ${r0} 0 1 0 0.01 ${-r0}Z` : `M${x1.toFixed(2)} ${y1.toFixed(2)}A${ro} ${ro} 0 ${big} 1 ${x2.toFixed(2)} ${y2.toFixed(2)}L${x3.toFixed(2)} ${y3.toFixed(2)}A${r0} ${r0} 0 ${big} 0 ${x4.toFixed(2)} ${y4.toFixed(2)}Z`;
-    return `<path d="${dd}" fill="${fic(nome)[1]}" ${sel && sel !== nome ? 'opacity=".3"' : ''} data-fcat="${h(nome)}" fill-rule="evenodd"><title>${h(nome)}: ${brl(v)}</title></path>`;
-  }).join('');
-  const s = sel && rows.find(x => x[0] === sel);
-  return `<div class="donut"><svg viewBox="-110 -110 220 220" role="img" aria-label="Rosca com o gasto de cada categoria">${segs}</svg><div class="c">${s ? `<span>${fic(s[0])[0]} ${h(s[0])}</span><b class="veil">${brl(s[1])}</b><span>${Math.round(100 * s[1] / tot)}% do mês</span>` : `<span>Total</span><b class="veil">${brl(tot)}</b>`}</div></div>`;
+function renderSentir() {
+  const el = $('#sentir');
+  if (!el) return;
+  const oculto = cfg.discreet && !S.reveal.has('#sentir');
+  const fichas = fichasAll().filter(f => !f.builtin);
+  el.innerHTML = `<header class="es-topo"><div class="page-h"><h1>Como estou</h1><p>Seu diário emocional. Fica guardado direto, sem organizar nada; o assessor lê todo dia.</p></div></header>
+    <section class="es-bloco"><h2>Como você está agora?</h2>${humorBotoes()}</section>
+    ${oculto ? `<div class="fin-privado">${ICON.lock}<h2>Registros em modo discreto</h2><button type="button" class="btn" data-reveal-sentir>Mostrar registros</button></div>`
+      : `<section class="es-bloco"><h2>Exercícios da psicóloga</h2><div class="hj-actions">${fichas.map(f => `<button type="button" class="btn ghost" data-ficha="${h(f.id)}">${h(f.emoji || '🧭')} ${h(f.nome)}</button>`).join('')}
+        <button type="button" class="btn ghost" data-act="ficha-nova">＋ Criar exercício</button></div></section>
+        ${visaoBemEstar('emocional', Object.values(S.files), ymd(now()))}`}`;
 }
 
 /* ─────────────── Alimentação ─────────────── */
@@ -3335,15 +2609,25 @@ function clickPego(key) {
 }
 
 /* ─────────────── eventos ─────────────── */
-let lp = { t: 0, key: null, fired: false };
 function copiar(txt, ok) {
   try { navigator.clipboard.writeText(txt).then(() => toast(ok), () => toast('Não consegui copiar. Tente de novo no computador.', { err: true })); } catch { toast('Não consegui copiar. Tente de novo no computador.', { err: true }); }
 }
 function bind() {
   document.addEventListener('click', ev => {
-    const t = ev.target.closest('[data-commit],[data-open],[data-task],[data-compra],[data-cxdel],[data-tab],[data-mdt],[data-reveal],[data-find],[data-reg],[data-mood],[data-emo],#copyAsk,[data-act],[data-st],[data-day],[data-wk],[data-pick],[data-ficha],[data-regficha],[data-fmes],[data-ftab],[data-fo],[data-fedit],[data-fnova],[data-faba],[data-fcart],[data-fvenc],[data-fdia],[data-fcat],[data-alitab],[data-pessoa],[data-dias],[data-pego],[data-trocagrupo],[data-ref],[data-trocap],[data-close],[data-reveal-area],[data-ocultar-area],[data-area-captura],[data-anotar-nota],[data-box-remove],[data-sumario],[data-voltar]');
+    const t = ev.target.closest('[data-humor],[data-reveal-sentir],[data-tarefa-privacidade],[data-commit],[data-open],[data-task],[data-compra],[data-cxdel],[data-tab],[data-mdt],[data-reveal],[data-find],[data-reg],[data-mood],[data-emo],#copyAsk,[data-act],[data-st],[data-day],[data-wk],[data-pick],[data-ficha],[data-regficha],[data-fmes],[data-ftab],[data-fo],[data-fedit],[data-fnova],[data-faba],[data-fcart],[data-fvenc],[data-fdia],[data-fcat],[data-alitab],[data-pessoa],[data-dias],[data-pego],[data-trocagrupo],[data-ref],[data-trocap],[data-close],[data-reveal-area],[data-ocultar-area],[data-area-captura],[data-anotar-nota],[data-box-remove],[data-sumario],[data-voltar]');
     if (!t) return;
     const d = t.dataset;
+    if (d.humor) {
+      const fi = fichasAll()[0];
+      openSheet(`${fi.emoji} ${fi.nome}`, formFicha(fi), { focus: 'textarea[name=livre]' });
+      $(`#shBody [data-pick="humor"][data-v="${d.humor}"]`)?.setAttribute('aria-checked', 'true');
+      return;
+    }
+    if (d.revealSentir !== undefined) { S.reveal.add('#sentir'); renderSentir(); return; }
+    if (d.tarefaPrivacidade !== undefined) {
+      if (S.reveal.has('#tarefas')) S.reveal.delete('#tarefas'); else S.reveal.add('#tarefas');
+      renderTasks(); $('#tasks [data-tarefa-privacidade]')?.focus(); return;
+    }
     if (d.sumario) { ev.preventDefault(); sumario(d.sumario === 'abrir' && !S.sumario); return; }
     if (d.boxRemove !== undefined) { const it = S.cx[Number(d.boxRemove)]; if (it && !it.pending) delCaixa(it, 'Registro retirado da caixa.'); return; }
     if (t.id === 'copyAsk') { copiar('oi assessor, organiza a caixa do painel', 'Copiado. Cole no Claude: "oi assessor, organiza a caixa do painel"'); return; }
@@ -3367,24 +2651,8 @@ function bind() {
       const grp = t.closest('[role="radiogroup"]');
       if (grp) { for (const b of $$(`[data-pick="${d.pick}"]`, grp)) b.setAttribute('aria-checked', String(b === t)); }
       else t.setAttribute('aria-pressed', String(t.getAttribute('aria-pressed') !== 'true'));
-      const f = t.closest('form');
-      if (f && f.dataset.form === 'status') syncStatusForm(f);
-      if (f && f.dataset.form === 'compra' && d.pick === 'pg') { f.querySelector('[data-cartoes]').hidden = d.v !== 'Crédito'; f.querySelector('[data-va]').hidden = d.v !== 'Alimentação'; }
-      if (f?.dataset.form === 'compra' && d.pick === 'pg') resumoPagamento(f);
       return;
     }
-    if (d.st) {
-      ev.preventDefault();
-      if (lp.fired) { lp.fired = false; return; }
-      const it = S._idx && S._idx[d.st]; if (!it) return;
-      const hs = habitState(it);
-      if (!hs) setHabit(it, 'feito');
-      else if (hs.item && hs.item.pending) return;
-      else sheetStatus(it);
-      return;
-    }
-    if (d.day) { S.sel = d.day; renderInicio(); return; }
-    if (d.wk) { S.wk += +d.wk; S.sel = null; renderInicio(); return; }
     if (d.ficha) { const fi = fichasAll().find(x => x.id === d.ficha); if (fi) openSheet(`${fi.emoji} ${fi.nome}`, formFicha(fi)); return; }
     if (d.regficha) { S.regFicha = d.regficha; renderRegistrar(); return; }
     if (d.act === 'ali-privacidade') {
@@ -3393,27 +2661,13 @@ function bind() {
     }
     if (d.act) {
       const a = d.act;
-      if (a === 'receita' || a === 'transferencia') { openSheet(a === 'receita' ? 'Nova receita' : 'Transferir entre contas', formMovimento(a), { focus: 'input[name=valor]' }); return; }
       if (t.tagName === 'A') ev.preventDefault();
       if (a === 'nota') { openSheet('✏️ Anotar', formNota('geral'), { focus: 'textarea' }); return; }
-      if (a === 'compra') { openSheet('💳 Compra', formCompra(false), { focus: 'input[name=oque]' }); return; }
-      if (a === 'fin-conectar') { openSheet('Conectar edição da planilha', formConectarPlanilha(), { focus: '#feUrl' }); return; }
-      if (a === 'fin-apagar') {
-        const f = t.closest('form');
-        if (!f) return;
-        if (t.dataset.sure) { apagarLinha(f); return; }
-        t.dataset.sure = '1'; t.textContent = 'Toque de novo para apagar'; t.classList.add('perigo');
-        setTimeout(() => { if (t.isConnected && !f.dataset.enviando) { delete t.dataset.sure; t.textContent = 'Apagar'; t.classList.remove('perigo'); } }, 4000);
-        return;
-      }
-      if (a === 'comprovante') { openSheet('🧾 Comprovante', formCompra(true)); return; }
       if (a === 'ficha-nova') { openSheet('Novo exercício', formFichaEd(null), { focus: 'input[name=nome]' }); return; }
       if (a === 'ficha-editar') { const fi = S.fichas.find(x => x.id === d.id); if (fi) openSheet('Editar exercício', formFichaEd(fi)); return; }
       if (a === 'ficha-del') { const f = t.closest('form'); if (f && f.dataset.id) { if (t.dataset.sure) apagarFicha(f.dataset.id); else { t.dataset.sure = '1'; t.textContent = 'Toque de novo pra apagar'; } } return; }
       if (a === 'campo-add') { t.closest('form').querySelector('[data-campos]').insertAdjacentHTML('beforeend', campoRow()); t.closest('form').querySelector('[data-campo]:last-child [data-q]').focus(); return; }
       if (a === 'campo-del') { const r = t.closest('[data-campo]'); if (r && r.parentElement.children.length > 1) r.remove(); else if (r) r.querySelector('[data-q]').value = ''; return; }
-      if (a === 'status-desfazer') { const it = sheetCtx && sheetCtx.item; const hs = it && habitState(it); if (hs && hs.box) delCaixa(hs.item, 'Desfeito. Saiu da caixa.'); closeSheet(); return; }
-      if (a === 'hoje') { S.wk = 0; S.sel = ymd(now()); renderInicio(); return; }
       if (a === 'mais') { sheetMais(); return; }
       if (a === 'buscar') { closeSheet(); openFind(); return; }
       if (a === 'ajustes') { closeSheet(); showCfg(); return; }
@@ -3434,16 +2688,6 @@ function bind() {
     if (d.reveal) { S.reveal.add(d.reveal); if (S.open) renderDrawer(); renderAreaPage(); renderNotaPage(); return; }
     if (d.find) { const r = findList[+d.find]; if (r) { closeFind(); openNote(r.f.path); } return; }
     if (d.reg) { location.hash = '#registrar/' + d.reg; return; }
-    if (d.fedit) { const k = d.fedit.lastIndexOf(':'); abrirEdicao(d.fedit.slice(0, k), Number(d.fedit.slice(k + 1))); return; }
-    if (d.fnova) { abrirEdicao(d.fnova, null); return; }
-    if (d.faba) { S.planAba = d.faba; S.planBusca = ''; renderFinancas(); return; }
-    if (d.fmes) { const M = finModel(); if (M && M.meses[+d.fmes]) { S.finMes = M.meses[+d.fmes]; S.finOpen = {}; S.finDia = null; S.finCat = null; renderFinancas(); } return; }
-    if (d.ftab) { S.finTab = d.ftab; history.replaceState(null, '', '#financas/' + d.ftab); renderFinancas(); return; }
-    if (d.fo) { S.finOpen[d.fo] = !S.finOpen[d.fo]; renderFinancas(); return; }
-    if (d.fcart) { S.fcart = d.fcart; renderFinancas(); return; }
-    if (d.fvenc) { S.finMes = d.fvenc.slice(0, 7); S.finOpen = {}; renderFinancas(); return; }
-    if (d.fdia) { S.finDia = d.fdia; renderFinancas(); return; }
-    if (d.fcat) { S.finCat = S.finCat === d.fcat ? null : d.fcat; renderFinancas(); return; }
     if (d.pessoa) { S.pessoa = d.pessoa; LS.set(K + 'pessoa2', d.pessoa); renderAlimentacao(); return; }
     if (d.ref) {
       S.aliRef = d.ref === 'agora' ? null : d.ref;
@@ -3456,24 +2700,9 @@ function bind() {
     if (d.pego) { clickPego(d.pego); return; }
     if (d.trocagrupo) { S.aliTab = 'trocas'; S.trocaP = d.tp || (S.pessoa === 'michele' ? 'michele' : 'diovane'); S.trocaQ = ''; S.trocaOpen = d.trocagrupo; history.replaceState(null, '', '#alimentacao/trocas'); renderAlimentacao(); const g = $$('[data-grp]').find(x => x.dataset.grp === d.trocagrupo); if (g) { g.scrollIntoView({ behavior: 'smooth', block: 'start' }); g.classList.add('flash'); } return; }
   });
-  // segurar o círculo: não fiz ou cancelado
-  document.addEventListener('pointerdown', ev => {
-    const b = ev.target.closest('[data-st]');
-    if (!b) return;
-    lp.fired = false; clearTimeout(lp.t);
-    lp.key = b.dataset.st;
-    lp.t = setTimeout(() => { const it = S._idx && S._idx[lp.key]; if (!it) return; lp.fired = true; if (navigator.vibrate) navigator.vibrate(12); sheetStatus(it); }, 450);
-  });
-  for (const e of ['pointerup', 'pointercancel', 'pointerleave']) document.addEventListener(e, ev => { if (ev.target.closest && ev.target.closest('[data-st]')) clearTimeout(lp.t); }, true);
   document.addEventListener('contextmenu', ev => { if (!ev.target.closest('input,textarea,select,[contenteditable]')) ev.preventDefault(); });
   document.addEventListener('input', ev => {
     const t = ev.target;
-    if (t.id === 'planBusca') { S.planBusca = t.value; $('#planLinhas').innerHTML = linhasPlanilha(); return; }
-    if (t.id === 'extratoBusca' || t.id === 'extratoTipo') {
-      if (t.id === 'extratoBusca') S.extratoBusca = t.value; else S.extratoTipo = t.value;
-      $('#extratoLinhas').innerHTML = linhasDoExtrato(finModel(), S.finMes);
-      return;
-    }
     if (t.matches('[data-range]')) { t.dataset.set = '1'; const o = t.parentElement.querySelector('output'); if (o) o.textContent = t.value; const hh = t.closest('.field')?.querySelector('[data-rh]'); if (hh) hh.textContent = 'Marcado.'; return; }
     if (t.matches('[data-trocaq]')) { S.trocaQ = t.value; renderAlimentacao(); return; }
   });
@@ -3486,7 +2715,6 @@ function bind() {
       t.replaceWith(campo); campo.focus();
     }
     if (t.matches('[data-ficha-escolha]')) { S.regFicha = t.value; renderRegistrar(); }
-    if (t.matches('form[data-form=compra] input[type=date]')) resumoPagamento(t.form);
     if (t.matches('input[type=file][name=arq]')) {
       const box = t.closest('form').querySelector('[data-prev]'), file = t.files && t.files[0];
       if (!file) { box.innerHTML = ''; return; }
@@ -3494,21 +2722,14 @@ function bind() {
       else box.innerHTML = `<span>📄 ${h(short(file.name, 34))}</span>`;
     }
   });
-  document.addEventListener('pointermove', ev => { const c = ev.target.closest && ev.target.closest('[data-ritmo]'); if (c) ritmoTip(ev, c); });
-  document.addEventListener('pointerdown', ev => { const c = ev.target.closest && ev.target.closest('[data-ritmo]'); if (c) ritmoTip(ev, c); });
   document.addEventListener('submit', ev => {
     const f = ev.target;
     const kind = f.dataset.form;
     if (kind) ev.preventDefault();
     if (kind === 'captura') { enviarCaptura(f); return; }
     if (kind === 'nota') { concluirCaptura(f, () => saveNota(f.elements.txt.value, f.elements.areaNota.value)); return; }
-    if (kind === 'status') { const it = sheetCtx && sheetCtx.item; if (it) setHabit(it, picked(f, 'st') || 'nao', f.motivo.value); closeSheet(); return; }
     if (kind === 'ficha') { submitFicha(f); return; }
     if (kind === 'ficha-ed') { salvarFicha(f); return; }
-    if (kind === 'compra') { submitCompra(f); return; }
-    if (kind === 'receita' || kind === 'transferencia') { guardarMovimento(f); return; }
-    if (kind === 'fin-edit') { salvarEdicao(f); return; }
-    if (kind === 'fin-conectar') { conectarPlanilha(f); return; }
     if (kind === 'outro') { const txt = oneLine(f.txt.value); if (!txt) { f.txt.focus(); return; } const lugar = f.lugar.value; addCaixa([`🛒 Comprado: ${txt}${lugar ? ` (no lugar de ${lugar})` : ''}`], { msg: `comprado — ${short(txt, 40)}`, ok: lugar ? `Anotado no lugar de ${lugar}.` : 'Anotado.' }); f.txt.value = ''; f.lugar.value = ''; return; }
     if (kind === 'addcompra') { const txt = oneLine(f.txt.value); if (!txt) { f.txt.focus(); return; } addCompraBox(txt, f.sec.value); f.txt.value = ''; return; }
     if (kind === 'nota-vinculada') {
@@ -3529,7 +2750,6 @@ function bind() {
   });
   // "Ver mais" do sumário lembra se ele abriu ou fechou (só quando é ele quem clica)
   document.addEventListener('click', ev => { const sm = ev.target.closest?.('details[data-sm-area] > summary'); if (sm) LS.set('sm-mais-' + sm.parentElement.dataset.smArea, !sm.parentElement.open); }, true);
-  vincularTarefas();
   $('#eye').onclick = () => { cfg.discreet = !cfg.discreet; saveCfg(); S.reveal.clear(); render(); };
   $('#openCfg').onclick = showCfg;
   $('#openFind').onclick = openFind;
@@ -3574,9 +2794,9 @@ function tick() {
   const n = now();
   if ($('#app').hidden) return;
   const m = n.getHours() * 60 + n.getMinutes();
-  if (ymd(n) !== S.day) { S.sel = null; render(); }
+  if (ymd(n) !== S.day) render();
   else if (m !== S.minute) {
-    renderInicio(); renderFeed();
+    renderInicio();
     if (S.page === 'alimentacao' && S.aliTab === 'plano' && !S.aliRef) {
       const marker = $('#ali [data-meal-key]');
       const meals = refeicoesOrdenadas(refeicoesDaPessoa(S.plano || {}, S.pessoa));

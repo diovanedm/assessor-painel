@@ -1,0 +1,83 @@
+/* Painel simples: o que vem do Google Agenda, do TickTick e do Minhas Economias (só leitura) */
+
+/* Início */
+.es-board { grid-template-areas:"agenda prioridades" "agenda dinheiro" "sentir retomar"; }
+.hj-dinheiro { grid-area:dinheiro; }
+.hj-sentir { grid-area:sentir; }
+.hj-section-head p .es-velho, .es-topo p .es-velho { color:var(--alert); font-weight:650; }
+.es-canais { grid-template-columns:minmax(0,1fr); max-width:520px; }
+
+/* Agenda: a linha inteira abre o evento no Google Agenda */
+.hj-event.es-ev { grid-template-columns:minmax(0,1fr); padding:0; }
+.es-ev > a, .es-ev > div { display:grid; grid-template-columns:49px minmax(0,1fr); align-items:center; gap:7px; min-height:52px; padding:6px 0; color:inherit; text-decoration:none; }
+.es-ev > a:hover .hj-event-name { color:var(--signal); }
+.es-ev.passou { opacity:.55; }
+.es-ev.agora .hj-event-name small { color:var(--signal); font-weight:650; }
+
+/* Listas de tarefas */
+.es-lista { list-style:none; margin:0; padding:0; }
+.es-lista li { border-top:1px solid var(--line2); }
+.es-lista li:first-child { border-top:0; }
+.es-item { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:10px; align-items:center; min-height:50px; padding:8px 0 8px 11px; border-left:3px solid var(--c, var(--line)); color:inherit; text-decoration:none; overflow-wrap:anywhere; }
+.es-nome { font-size:14.5px; font-weight:550; line-height:1.4; }
+.es-nome small { display:block; margin-top:2px; color:var(--ink2); font-size:12px; font-weight:450; }
+.es-lista li.atrasada .es-nome small { color:var(--alert); font-weight:600; }
+.es-abrir { color:var(--ink3); font-size:15px; }
+a.es-item:hover .es-abrir, a.es-item:hover .es-nome { color:var(--signal); }
+
+/* Páginas Tarefas, Finanças e Como estou */
+.es-pagina, .fin { width:100%; max-width:860px; margin:0 auto; }
+.es-topo { display:flex; align-items:end; justify-content:space-between; gap:14px; margin:0 0 20px; }
+.es-topo .page-h { margin:0; }
+.es-topo .page-h p { margin:4px 0 0; color:var(--ink2); font-size:13.5px; }
+.es-app { flex:none; height:42px; padding:0 16px; border-radius:12px; }
+.es-grupo { margin:0 0 22px; padding:16px 18px; border:1px solid var(--line2); border-radius:18px; background:var(--panel); }
+.es-grupo h2 { display:flex; align-items:center; gap:8px; margin:0 0 6px; font-size:17px; letter-spacing:-.03em; }
+.es-grupo h2 span { color:var(--ink2); font-size:13px; font-weight:600; }
+.es-rodape { margin:18px 0 0; color:var(--ink2); font-size:13px; }
+.es-rodape a { color:var(--signal); font-weight:600; }
+.es-vazio { display:grid; justify-items:start; gap:12px; padding:18px; border:1px dashed var(--line); border-radius:16px; color:var(--ink2); }
+.es-vazio p { margin:0; line-height:1.5; }
+
+/* Números do dinheiro */
+.es-kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px; margin:0 0 6px; }
+.es-kpis > div { padding:12px 14px; border-radius:14px; background:var(--bg); }
+.es-kpis dt { color:var(--ink2); font-size:12.5px; }
+.es-kpis dd { margin:3px 0 0; font-size:19px; font-weight:700; letter-spacing:-.03em; }
+.es-kpis dd small { display:block; color:var(--ink2); font-size:12px; font-weight:450; letter-spacing:0; }
+.veil.neg { color:var(--alert); }
+.veil.pos { color:var(--signal); }
+.es-fin { display:grid; gap:14px; }
+.es-bloco { padding:18px; border:1px solid var(--line2); border-radius:18px; background:var(--panel); margin:0 0 14px; }
+.es-fin .es-bloco { margin:0; }
+.es-bloco h2 { margin:0 0 12px; font-size:17px; letter-spacing:-.03em; }
+.es-bloco h3 { margin:16px 0 8px; font-size:14px; color:var(--ink2); }
+.es-grande { margin:0 0 10px; font-size:clamp(28px,4vw,38px); font-weight:700; letter-spacing:-.05em; }
+.es-linhas { list-style:none; margin:0; padding:0; }
+.es-linhas li { display:grid; grid-template-columns:12px minmax(0,1fr) auto; gap:10px; align-items:center; min-height:44px; padding:6px 0; border-top:1px solid var(--line2); font-size:14px; }
+.es-linhas li small { display:block; color:var(--ink2); font-size:12px; }
+.es-linhas.es-extrato li { grid-template-columns:44px minmax(0,1fr) auto; }
+.es-linhas time { color:var(--ink2); font-size:12.5px; font-weight:600; }
+.es-dot { width:10px; height:10px; border-radius:50%; background:var(--c); }
+.es-barras { list-style:none; margin:0; padding:0; display:grid; gap:9px; }
+.es-barras li { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:4px 10px; font-size:14px; }
+.es-barras i { grid-column:1 / -1; height:6px; border-radius:6px; background:linear-gradient(90deg, var(--c) var(--p), var(--line2) var(--p)); }
+
+/* Como estou */
+.es-humor { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:6px; }
+.es-humor button { display:grid; justify-items:center; gap:3px; padding:10px 2px 8px; border-radius:14px; background:var(--bg); font-size:26px; line-height:1; }
+.es-humor button small { font-size:11px; color:var(--ink2); line-height:1.2; text-align:center; }
+.es-humor button:hover { background:var(--signal-soft); }
+#sentir .be-grid { margin-top:4px; }
+
+@media(max-width:860px) {
+  .es-board { grid-template-areas:"agenda" "prioridades" "dinheiro" "sentir" "retomar"; }
+}
+@media(max-width:560px) {
+  .es-topo { flex-direction:column; align-items:stretch; }
+  .es-app { width:100%; }
+  .es-humor button { font-size:23px; }
+}
+.hj-agenda .hj-events + .hj-day-heading, .hj-agenda .hj-empty + .hj-day-heading { margin-top:16px; }
+.hj-section-head > a { white-space:nowrap; flex:none; }
+.es-bloco .hj-actions .btn { height:auto; min-height:42px; padding:8px 14px; white-space:normal; text-align:left; }
