@@ -74,3 +74,27 @@ test('idade do espelho em minutos', () => {
   assert.equal(idadeDoEspelho(esp, new Date('2030-05-08T08:30:00-03:00')), 90);
   assert.equal(idadeDoEspelho({}, new Date()), null);
 });
+
+test('comAoVivo: agenda e tarefas da ponte, dinheiro do espelho, área herdada', async () => {
+  const { comAoVivo } = await import('../espelho.mjs');
+  const base = { atualizado: '2030-05-08T06:00:00-03:00', financas: { mes: '2030-05' },
+    agenda: [{ data: '2030-05-08', inicio: '09:00', titulo: 'Consulta', area: 'saude', link: 'L1' }],
+    tarefas: [{ id: 'a', titulo: 'Velha', area: 'trabalho', nota: 'casos/x.md' }, { id: 'b', titulo: 'Feita no app' }] };
+  const vivo = { atualizado: '2030-05-08T10:00:00-03:00', tarefasTodas: true,
+    agenda: [{ data: '2030-05-08', inicio: '10:00', titulo: 'Consulta', area: null, link: 'L1' }],
+    tarefas: [{ id: 'a', titulo: 'Velha renomeada', area: null, nota: null }, { id: 'c', titulo: 'Nova', area: 'financas' }] };
+  const r = comAoVivo(base, vivo);
+  assert.equal(r.financas.mes, '2030-05');
+  assert.equal(r.agenda[0].inicio, '10:00');
+  assert.equal(r.agenda[0].area, 'saude');
+  assert.deepEqual(r.tarefas.map(t => t.id), ['a', 'c']);
+  assert.equal(r.tarefas[0].area, 'trabalho');
+  assert.equal(r.tarefas[0].nota, 'casos/x.md');
+  assert.equal(r.atualizado, '2030-05-08T10:00:00-03:00');
+  assert.equal(r.aoVivo, true);
+  assert.equal(comAoVivo(base, null), base);
+  const soTarefas = comAoVivo(base, { tarefas: [], agenda: null });
+  assert.equal(soTarefas.agenda, base.agenda);
+  assert.equal(soTarefas.atualizado, base.atualizado);
+  assert.equal(comAoVivo(base, { ...vivo, atualizado: '2030-05-08T05:00:00-03:00' }), base);
+});

@@ -1,6 +1,6 @@
 // O espelho que o assessor grava em painel/espelho.json: o que está agora no Google Agenda,
 // no TickTick e no Minhas Economias. O painel só lê; quem manda são os aplicativos.
-import { addDays, pymd, ymd, toMin } from './datas.mjs?v=608f29e12708';
+import { addDays, pymd, ymd, toMin } from './datas.mjs?v=284e0f19e740';
 
 export const APPS = {
   agenda: { nome: 'Google Agenda', url: 'https://calendar.google.com/calendar/r' },
@@ -82,4 +82,28 @@ export function resumoFinanceiro(esp, { categorias = 6 } = {}) {
     categorias: principais.map(c => ({ ...c, parte: maior ? c.valor / maior : 0 })),
     faturas, proximaFatura: faturas[0] || null, ultimos,
   };
+}
+
+/** Junta o espelho do repo (dinheiro e o resto) com a ponte ao vivo (agenda e tarefas na hora).
+ *  Parte que a ponte não trouxe fica a do espelho. Área e nota que a ponte não sabe vêm do espelho (mesma tarefa ou evento). */
+export function comAoVivo(base, vivo) {
+  if (!vivo || typeof vivo !== 'object') return base;
+  const temAgenda = Array.isArray(vivo.agenda), temTarefas = Array.isArray(vivo.tarefas);
+  if (!temAgenda && !temTarefas) return base;
+  const tb = Date.parse(base?.atualizado || ''), tv = Date.parse(vivo.atualizado || '');
+  if (Number.isFinite(tb) && Number.isFinite(tv) && tb > tv) return base; // ponte guardada no aparelho mais velha que o espelho
+  const out = { ...(base || { versao: 1 }) };
+  if (temAgenda) {
+    const antes = new Map((Array.isArray(base?.agenda) ? base.agenda : []).map(e => [e.link || `${e.data}|${e.inicio}|${e.titulo}`, e]));
+    const porTitulo = new Map((Array.isArray(base?.agenda) ? base.agenda : []).map(e => [e.titulo, e]));
+    out.agenda = vivo.agenda.map(e => e.area ? e : { ...e, area: (antes.get(e.link) || antes.get(`${e.data}|${e.inicio}|${e.titulo}`) || porTitulo.get(e.titulo))?.area || null });
+  }
+  if (temTarefas) {
+    const antes = new Map((Array.isArray(base?.tarefas) ? base.tarefas : []).map(t => [t.id, t]));
+    out.tarefas = vivo.tarefas.map(t => { const a = antes.get(t.id); return a ? { ...t, area: t.area || a.area || null, nota: t.nota || a.nota || null } : t; });
+    out.tarefasTodas = vivo.tarefasTodas !== false;
+  }
+  if (temAgenda && temTarefas) { out.atualizado = vivo.atualizado || out.atualizado; out.aoVivo = true; }
+  out.atualizadoAssessor = base?.atualizado || null;
+  return out;
 }

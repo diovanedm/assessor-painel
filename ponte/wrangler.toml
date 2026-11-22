@@ -1,0 +1,11 @@
+name = "ponte-painel"
+main = "src/worker.js"
+compatibility_date = "2026-11-01"
+
+# Quem pode ler a ponte (o painel no GitHub Pages)
+[vars]
+ORIGENS = "https://diovanedm.github.io"
+
+# Guarda o acesso do TickTick. O wrangler cria sozinho no primeiro deploy.
+[[kv_namespaces]]
+binding = "PONTE"

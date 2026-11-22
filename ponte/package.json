@@ -1,0 +1,8 @@
+{
+  "name": "ponte-painel",
+  "private": true,
+  "type": "module",
+  "scripts": { "deploy": "wrangler deploy", "empacotar": "esbuild src/worker.js --bundle --format=esm --minify --outfile=dist/worker.js" },
+  "dependencies": { "ical.js": "^2.1.0" },
+  "devDependencies": { "esbuild": "^0.24.0", "wrangler": "^4.0.0" }
+}

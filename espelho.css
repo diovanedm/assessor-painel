@@ -5,6 +5,7 @@
 .hj-dinheiro { grid-area:dinheiro; }
 .hj-sentir { grid-area:sentir; }
 .hj-section-head p .es-velho, .es-topo p .es-velho { color:var(--alert); font-weight:650; }
+.es-vivo { color:var(--ok, #2e9e6a); font-weight:650; }
 .es-canais { grid-template-columns:minmax(0,1fr); max-width:520px; }
 
 /* Agenda: a linha inteira abre o evento no Google Agenda */

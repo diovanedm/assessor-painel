@@ -1,18 +1,18 @@
 /* ─────────────── utilidades ─────────────── */
-import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDaNota, linkDeRegistro, metasDaTabela, notaSolta, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=608f29e12708';
-import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=608f29e12708';
-import { visaoBemEstar } from './bem-estar.mjs?v=608f29e12708';
-import { blocosDaSemanaModelo, casosEmAndamento, pontoDeParada, textoDaBusca } from './memoria.mjs?v=608f29e12708';
-import { APPS, agendaPorDia, idadeDoEspelho, momento, resumoFinanceiro, tarefasEmGrupos } from './espelho.mjs?v=608f29e12708';
-import { humorRecente, marcosDaArea, nivelDeIngles, semanaDaArea, trilha } from './visual.mjs?v=608f29e12708';
-import { projetos as listaDeProjetos, situacao as situacaoDoCaso } from './projetos.mjs?v=608f29e12708';
-import { TICKTICK, tickTick, situacaoDaTarefa, tarefasDoAssunto, foraDoTickTick, partesDoTitulo, compromissosDaArea, semanaDosBlocos, progressoDasMetas, cardapio, diaDoCardapio, partesDoCaso } from './organizar.mjs?v=608f29e12708';
-import { linhasCaptura, lerCaptura, tipoAnexo, extAudio, lerOrganizados, destinoLegivel } from './captura.mjs?v=608f29e12708';
+import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDaNota, linkDeRegistro, metasDaTabela, notaSolta, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=284e0f19e740';
+import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=284e0f19e740';
+import { visaoBemEstar } from './bem-estar.mjs?v=284e0f19e740';
+import { blocosDaSemanaModelo, casosEmAndamento, pontoDeParada, textoDaBusca } from './memoria.mjs?v=284e0f19e740';
+import { APPS, agendaPorDia, comAoVivo, idadeDoEspelho, momento, resumoFinanceiro, tarefasEmGrupos } from './espelho.mjs?v=284e0f19e740';
+import { humorRecente, marcosDaArea, nivelDeIngles, semanaDaArea, trilha } from './visual.mjs?v=284e0f19e740';
+import { projetos as listaDeProjetos, situacao as situacaoDoCaso } from './projetos.mjs?v=284e0f19e740';
+import { TICKTICK, tickTick, situacaoDaTarefa, tarefasDoAssunto, foraDoTickTick, partesDoTitulo, compromissosDaArea, semanaDosBlocos, progressoDasMetas, cardapio, diaDoCardapio, partesDoCaso } from './organizar.mjs?v=284e0f19e740';
+import { linhasCaptura, lerCaptura, tipoAnexo, extAudio, lerOrganizados, destinoLegivel } from './captura.mjs?v=284e0f19e740';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const h = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=608f29e12708';
+import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=284e0f19e740';
 const DOW = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 const DOWL = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
 const MON = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
@@ -104,7 +104,7 @@ const Blobs = {
     if (this.db) { try { this.store('readwrite').clear(); } catch { } }
   },
 };
-const cfg = Object.assign({ token: '', repo: 'diovanedm/meu-assessor-dados', branch: '', interval: 15, theme: 'auto', discreet: true, finUrl: '', finToken: '' }, LS.get(K + 'cfg', {}));
+const cfg = Object.assign({ token: '', repo: 'diovanedm/meu-assessor-dados', branch: '', interval: 15, theme: 'auto', discreet: true, finUrl: '', finToken: '', vivoUrl: '', vivoChave: '' }, LS.get(K + 'cfg', {}));
 const saveCfg = () => LS.set(K + 'cfg', cfg);
 const devHost = ['localhost', '127.0.0.1'].includes(location.hostname);
 const API = (devHost && new URLSearchParams(location.search).get('api')) || 'https://api.github.com';
@@ -160,7 +160,7 @@ const S = {
   page: 'inicio', areaRoute: null, areaHash: '', tab: 'hoje', reg: 'nota', open: null, reveal: new Set(), minute: -1, day: '',
   notaArea: 'geral', regFicha: 'estou', fichas: [], plano: null, comprados: [], sel: null, wk: 0, _idx: {},
   extratoTipo: '', extratoBusca: '', planAba: 'Lançamentos', planBusca: '',
-  fin: null, finSha: null, _fm: null, finMes: null, finTab: 'resumo', finOpen: {}, finDia: null, finCat: null, fcart: null,
+  fin: null, finBase: null, vivo: LS.get(K + 'vivo', null), vivoTry: 0, vivoBusy: false, vivoErro: null, finSha: null, _fm: null, finMes: null, finTab: 'resumo', finOpen: {}, finDia: null, finCat: null, fcart: null,
   projArea: LS.get(K + 'projarea', 'todos'), aliTab: 'plano', pessoa: LS.get(K + 'pessoa2', 'ambos'), aliRef: null, trocaP: LS.get(K + 'trocap', 'diovane'), trocaOpen: null, dias: LS.get(K + 'dias', 7), trocaQ: '',
 };
 let queue = Promise.resolve();
@@ -471,13 +471,34 @@ async function loadSnap() {
   await Blobs.load([...Object.values(s.files), s.finSha]);
   for (const p in s.files) { if (!incluir(p)) continue; const t = Blobs.get(s.files[p]); if (t != null) S.files[p] = parseFile(p, s.files[p], t); }
   S.head = s.head; S.commits = s.commits || [];
-  if (s.finSha) { const t = Blobs.get(s.finSha); if (t != null) { try { S.fin = JSON.parse(t); S.finSha = s.finSha; } catch { } } }
+  if (s.finSha) { const t = Blobs.get(s.finSha); if (t != null) { try { S.finBase = JSON.parse(t); S.finSha = s.finSha; aplicarVivo(); } catch { } } }
   return Object.keys(S.files).length > 0;
 }
 function gcBlobs() {
   const keep = new Set(Object.values(S.files).map(f => f.sha));
   if (S.finSha) keep.add(S.finSha);
   Blobs.gc(keep);
+}
+
+/* Ponte ao vivo (Cloudflare): agenda e tarefas direto do Google Agenda e do TickTick, sem esperar o assessor. */
+function aplicarVivo() { S.fin = comAoVivo(S.finBase, S.vivo); S._fm = null; }
+const VIVO_SEG = 30;
+async function buscarVivo(force = false) {
+  if (!cfg.vivoUrl || !cfg.vivoChave || S.vivoBusy) return;
+  S.vivoBusy = true; S.vivoTry = Date.now();
+  try {
+    const r = await fetch(cfg.vivoUrl.replace(/\/+$/, '') + '/ao-vivo' + (force ? '?agora' : ''), { headers: { Authorization: 'Bearer ' + cfg.vivoChave }, cache: 'no-store' });
+    if (r.status === 401) { S.vivoErro = 'A ponte recusou a chave.'; return; }
+    if (!r.ok) { S.vivoErro = 'A ponte respondeu ' + r.status + '.'; return; }
+    const j = await r.json();
+    const erros = Object.values(j.erros || {});
+    S.vivoErro = erros.length ? erros.join(' · ') : null;
+    const antes = JSON.stringify([S.fin?.agenda, S.fin?.tarefas]);
+    S.vivo = j; LS.set(K + 'vivo', j);
+    aplicarVivo();
+    if (JSON.stringify([S.fin?.agenda, S.fin?.tarefas]) !== antes) render();
+  } catch { S.vivoErro = 'Sem conexão com a ponte.'; }
+  finally { S.vivoBusy = false; }
 }
 
 async function sync(force = false) {
@@ -504,7 +525,7 @@ async function sync(force = false) {
     const next = {};
     let finSha = null;
     for (const e of tr.json.tree) { if (e.type !== 'blob') continue; if (e.path === FIN) finSha = e.sha; else if (incluir(e.path)) next[e.path] = e.sha; }
-    if (finSha !== S.finSha) { if (finSha) { try { await Blobs.load([finSha]); S.fin = JSON.parse(await getBlob(finSha)); S.finSha = finSha; } catch { throw erro('http', 'leitura do espelho'); } } else { S.fin = null; S.finSha = null; } S._fm = null; }
+    if (finSha !== S.finSha) { if (finSha) { try { await Blobs.load([finSha]); S.finBase = JSON.parse(await getBlob(finSha)); S.finSha = finSha; } catch { throw erro('http', 'leitura do espelho'); } } else { S.finBase = null; S.finSha = null; } aplicarVivo(); }
     const fresh = p => (S.wrote[p] || 0) >= t0;
     const changed = Object.keys(next).filter(p => (!S.files[p] || S.files[p].sha !== next[p]) && !fresh(p));
     const removed = Object.keys(S.files).filter(p => !(p in next) && !fresh(p));
@@ -866,7 +887,7 @@ function seloTickTick(sit, id) {
 }
 const isChecked = g => { const o = taskOv(g); if (o) return o.kind === 'feita'; const s = situacaoDoGrupo(g); return s === 'feita' || s === 'fechada'; };
 const byDue = (a, b) => (a.due || '9').localeCompare(b.due || '9') || (b.prio === 'alta') - (a.prio === 'alta');
-import { organizarTarefas, primeiroPasso, prioridadesDoDia } from './tarefas.mjs?v=608f29e12708';
+import { organizarTarefas, primeiroPasso, prioridadesDoDia } from './tarefas.mjs?v=284e0f19e740';
 function estadoTarefa(g) {
   if (g.nova) return { feita:false, data:'' };
   const item = taskOv(g);
@@ -881,7 +902,7 @@ function ttLi(t, hoje) {
     ${quando ? `<span class="tt-quando">${CAL_ICON}${h(quando)}</span>` : ''}<span class="tt-abrir" aria-hidden="true">↗</span><span class="sr"> (abre no TickTick)</span></a></li>`;
 }
 const ordemTickTick = (lista, hoje) => { const G = tarefasEmGrupos({ tarefas: lista }, hoje); return [...G.atrasadas, ...G.hoje, ...G.semana, ...G.depois, ...G.semPrazo]; };
-const fonteTickTick = () => { const q = quandoEspelho(); return `<p class="tt-fonte">${TT_ICON}<span>Do <b>TickTick</b>${q ? `, atualizado ${q}` : ''}. Marcar, criar e mudar: lá.</span></p>`; };
+const fonteTickTick = () => { const q = quandoEspelho(); return `<p class="tt-fonte">${TT_ICON}<span>Do <b>TickTick</b>${S.fin?.aoVivo ? ' · ao vivo' : ''}${q ? `, atualizado ${q}` : ''}. Marcar, criar e mudar: lá.</span></p>`; };
 /* Tarefas das notas que não batem com o TickTick: a lista, com a nota de onde vieram. */
 function avisoForaDoTickTick(pend, { compacto = false } = {}) {
   const n = pend.fora.length + pend.fechadas.length;
@@ -1929,9 +1950,14 @@ function showCfg() {
     <label for="cInt">Intervalo de sincronização</label><select id="cInt">${[10,15,30,60].map(s => `<option value="${s}"${cfg.interval === s ? ' selected' : ''}>${s} segundos</option>`).join('')}</select>
     <details class="capture-extra"><summary>Conexão com o GitHub</summary><label for="cRepo">Repositório conectado</label><input id="cRepo" value="${h(cfg.repo)}" disabled>
       <p class="hint">Token terminado em ${h(cfg.token.slice(-4))}.</p><button class="btn ghost signout" type="button" id="cOut">Desconectar deste aparelho</button></details>
+    <details class="capture-extra"${cfg.vivoUrl ? '' : ' open'}><summary>Ao vivo: TickTick e Google Agenda</summary>
+      <p class="hint">Endereço e chave da ponte na Cloudflare. Com ela, o que você marca no TickTick ou muda na Agenda aparece aqui em até ${VIVO_SEG} segundos.</p>
+      <label for="cVivoUrl">Endereço da ponte</label><input id="cVivoUrl" type="url" inputmode="url" placeholder="https://ponte-painel.<você>.workers.dev" value="${h(cfg.vivoUrl)}">
+      <label for="cVivoChave">Chave</label><input id="cVivoChave" type="password" autocomplete="off" value="${h(cfg.vivoChave)}">
+      <p class="hint" id="cVivoSt">${!cfg.vivoUrl ? 'Desligada: o painel mostra o espelho do assessor.' : S.vivoErro ? '⚠️ ' + h(S.vivoErro) : S.fin?.aoVivo ? '✅ Ligada, ' + h(quandoEspelho()) + '.' : 'Ligando…'}</p></details>
     <div class="form-foot"><button class="btn" type="submit">Salvar ajustes</button></div>
   </form></div>`;
-  $('#cfgForm').onsubmit = ev => { ev.preventDefault(); cfg.interval = +$('#cInt').value; cfg.theme = $('#cTheme').value; saveCfg(); applyTheme(); o.hidden = true; };
+  $('#cfgForm').onsubmit = ev => { ev.preventDefault(); cfg.interval = +$('#cInt').value; cfg.theme = $('#cTheme').value; const vu = $('#cVivoUrl').value.trim(), vc = $('#cVivoChave').value.trim(); const mudou = vu !== cfg.vivoUrl || vc !== cfg.vivoChave; cfg.vivoUrl = vu; cfg.vivoChave = vc; saveCfg(); applyTheme(); o.hidden = true; if (mudou) { S.vivoErro = null; if (!vu) { S.vivo = null; LS.del(K + 'vivo'); aplicarVivo(); render(); } else buscarVivo(true); } };
   $('#cClose').onclick = () => { o.hidden = true; };
   $('#cOut').onclick = () => {
     cfg.token = ''; cfg.branch = ''; saveCfg();
@@ -1995,16 +2021,18 @@ const MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julh
 const sensIt = it => SENS.has(it.area) || /🧠|🩺|psic[oó]|psiq|terap/i.test(it.name);
 const maiusc = s => String(s || '').charAt(0).toUpperCase() + String(s || '').slice(1);
 const safeUrl = u => (/^https:\/\/[^\s"'<>]+$/.test(String(u || '')) ? String(u) : '');
-function quandoEspelho() {
-  const t = Date.parse(S.fin?.atualizado || '');
+function quandoEspelho(iso = S.fin?.atualizado) {
+  const t = Date.parse(iso || '');
   if (!Number.isFinite(t)) return '';
   const d = new Date(t), dia = ymd(d);
   return dia === ymd(now()) ? `hoje às ${hm(d)}` : dia === ymd(addDays(now(), -1)) ? `ontem às ${hm(d)}` : `em ${dm(dia)} às ${hm(d)}`;
 }
 function fonteTxt(app) {
-  const q = quandoEspelho(), idade = idadeDoEspelho(S.fin, now());
-  const velho = idade != null && idade > 12 * 60;
-  return `Do ${APPS[app].nome}${q ? `, atualizado ${q}` : ''}${velho ? ' · <b class="es-velho">pode estar desatualizado</b>' : ''}`;
+  const vivo = S.fin?.aoVivo && app !== 'financas';
+  const iso = app === 'financas' ? (S.fin?.atualizadoAssessor || S.fin?.atualizado) : S.fin?.atualizado;
+  const q = quandoEspelho(iso), idade = idadeDoEspelho({ atualizado: iso }, now());
+  const velho = idade != null && idade > (vivo ? 30 : 12 * 60);
+  return `Do ${APPS[app].nome}${vivo ? ` · <b class="es-vivo">ao vivo</b>${q ? ' ' + q.replace(/^hoje /, '') : ''}` : q ? `, atualizado ${q}` : ''}${velho ? ' · <b class="es-velho">pode estar desatualizado</b>' : ''}`;
 }
 const abrirApp = app => `<a class="btn es-app" href="${APPS[app].url}" target="_blank" rel="noopener noreferrer">Abrir ${APPS[app].nome} <span aria-hidden="true">↗</span></a>`;
 const semEspelho = app => `<div class="es-vazio"><p>O assessor ainda não puxou os dados do ${APPS[app].nome}. Peça a ele: <b>“atualiza o painel”</b>.</p>${abrirApp(app)}</div>`;
@@ -2569,7 +2597,7 @@ function enviarCaptura(f) {
 }
 
 /* ─────────────── Finanças: o resumo do Minhas Economias (espelho gravado pelo assessor) ─────────────── */
-import { brl, pnum } from './financas.mjs?v=608f29e12708';
+import { brl, pnum } from './financas.mjs?v=284e0f19e740';
 const V = (v, cls = '') => `<span class="veil${cls ? ' ' + cls : ''}">${brl(v)}</span>`;
 const corSegura = c => /^#[0-9a-f]{3,8}$/i.test(String(c || '')) ? c : /^[0-9a-f]{6}$/i.test(String(c || '')) ? '#' + c : 'var(--ink3)';
 function renderFinancas() {
@@ -3075,7 +3103,7 @@ function bind() {
   });
   addEventListener('hashchange', route);
   matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => cfg.theme === 'auto' && applyTheme());
-  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && Date.now() - S.lastTry > 4000) sync(); });
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && Date.now() - S.lastTry > 4000) sync(); if (document.visibilityState === 'visible' && Date.now() - S.vivoTry > 4000) buscarVivo(); });
   addEventListener('online', () => sync());
 }
 function saveNota(v, area) {
@@ -3102,6 +3130,7 @@ function tick() {
     }
   }
   setLive();
+  if (cfg.token && document.visibilityState === 'visible' && Date.now() - S.vivoTry >= VIVO_SEG * 1000) buscarVivo();
   if (!cfg.token || S.syncing || document.visibilityState !== 'visible') return;
   let wait = cfg.interval * 1000;
   if (S.err === 'offline' || S.err === 'http') wait = Math.max(wait, 30000);
@@ -3114,6 +3143,7 @@ async function start() {
   $('#app').hidden = false;
   await Blobs.init();
   if (await loadSnap()) reindex(); else buildCaixa();
+  aplicarVivo();
   route();
   render();
   sync(true);
