@@ -1,18 +1,18 @@
 /* ─────────────── utilidades ─────────────── */
-import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDaNota, linkDeRegistro, metasDaTabela, notaSolta, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=048d9ab09640';
-import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=048d9ab09640';
-import { visaoBemEstar } from './bem-estar.mjs?v=048d9ab09640';
-import { blocosDaSemanaModelo, casosEmAndamento, pontoDeParada, textoDaBusca } from './memoria.mjs?v=048d9ab09640';
-import { APPS, agendaPorDia, comAoVivo, idadeDoEspelho, momento, resumoFinanceiro, tarefasEmGrupos } from './espelho.mjs?v=048d9ab09640';
-import { humorRecente, marcosDaArea, nivelDeIngles, semanaDaArea, trilha } from './visual.mjs?v=048d9ab09640';
-import { projetos as listaDeProjetos, situacao as situacaoDoCaso } from './projetos.mjs?v=048d9ab09640';
-import { TICKTICK, tickTick, situacaoDaTarefa, tarefasDoAssunto, foraDoTickTick, partesDoTitulo, compromissosDaArea, semanaDosBlocos, progressoDasMetas, cardapio, diaDoCardapio, partesDoCaso } from './organizar.mjs?v=048d9ab09640';
-import { linhasCaptura, lerCaptura, tipoAnexo, extAudio, lerOrganizados, destinoLegivel } from './captura.mjs?v=048d9ab09640';
+import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDaNota, linkDeRegistro, metasDaTabela, notaSolta, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=284e0f19e740';
+import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=284e0f19e740';
+import { visaoBemEstar } from './bem-estar.mjs?v=284e0f19e740';
+import { blocosDaSemanaModelo, casosEmAndamento, pontoDeParada, textoDaBusca } from './memoria.mjs?v=284e0f19e740';
+import { APPS, agendaPorDia, comAoVivo, idadeDoEspelho, momento, resumoFinanceiro, tarefasEmGrupos } from './espelho.mjs?v=284e0f19e740';
+import { humorRecente, marcosDaArea, nivelDeIngles, semanaDaArea, trilha } from './visual.mjs?v=284e0f19e740';
+import { projetos as listaDeProjetos, situacao as situacaoDoCaso } from './projetos.mjs?v=284e0f19e740';
+import { TICKTICK, tickTick, situacaoDaTarefa, tarefasDoAssunto, foraDoTickTick, partesDoTitulo, compromissosDaArea, semanaDosBlocos, progressoDasMetas, cardapio, diaDoCardapio, partesDoCaso } from './organizar.mjs?v=284e0f19e740';
+import { linhasCaptura, lerCaptura, tipoAnexo, extAudio, lerOrganizados, destinoLegivel } from './captura.mjs?v=284e0f19e740';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const h = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=048d9ab09640';
+import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=284e0f19e740';
 const DOW = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 const DOWL = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
 const MON = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
@@ -26,17 +26,13 @@ const ICON = {
   lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg>',
 };
 const PAGES = [
-  { id: 'inicio', nome: 'Hoje', arquivada: true, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7" rx="2.2"/><rect x="13" y="4" width="7" height="7" rx="2.2"/><rect x="4" y="13" width="7" height="7" rx="2.2"/><rect x="13" y="13" width="7" height="7" rx="2.2"/></svg>' },
+  { id: 'inicio', nome: 'Hoje', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7" rx="2.2"/><rect x="13" y="4" width="7" height="7" rx="2.2"/><rect x="4" y="13" width="7" height="7" rx="2.2"/><rect x="13" y="13" width="7" height="7" rx="2.2"/></svg>' },
   { id: 'tarefas', nome: 'Tarefas', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="7" r="2"/><path d="M11 7h9M11 17h9"/><path d="m4.5 17 1.5 1.5L8.5 15.5"/></svg>' },
-  { id: 'projetos', nome: 'Projetos', arquivada: true, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 7.5a2 2 0 0 1 2-2h4l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2Z"/><path d="M8 14.5h3.5M8 11.5h7"/></svg>' },
+  { id: 'projetos', nome: 'Projetos', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 7.5a2 2 0 0 1 2-2h4l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2Z"/><path d="M8 14.5h3.5M8 11.5h7"/></svg>' },
   { id: 'financas', nome: 'Finanças', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="6" width="17" height="13" rx="3"/><path d="M3.5 10.5h17"/><path d="M15 15h2.5"/></svg>' },
   { id: 'alimentacao', nome: 'Refeições e compras', curto: 'Refeições', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5h16a8 8 0 0 1-16 0Z"/><path d="M9.5 9c0-1.6 1.2-2 1.2-3.6M13.5 9c0-1.6 1.2-2 1.2-3.6"/></svg>' },
-  { id: 'areas', nome: 'Memória', arquivada: true, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="m15.5 8.5-2 5-5 2 2-5 5-2Z"/></svg>' },
+  { id: 'areas', nome: 'Memória', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="m15.5 8.5-2 5-5 2 2-5 5-2Z"/></svg>' },
 ];
-/* Arquivado em 22/11/2026 (pedido do Diovane): o painel mostra só Tarefas, Finanças e Refeições.
-   Hoje, Projetos, Memória, áreas e notas soltas continuam no código; para voltar, tire o `arquivada`. */
-const VISIVEIS = PAGES.filter(p => !p.arquivada);
-const PAGINA_INICIAL = VISIVEIS[0].id;
 const MAIS_ICON = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5.5" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="18.5" cy="12" r="1.9"/></svg>';
 
 const LS = {
@@ -161,7 +157,7 @@ const S = {
   tasks: [], compras: { secs: [], heads: [] }, agenda: { series: [], events: [] }, habits: [], inbox: [], stems: {}, name: '',
   cx: [], ov: null, pendAdd: [], pendDel: new Set(),
   syncing: false, lastSync: 0, lastTry: 0, pending: 0, err: null, rateReset: 0, wrote: {}, resync: false,
-  page: PAGINA_INICIAL, areaRoute: null, areaHash: '', tab: 'hoje', reg: 'nota', open: null, reveal: new Set(), minute: -1, day: '',
+  page: 'inicio', areaRoute: null, areaHash: '', tab: 'hoje', reg: 'nota', open: null, reveal: new Set(), minute: -1, day: '',
   notaArea: 'geral', regFicha: 'estou', fichas: [], plano: null, comprados: [], sel: null, wk: 0, _idx: {},
   extratoTipo: '', extratoBusca: '', planAba: 'Lançamentos', planBusca: '',
   fin: null, finBase: null, vivo: LS.get(K + 'vivo', null), vivoTry: 0, vivoBusy: false, vivoErro: null, finSha: null, _fm: null, finMes: null, finTab: 'resumo', finOpen: {}, finDia: null, finCat: null, fcart: null,
@@ -806,10 +802,10 @@ function render() {
 }
 function renderNav() {
   const active = S.page === 'area' ? (S.areaRoute.area === 'financas' ? 'financas' : 'areas') : S.page === 'nota' ? 'areas' : S.page;
-  $('#nav').innerHTML = VISIVEIS.map(p => `<a href="#${p.id}"${active === p.id ? ' aria-current="page"' : ''}>${p.icon}<span>${p.nome}</span></a>`).join('');
-  const naMais = VISIVEIS.some(p => p.mais && p.id === active);
-  $('#tabbar').innerHTML = VISIVEIS.filter(p => !p.mais).map(p => `<a href="#${p.id}"${active === p.id ? ' aria-current="page"' : ''}>${p.icon}<span>${p.curto || p.nome}</span></a>`).join('') +
-    (VISIVEIS.some(p => p.mais) ? `<a href="#" data-act="mais"${naMais ? ' aria-current="page"' : ''} aria-label="Mais opções">${MAIS_ICON}<span>Mais</span></a>` : '');
+  $('#nav').innerHTML = PAGES.map(p => `<a href="#${p.id}"${active === p.id ? ' aria-current="page"' : ''}>${p.icon}<span>${p.nome}</span></a>`).join('');
+  const naMais = PAGES.some(p => p.mais && p.id === active);
+  $('#tabbar').innerHTML = PAGES.filter(p => !p.mais).map(p => `<a href="#${p.id}"${active === p.id ? ' aria-current="page"' : ''}>${p.icon}<span>${p.curto || p.nome}</span></a>`).join('') +
+    (PAGES.some(p => p.mais) ? `<a href="#" data-act="mais"${naMais ? ' aria-current="page"' : ''} aria-label="Mais opções">${MAIS_ICON}<span>Mais</span></a>` : '');
 }
 function route() {
   let [id, sub] = location.hash.slice(1).split('/');
@@ -818,14 +814,9 @@ function route() {
     history.replaceState(null, '', '#financas');
     id = 'financas'; sub = ''; area = null;
   }
-  if (!id || id === 'hoje') id = PAGINA_INICIAL;
-  let solta = area ? null : notaSolta(location.hash);
-  // Arquivado: área (menos Finanças), nota solta e páginas arquivadas voltam pra página inicial.
-  if ((area && area.area !== 'financas') || solta || !VISIVEIS.some(x => x.id === id) && !(area && area.area === 'financas')) {
-    if (location.hash !== '#' + PAGINA_INICIAL) history.replaceState(null, '', '#' + PAGINA_INICIAL);
-    id = PAGINA_INICIAL; sub = ''; area = null; solta = null;
-  }
-  const p = area ? 'area' : id;
+  if (!id || id === 'hoje') id = 'inicio';
+  const solta = area ? null : notaSolta(location.hash);
+  const p = area ? 'area' : solta ? 'nota' : id === 'area' ? 'areas' : PAGES.some(x => x.id === id) ? id : 'inicio';
   const changed = p !== S.page || ((p === 'area' || p === 'nota') && location.hash !== S.areaHash);
   S.notaPath = solta ? solta.path : null;
   if (changed && S.open) closeNote();
@@ -896,7 +887,7 @@ function seloTickTick(sit, id) {
 }
 const isChecked = g => { const o = taskOv(g); if (o) return o.kind === 'feita'; const s = situacaoDoGrupo(g); return s === 'feita' || s === 'fechada'; };
 const byDue = (a, b) => (a.due || '9').localeCompare(b.due || '9') || (b.prio === 'alta') - (a.prio === 'alta');
-import { organizarTarefas, primeiroPasso, prioridadesDoDia } from './tarefas.mjs?v=048d9ab09640';
+import { organizarTarefas, primeiroPasso, prioridadesDoDia } from './tarefas.mjs?v=284e0f19e740';
 function estadoTarefa(g) {
   if (g.nova) return { feita:false, data:'' };
   const item = taskOv(g);
@@ -1725,7 +1716,7 @@ function renderAreaPage() {
   el.dataset.locked = String(gate);
   el.style.setProperty('--area-accent', areaColor(area));
   const hide = cfg.discreet && S.reveal.has(base) ? `<button class="btn ghost" data-ocultar-area="${area}">Ocultar área</button>` : '';
-  const head = `${area === 'financas' ? '<a class="area-back" href="#financas"><span aria-hidden="true">←</span> Finanças</a>' : '<a class="area-back" href="#areas"><span aria-hidden="true">←</span> Todas as áreas</a>'}
+  const head = `<a class="area-back" href="#areas"><span aria-hidden="true">←</span> Todas as áreas</a>
     <div class="area-heading"><h1 tabindex="-1">${label}</h1><div class="area-tools">${hide}</div></div>`;
   let markup;
   if (gate) {
@@ -2606,7 +2597,7 @@ function enviarCaptura(f) {
 }
 
 /* ─────────────── Finanças: o resumo do Minhas Economias (espelho gravado pelo assessor) ─────────────── */
-import { brl, pnum } from './financas.mjs?v=048d9ab09640';
+import { brl, pnum } from './financas.mjs?v=284e0f19e740';
 const V = (v, cls = '') => `<span class="veil${cls ? ' ' + cls : ''}">${brl(v)}</span>`;
 const corSegura = c => /^#[0-9a-f]{3,8}$/i.test(String(c || '')) ? c : /^[0-9a-f]{6}$/i.test(String(c || '')) ? '#' + c : 'var(--ink3)';
 function renderFinancas() {
@@ -3100,8 +3091,8 @@ function bind() {
   $('#scrim').onclick = closeNote;
   document.addEventListener('keydown', ev => {
     const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName);
-    if ((ev.metaKey || ev.ctrlKey) && ev.key.toLowerCase() === 'k' && !$('#openFind').hidden) { ev.preventDefault(); $('#find').hidden ? openFind() : closeFind(); return; }
-    if (ev.key === '/' && !$('#openFind').hidden && !typing && $('#find').hidden && !$('#app').hidden && !sheetOpen()) { ev.preventDefault(); openFind(); return; }
+    if ((ev.metaKey || ev.ctrlKey) && ev.key.toLowerCase() === 'k') { ev.preventDefault(); $('#find').hidden ? openFind() : closeFind(); return; }
+    if (ev.key === '/' && !typing && $('#find').hidden && !$('#app').hidden && !sheetOpen()) { ev.preventDefault(); openFind(); return; }
     if (ev.key === 'Escape') {
       if (!$('#find').hidden) closeFind();
       else if (sheetOpen()) closeSheet();

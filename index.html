@@ -16,19 +16,19 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Baskervville:ital@0;1&display=swap" rel="stylesheet">
-<script src="./tema.js?v=048d9ab09640"></script>
-<link rel="stylesheet" href="./painel.css?v=048d9ab09640">
-<link rel="stylesheet" href="./layout.css?v=048d9ab09640">
-<link rel="stylesheet" href="./areas.css?v=048d9ab09640">
-<link rel="stylesheet" href="./bem-estar.css?v=048d9ab09640">
-<link rel="stylesheet" href="./financas-ui.css?v=048d9ab09640">
-<link rel="stylesheet" href="./hoje.css?v=048d9ab09640">
-<link rel="stylesheet" href="./tarefas.css?v=048d9ab09640">
-<link rel="stylesheet" href="./alimentacao-ui.css?v=048d9ab09640">
-<link rel="stylesheet" href="./captura.css?v=048d9ab09640">
-<link rel="stylesheet" href="./espelho.css?v=048d9ab09640">
-<link rel="stylesheet" href="./projetos.css?v=048d9ab09640">
-<link rel="stylesheet" href="./organizar.css?v=048d9ab09640">
+<script src="./tema.js?v=284e0f19e740"></script>
+<link rel="stylesheet" href="./painel.css?v=284e0f19e740">
+<link rel="stylesheet" href="./layout.css?v=284e0f19e740">
+<link rel="stylesheet" href="./areas.css?v=284e0f19e740">
+<link rel="stylesheet" href="./bem-estar.css?v=284e0f19e740">
+<link rel="stylesheet" href="./financas-ui.css?v=284e0f19e740">
+<link rel="stylesheet" href="./hoje.css?v=284e0f19e740">
+<link rel="stylesheet" href="./tarefas.css?v=284e0f19e740">
+<link rel="stylesheet" href="./alimentacao-ui.css?v=284e0f19e740">
+<link rel="stylesheet" href="./captura.css?v=284e0f19e740">
+<link rel="stylesheet" href="./espelho.css?v=284e0f19e740">
+<link rel="stylesheet" href="./projetos.css?v=284e0f19e740">
+<link rel="stylesheet" href="./organizar.css?v=284e0f19e740">
 </head>
 <body class="discreet">
 
@@ -36,16 +36,16 @@
 
 <div id="app" hidden>
   <header class="top">
-    <a class="brand" href="#tarefas"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="11" fill="none" stroke="var(--line)" stroke-width="3"/><path d="M16 5a11 11 0 0 1 9.5 16.5" fill="none" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/><circle cx="25.5" cy="21.5" r="3.4" fill="var(--signal)"/></svg>Meu Assessor</a>
+    <a class="brand" href="#inicio"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="11" fill="none" stroke="var(--line)" stroke-width="3"/><path d="M16 5a11 11 0 0 1 9.5 16.5" fill="none" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/><circle cx="25.5" cy="21.5" r="3.4" fill="var(--signal)"/></svg>Meu Assessor</a>
     <nav class="nav" id="nav" aria-label="Páginas"></nav>
-    <button class="find" id="openFind" hidden aria-label="Buscar nas notas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span>Buscar nas notas</span><kbd>⌘K</kbd></button>
+    <button class="find" id="openFind" aria-label="Buscar nas notas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span>Buscar nas notas</span><kbd>⌘K</kbd></button>
     <div class="live idle" id="live" role="status" aria-live="polite"><span class="dot"></span><span id="liveTxt">conectando</span></div>
     <button class="ib" id="eye" aria-pressed="false" aria-label="Mostrar assuntos reservados" title="Mostrar ou esconder emocional, saúde e valores"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path id="eyeSlash" d="M4 4l16 16"/></svg></button>
     <button class="ib" id="openCfg" aria-label="Ajustes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></button>
   </header>
 
   <!-- INÍCIO -->
-  <main class="page" id="p-inicio" data-page="inicio" hidden>
+  <main class="page" id="p-inicio" data-page="inicio">
     <div class="home" id="home"></div>
   </main>
 
@@ -142,6 +142,6 @@
 <div class="sheet-wrap" id="sheet" hidden><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="shTitle"><div class="sheet-h"><h2 id="shTitle"></h2><button class="ib" id="shClose" aria-label="Fechar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div><div class="sheet-b" id="shBody"></div></div></div>
 <div class="toasts" id="toasts" aria-live="polite"></div>
 
-<script type="module" src="./painel.mjs?v=048d9ab09640"></script>
+<script type="module" src="./painel.mjs?v=284e0f19e740"></script>
 </body>
 </html>
