@@ -1,0 +1,41 @@
+/* Aba Projetos (22/11/2026): um cartão por projeto, com a cor da área, o andamento e o próximo passo */
+.pj-pagina { max-width: 880px; }
+.pj-placar { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 14px; padding: 0; }
+.pj-placar span { padding: 7px 13px; border-radius: 99px; background: var(--panel); border: 1px solid var(--line2); color: var(--ink2); font-size: 13.5px; }
+.pj-placar b { color: var(--ink); font-weight: 750; }
+.pj-placar .atrasado { border-color: color-mix(in srgb, var(--alert) 35%, transparent); color: var(--alert); }
+.pj-placar .atrasado b { color: var(--alert); }
+.pj-filtros { display: flex; gap: 6px; overflow-x: auto; margin: 0 0 14px; padding-bottom: 2px; scrollbar-width: none; }
+.pj-filtros::-webkit-scrollbar { display: none; }
+.pj-filtros button { flex: none; min-height: 36px; padding: 6px 13px; border-radius: 99px; border: 1px solid var(--line); background: transparent; color: var(--ink2); font: 550 13.5px var(--f-ui); cursor: pointer; }
+.pj-filtros button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--on-ink); }
+.pj-lista { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr)); gap: 12px; }
+.pj-card { width: 100%; height: 100%; display: grid; align-content: start; gap: 9px; padding: 16px 16px 12px 18px; text-align: left; border-radius: 18px; border: 1px solid var(--line2); background: var(--panel); color: var(--ink); font: inherit; cursor: pointer; position: relative; overflow: hidden; box-shadow: var(--shadow); }
+.pj-card::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 5px; background: var(--c); }
+.pj-card:hover { border-color: color-mix(in srgb, var(--c) 45%, var(--line)); }
+.pj-card.atrasado { border-color: color-mix(in srgb, var(--alert) 40%, var(--line2)); }
+.pj-topo { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.pj-area { font-size: 12.5px; font-weight: 650; color: color-mix(in srgb, var(--c) 55%, var(--ink)); }
+.pj-sit { flex: none; padding: 3px 9px; border-radius: 99px; font-size: 11.5px; font-weight: 650; background: color-mix(in srgb, var(--c) 14%, var(--panel)); color: color-mix(in srgb, var(--c) 55%, var(--ink)); }
+.pj-sit.s-esperando { background: color-mix(in srgb, var(--warn) 16%, var(--panel)); color: var(--warn); }
+.pj-sit.s-concluido { background: color-mix(in srgb, var(--ok) 14%, var(--panel)); color: var(--ok); }
+.pj-titulo { font-size: 17px; line-height: 1.3; font-weight: 700; letter-spacing: -.01em; }
+.pj-agora { color: var(--ink2); font-size: 14px; line-height: 1.5; }
+.pj-res { display: inline-flex; align-items: center; gap: 6px; color: var(--ink3); }
+.pj-res svg { width: 15px; height: 15px; }
+.pj-prog { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px; }
+.pj-barra { height: 7px; border-radius: 99px; background: color-mix(in srgb, var(--c) 14%, var(--line2)); overflow: hidden; }
+.pj-barra i { display: block; height: 100%; border-radius: inherit; background: var(--c); }
+.pj-prog small { color: var(--ink3); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.pj-prox { font-size: 13.5px; line-height: 1.45; color: var(--ink2); padding: 8px 10px; border-radius: 11px; background: color-mix(in srgb, var(--c) 7%, var(--bg)); }
+.pj-prox b { color: var(--ink); font-weight: 650; }
+.pj-prox.atrasada { background: color-mix(in srgb, var(--alert) 9%, var(--bg)); color: var(--alert); }
+.pj-prox.atrasada b { color: var(--alert); }
+.pj-pe { display: flex; justify-content: space-between; align-items: center; color: var(--ink3); font-size: 12.5px; }
+.pj-pe > span:last-child { font-size: 18px; }
+.pj-parado { color: var(--warn); font-weight: 650; }
+.pj-concluidos { margin-top: 18px; }
+.pj-concluidos > summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 15px; color: var(--ink2); }
+.pj-concluidos > summary span { color: var(--ink3); font-weight: 500; }
+.pj-concluidos .pj-card { opacity: .8; }
+.pj-revelar { margin-top: 16px; }

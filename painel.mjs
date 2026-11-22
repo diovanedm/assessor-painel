@@ -1,16 +1,17 @@
 /* ─────────────── utilidades ─────────────── */
-import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDaNota, linkDeRegistro, metasDaTabela, notaSolta, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=13ee44f54df8';
-import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=13ee44f54df8';
-import { visaoBemEstar } from './bem-estar.mjs?v=13ee44f54df8';
-import { blocosDaSemanaModelo, casosEmAndamento, pontoDeParada, textoDaBusca } from './memoria.mjs?v=13ee44f54df8';
-import { APPS, agendaPorDia, idadeDoEspelho, momento, resumoFinanceiro, tarefasEmGrupos } from './espelho.mjs?v=13ee44f54df8';
-import { humorRecente, marcosDaArea, nivelDeIngles, proximosDaArea, semanaDaArea, trilha } from './visual.mjs?v=13ee44f54df8';
-import { linhasCaptura, lerCaptura, tipoAnexo, extAudio, lerOrganizados, destinoLegivel } from './captura.mjs?v=13ee44f54df8';
+import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDaNota, linkDeRegistro, metasDaTabela, notaSolta, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=d8e3ff85f4ed';
+import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=d8e3ff85f4ed';
+import { visaoBemEstar } from './bem-estar.mjs?v=d8e3ff85f4ed';
+import { blocosDaSemanaModelo, casosEmAndamento, pontoDeParada, textoDaBusca } from './memoria.mjs?v=d8e3ff85f4ed';
+import { APPS, agendaPorDia, idadeDoEspelho, momento, resumoFinanceiro, tarefasEmGrupos } from './espelho.mjs?v=d8e3ff85f4ed';
+import { humorRecente, marcosDaArea, nivelDeIngles, proximosDaArea, semanaDaArea, trilha } from './visual.mjs?v=d8e3ff85f4ed';
+import { projetos as listaDeProjetos } from './projetos.mjs?v=d8e3ff85f4ed';
+import { linhasCaptura, lerCaptura, tipoAnexo, extAudio, lerOrganizados, destinoLegivel } from './captura.mjs?v=d8e3ff85f4ed';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const h = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=13ee44f54df8';
+import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=d8e3ff85f4ed';
 const DOW = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 const DOWL = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
 const MON = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
@@ -26,6 +27,7 @@ const ICON = {
 const PAGES = [
   { id: 'inicio', nome: 'Hoje', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7" rx="2.2"/><rect x="13" y="4" width="7" height="7" rx="2.2"/><rect x="4" y="13" width="7" height="7" rx="2.2"/><rect x="13" y="13" width="7" height="7" rx="2.2"/></svg>' },
   { id: 'tarefas', nome: 'Tarefas', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="7" r="2"/><path d="M11 7h9M11 17h9"/><path d="m4.5 17 1.5 1.5L8.5 15.5"/></svg>' },
+  { id: 'projetos', nome: 'Projetos', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 7.5a2 2 0 0 1 2-2h4l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2Z"/><path d="M8 14.5h3.5M8 11.5h7"/></svg>' },
   { id: 'financas', nome: 'Finanças', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="6" width="17" height="13" rx="3"/><path d="M3.5 10.5h17"/><path d="M15 15h2.5"/></svg>' },
   { id: 'alimentacao', nome: 'Refeições e compras', curto: 'Refeições', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5h16a8 8 0 0 1-16 0Z"/><path d="M9.5 9c0-1.6 1.2-2 1.2-3.6M13.5 9c0-1.6 1.2-2 1.2-3.6"/></svg>' },
   { id: 'areas', nome: 'Memória', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="m15.5 8.5-2 5-5 2 2-5 5-2Z"/></svg>' },
@@ -158,7 +160,7 @@ const S = {
   notaArea: 'geral', regFicha: 'estou', fichas: [], plano: null, comprados: [], sel: null, wk: 0, _idx: {},
   extratoTipo: '', extratoBusca: '', planAba: 'Lançamentos', planBusca: '',
   fin: null, finSha: null, _fm: null, finMes: null, finTab: 'resumo', finOpen: {}, finDia: null, finCat: null, fcart: null,
-  aliTab: 'plano', pessoa: LS.get(K + 'pessoa2', 'ambos'), aliRef: null, trocaP: LS.get(K + 'trocap', 'diovane'), trocaOpen: null, dias: LS.get(K + 'dias', 7), trocaQ: '',
+  projArea: LS.get(K + 'projarea', 'todos'), aliTab: 'plano', pessoa: LS.get(K + 'pessoa2', 'ambos'), aliRef: null, trocaP: LS.get(K + 'trocap', 'diovane'), trocaOpen: null, dias: LS.get(K + 'dias', 7), trocaQ: '',
 };
 let queue = Promise.resolve();
 
@@ -772,7 +774,7 @@ function render() {
   document.body.classList.toggle('discreet', !!cfg.discreet);
   $('#eye').setAttribute('aria-pressed', String(!cfg.discreet));
   $('#eyeSlash').style.display = cfg.discreet ? '' : 'none';
-  renderNav(); renderInicio(); renderTasks(); renderFinancas(); renderSentir(); renderAlimentacao(); renderRegistrar(); renderRhythm(); renderAreas(); renderCases(); renderAreaPage();
+  renderNav(); renderInicio(); renderTasks(); renderProjetos(); renderFinancas(); renderSentir(); renderAlimentacao(); renderRegistrar(); renderRhythm(); renderAreas(); renderCases(); renderAreaPage();
   renderNotaPage();
   if (S.open) renderDrawer();
 }
@@ -804,6 +806,7 @@ function route() {
   S.areaHash = area || solta ? location.hash : '';
   if (changed) S.voltas = (S.voltas || 0) + 1;
   if (changed) S.sumario = false;
+  if (S.page === 'projetos' && p !== 'projetos') S.reveal.delete('#projetos');
   const saiDeTarefas = S.page === 'tarefas' && p !== 'tarefas';
   if (saiDeTarefas) S.reveal.delete('#tarefas');
   if (S.page === 'sentir' && p !== 'sentir') S.reveal.delete('#sentir');
@@ -821,6 +824,7 @@ function route() {
   renderAreaPage();
   renderNotaPage();
   if (p === 'tarefas' || saiDeTarefas) renderTasks();
+  if (p === 'projetos') renderProjetos();
   if (p === 'alimentacao') renderAlimentacao();
   if (p === 'financas' || (previousArea === 'financas' && nextArea !== previousArea)) renderFinancas();
   if (p === 'registrar') renderRegistrar();
@@ -840,7 +844,7 @@ function route() {
 
 const isChecked = g => { const o = taskOv(g); return o ? o.kind === 'feita' : g.checked; };
 const byDue = (a, b) => (a.due || '9').localeCompare(b.due || '9') || (b.prio === 'alta') - (a.prio === 'alta');
-import { organizarTarefas, primeiroPasso, prioridadesDoDia } from './tarefas.mjs?v=13ee44f54df8';
+import { organizarTarefas, primeiroPasso, prioridadesDoDia } from './tarefas.mjs?v=d8e3ff85f4ed';
 function estadoTarefa(g) {
   if (g.nova) return { feita:false, data:'' };
   const item = taskOv(g);
@@ -895,6 +899,45 @@ function grupoTarefas(titulo, itens, chave, expandidos, mostrar) {
     <ul class="tasks">${visiveis.slice(0, 5).map(taskLi).join('')}</ul>
     ${extras.length ? `<details class="tarefa-extras" data-task-lista="${chave}"${expandidos.has(chave) ? ' open' : ''}>
       <summary>Mais ${extras.length} ${extras.length === 1 ? 'tarefa' : 'tarefas'}</summary><ul class="tasks">${extras.map(taskLi).join('')}</ul></details>` : ''}</section>`;
+}
+
+/* ─────────────── Projetos: tudo que tem começo e fim, com o andamento (22/11/2026) ─────────────── */
+const ROTULO_SIT = { andamento: 'em andamento', esperando: 'esperando', concluido: 'concluído' };
+function cartaoProjeto(p, hoje) {
+  const reservado = cfg.discreet && VEIL.has(p.area) && !S.reveal.has('#projetos');
+  const area = AREAS[p.area] ? `${AREAS[p.area].emoji} ${AREAS[p.area].nome}` : '🙋 Pessoal';
+  const pct = p.total ? Math.round(p.feitas / p.total * 100) : null;
+  const agora = reservado ? '' : maiuscula(plain(pontoDeParada(S.files[p.path])).replace(/^(agora|parei aqui)\b[^:]*:\s*/i, ''));
+  const prox = p.proxima ? `${p.atrasada ? '⚠️ ' : ''}${short(plain(p.proxima.text), 90)}${p.proxima.due ? ` · ${p.atrasada ? 'atrasada desde' : 'até'} ${dm(p.proxima.due)}` : ''}` : '';
+  const parado = p.situacao !== 'concluido' && p.parado !== null && p.parado >= 10;
+  return `<li><button type="button" class="pj-card${p.atrasada ? ' atrasado' : ''}" data-open="${h(p.path)}" style="--c:${areaColor(p.area)}">
+    <span class="pj-topo"><span class="pj-area">${h(area)}</span><span class="pj-sit s-${p.situacao}">${ROTULO_SIT[p.situacao]}</span></span>
+    <strong class="pj-titulo">${h(plain(p.titulo))}</strong>
+    ${reservado ? `<span class="pj-agora pj-res">${ICON.lock} Detalhes reservados</span>` : agora ? `<span class="pj-agora">${h(short(agora, 150))}</span>` : ''}
+    ${pct !== null && !reservado ? `<span class="pj-prog"><span class="pj-barra" role="img" aria-label="${p.feitas} de ${p.total} tarefas feitas"><i style="width:${pct}%"></i></span><small>${p.feitas} de ${p.total} tarefas</small></span>` : ''}
+    ${prox && !reservado ? `<span class="pj-prox${p.atrasada ? ' atrasada' : ''}"><b>Próximo:</b> ${h(prox)}</span>` : ''}
+    <span class="pj-pe">${parado ? `<span class="pj-parado">Sem movimento há ${p.parado} dias</span>` : p.atualizado ? `<span>${relDay(p.atualizado)}</span>` : ''}<span aria-hidden="true">›</span></span>
+  </button></li>`;
+}
+function renderProjetos() {
+  const el = $('#projetos');
+  if (!el) return;
+  const hoje = ymd(now());
+  if (!S.head && !Object.keys(S.files).length) { el.innerHTML = '<p class="hj-loading">Carregando suas notas…</p>'; return; }
+  const P = listaDeProjetos(S.files, hoje);
+  const filtro = S.projArea || 'todos';
+  const areas = [...new Set([...P.andamento, ...P.concluidos].map(p => p.area))];
+  const ok = p => filtro === 'todos' || p.area === filtro;
+  const and = P.andamento.filter(ok), con = P.concluidos.filter(ok);
+  const temReservado = cfg.discreet && [...and, ...con].some(p => VEIL.has(p.area));
+  const nomeArea = a => AREAS[a] ? `${AREAS[a].emoji} ${AREAS[a].nome}` : '🙋 Pessoal';
+  el.innerHTML = `<header class="es-topo"><div class="page-h"><h1>Projetos</h1><p>Tudo que tem começo e fim: projetos, processos e casos.</p></div></header>
+    <p class="pj-placar"><span><b>${P.andamento.length}</b> em andamento</span>${P.atrasados ? `<span class="atrasado"><b>${P.atrasados}</b> com tarefa atrasada</span>` : ''}<span><b>${P.concluidos.length}</b> ${P.concluidos.length === 1 ? 'concluído' : 'concluídos'}</span></p>
+    ${areas.length > 1 ? `<div class="pj-filtros" role="group" aria-label="Filtrar por área"><button type="button" data-projarea="todos" aria-pressed="${filtro === 'todos'}">Todos</button>${areas.sort((a, b) => nomeArea(a).localeCompare(nomeArea(b), 'pt-BR')).map(a => `<button type="button" data-projarea="${h(a)}" aria-pressed="${filtro === a}">${h(nomeArea(a))}</button>`).join('')}</div>` : ''}
+    ${and.length ? `<ul class="pj-lista">${and.map(p => cartaoProjeto(p, hoje)).join('')}</ul>` : '<p class="area-empty">Nenhum projeto em andamento aqui.</p>'}
+    ${con.length ? `<details class="pj-concluidos" data-section="pj-concluidos"><summary>✅ Concluídos <span>${con.length}</span></summary><ul class="pj-lista">${con.map(p => cartaoProjeto(p, hoje)).join('')}</ul></details>` : ''}
+    ${temReservado ? `<button type="button" class="btn ghost pj-revelar" data-projetos-privacidade>${S.reveal.has('#projetos') ? 'Esconder detalhes reservados' : 'Mostrar detalhes reservados'}</button>` : ''}
+    <p class="es-rodape">O assessor atualiza cada projeto quando você conta como está. Aqui é só pra acompanhar.</p>`;
 }
 
 function renderTasks() {
@@ -2353,7 +2396,7 @@ function enviarCaptura(f) {
 }
 
 /* ─────────────── Finanças: o resumo do Minhas Economias (espelho gravado pelo assessor) ─────────────── */
-import { brl, pnum } from './financas.mjs?v=13ee44f54df8';
+import { brl, pnum } from './financas.mjs?v=d8e3ff85f4ed';
 const V = (v, cls = '') => `<span class="veil${cls ? ' ' + cls : ''}">${brl(v)}</span>`;
 const corSegura = c => /^#[0-9a-f]{3,8}$/i.test(String(c || '')) ? c : /^[0-9a-f]{6}$/i.test(String(c || '')) ? '#' + c : 'var(--ink3)';
 function renderFinancas() {
@@ -2683,7 +2726,7 @@ function copiar(txt, ok) {
 }
 function bind() {
   document.addEventListener('click', ev => {
-    const t = ev.target.closest('[data-humor],[data-reveal-sentir],[data-tarefa-privacidade],[data-commit],[data-open],[data-task],[data-compra],[data-cxdel],[data-tab],[data-mdt],[data-reveal],[data-find],[data-reg],[data-mood],[data-emo],#copyAsk,[data-act],[data-st],[data-day],[data-wk],[data-pick],[data-ficha],[data-regficha],[data-fmes],[data-ftab],[data-fo],[data-fedit],[data-fnova],[data-faba],[data-fcart],[data-fvenc],[data-fdia],[data-fcat],[data-alitab],[data-pessoa],[data-dias],[data-pego],[data-trocagrupo],[data-ref],[data-trocap],[data-close],[data-reveal-area],[data-ocultar-area],[data-area-captura],[data-anotar-nota],[data-box-remove],[data-sumario],[data-voltar]');
+    const t = ev.target.closest('[data-projarea],[data-projetos-privacidade],[data-humor],[data-reveal-sentir],[data-tarefa-privacidade],[data-commit],[data-open],[data-task],[data-compra],[data-cxdel],[data-tab],[data-mdt],[data-reveal],[data-find],[data-reg],[data-mood],[data-emo],#copyAsk,[data-act],[data-st],[data-day],[data-wk],[data-pick],[data-ficha],[data-regficha],[data-fmes],[data-ftab],[data-fo],[data-fedit],[data-fnova],[data-faba],[data-fcart],[data-fvenc],[data-fdia],[data-fcat],[data-alitab],[data-pessoa],[data-dias],[data-pego],[data-trocagrupo],[data-ref],[data-trocap],[data-close],[data-reveal-area],[data-ocultar-area],[data-area-captura],[data-anotar-nota],[data-box-remove],[data-sumario],[data-voltar]');
     if (!t) return;
     const d = t.dataset;
     // Painel só de leitura (22/11/2026): nada que grave nas notas, na caixa ou nas listas responde ao toque.
@@ -2695,6 +2738,8 @@ function bind() {
       return;
     }
     if (d.revealSentir !== undefined) { S.reveal.add('#sentir'); renderSentir(); return; }
+    if (d.projarea) { S.projArea = d.projarea; LS.set(K + 'projarea', d.projarea); renderProjetos(); return; }
+    if (d.projetosPrivacidade !== undefined) { if (S.reveal.has('#projetos')) S.reveal.delete('#projetos'); else S.reveal.add('#projetos'); renderProjetos(); return; }
     if (d.tarefaPrivacidade !== undefined) {
       if (S.reveal.has('#tarefas')) S.reveal.delete('#tarefas'); else S.reveal.add('#tarefas');
       renderTasks(); $('#tasks [data-tarefa-privacidade]')?.focus(); return;

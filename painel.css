@@ -673,7 +673,7 @@ body.sheet-on{overflow:hidden}
 @media (max-width:1020px){
   .nav{display:none}
   .brand{margin-right:auto}
-  .tabbar{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;z-index:35;left:0;right:0;bottom:0;padding:6px 6px max(8px,env(safe-area-inset-bottom));background:color-mix(in srgb,var(--raise) 92%,transparent);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-top:1px solid var(--line2)}
+  .tabbar{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);position:fixed;z-index:35;left:0;right:0;bottom:0;padding:6px 6px max(8px,env(safe-area-inset-bottom));background:color-mix(in srgb,var(--raise) 92%,transparent);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-top:1px solid var(--line2)}
   .tabbar a{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0 2px;font-size:11px;font-weight:600;color:var(--ink3);text-decoration:none;position:relative}
   .tabbar a svg{width:23px;height:23px}
   .tabbar a[aria-current="page"]{color:var(--ink)}
