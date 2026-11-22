@@ -322,3 +322,80 @@
 
 /* Painel só de leitura (22/11/2026): caixinhas de tarefa e de compra só mostram o estado */
 .chk[data-task], .chk[data-pego], .chk[data-compra], .chk[data-mdt] { cursor: default; pointer-events: none; }
+
+/* ─────────── topo próprio de cada área (22/11/2026) ─────────── */
+.hero { position: relative; overflow: hidden; display: grid; gap: 14px; margin: 0 0 clamp(16px,2vw,22px); padding: 20px 20px 18px; border-radius: 24px;
+  background: linear-gradient(140deg, color-mix(in srgb, var(--area-accent) 20%, var(--panel)) 0%, var(--area-tint) 55%, var(--panel) 100%);
+  border: 1px solid color-mix(in srgb, var(--area-accent) 22%, transparent); }
+.hero::after { content: attr(data-marca); position: absolute; right: -14px; top: -18px; font-size: 118px; line-height: 1; opacity: .13; pointer-events: none; transform: rotate(-8deg); }
+.hero > * { position: relative; z-index: 1; }
+.hero-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.hero-kicker { margin: 0; color: var(--area-ink); font: 700 11.5px/1.3 var(--f-ui); letter-spacing: .08em; text-transform: uppercase; }
+.hero-titulo { margin: 0; max-width: 22ch; font: 500 clamp(24px,6vw,32px)/1.12 var(--f-ui); letter-spacing: -.02em; color: var(--ink); }
+.hero-titulo b { font-weight: 750; color: var(--area-ink); }
+.hero-prox { list-style: none; margin: 2px 0 0; padding: 12px 0 0; border-top: 1px solid color-mix(in srgb, var(--area-accent) 22%, transparent); display: grid; gap: 6px; font-size: 14px; }
+.hero-prox li { display: flex; gap: 10px; align-items: baseline; color: var(--ink2); }
+.hero-prox span { flex: none; min-width: 92px; color: var(--area-ink); font-weight: 650; font-size: 13px; }
+
+/* Saúde: a semana em bolinhas, com o ícone do treino feito */
+.hx-semana { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.hx-semana li { display: grid; justify-items: center; gap: 5px; }
+.hx-d { font-size: 12px; font-weight: 650; color: var(--ink3); }
+.hx-c { width: 100%; max-width: 44px; aspect-ratio: 1; display: grid; place-items: center; border-radius: 50%; background: color-mix(in srgb, var(--panel) 75%, transparent); border: 1.5px dashed var(--line); font-size: 18px; letter-spacing: -6px; }
+.hx-semana .fez .hx-c { background: var(--area-accent); border: 0; box-shadow: 0 6px 16px -8px var(--area-accent); }
+.hx-semana .faltou .hx-c { border-style: solid; color: var(--ink3); font-size: 15px; letter-spacing: 0; }
+.hx-semana .hoje .hx-d { color: var(--area-ink); }
+.hx-semana .hoje .hx-c { outline: 2px solid var(--area-ink); outline-offset: 2px; }
+.hx-semana .futuro .hx-c { opacity: .55; }
+
+/* Inglês: anel das sessões e a escada de níveis */
+.hx-ingles { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.hx-anel { width: 86px; height: 86px; flex: none; transform: rotate(-90deg); }
+.hx-anel circle { fill: none; stroke: color-mix(in srgb, var(--area-accent) 16%, var(--panel)); stroke-width: 5; }
+.hx-anel circle.v { stroke: var(--area-accent); stroke-linecap: round; }
+.hx-anel text { transform: rotate(90deg); transform-origin: 22px 22px; text-anchor: middle; font: 700 10px var(--f-ui); fill: var(--ink); }
+.hx-niveis { list-style: none; margin: 0; padding: 0; display: flex; gap: 6px; flex: 1; min-width: 210px; }
+.hx-niveis li { flex: 1; display: grid; justify-items: center; gap: 2px; padding: 9px 0 7px; border-radius: 12px; background: color-mix(in srgb, var(--panel) 70%, transparent); color: var(--ink3); font: 700 14px/1 var(--f-ui); }
+.hx-niveis li small { font: 600 10px/1 var(--f-ui); }
+.hx-niveis .passou { background: color-mix(in srgb, var(--area-accent) 30%, var(--panel)); color: var(--area-ink); }
+.hx-niveis .agora { background: var(--area-accent); color: #fff; }
+.hx-niveis .alvo { outline: 2px dashed var(--area-accent); outline-offset: -2px; color: var(--area-ink); }
+
+/* Carreira: a trilha em degraus */
+.hx-trilha { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; align-items: end; }
+.hx-trilha li { display: grid; gap: 6px; align-content: end; }
+.hx-trilha li span { display: grid; place-items: center; height: calc(26px + var(--i, 0) * 9px); border-radius: 10px 10px 4px 4px; background: color-mix(in srgb, var(--panel) 70%, transparent); border: 1.5px dashed var(--line); font: 750 15px var(--f-ui); color: var(--ink3); }
+.hx-trilha li:nth-child(2) { --i: 1 } .hx-trilha li:nth-child(3) { --i: 2 } .hx-trilha li:nth-child(4) { --i: 3 } .hx-trilha li:nth-child(5) { --i: 4 }
+.hx-trilha .feita span { background: color-mix(in srgb, var(--area-accent) 35%, var(--panel)); border: 0; color: var(--area-ink); }
+.hx-trilha .agora span { background: var(--area-accent); border: 0; color: #fff; box-shadow: 0 8px 18px -10px var(--area-accent); }
+.hx-trilha small { font-size: 11px; line-height: 1.25; color: var(--ink2); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* Emocional: tons calmos, pontos dos registros e a linha do humor */
+.hero-emocional { background: linear-gradient(160deg, color-mix(in srgb, var(--area-accent) 16%, var(--panel)), var(--panel) 80%); }
+.hx-pontos { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.hx-pontos li { display: grid; justify-items: center; gap: 6px; font-size: 12px; font-weight: 650; color: var(--ink3); }
+.hx-pontos i { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--line); }
+.hx-pontos .fez i { background: var(--area-accent); border-color: transparent; }
+.hx-pontos .hoje span { color: var(--area-ink); }
+.hx-humor { margin: 0; }
+.hx-humor svg { width: 100%; height: 64px; overflow: visible; }
+.hx-humor polyline { fill: none; stroke: var(--area-accent); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.hx-humor circle { fill: var(--panel); stroke: var(--area-accent); stroke-width: 2; }
+.hx-humor figcaption { font-size: 12px; color: var(--ink3); }
+
+/* Casa e família: contagem regressiva dos marcos */
+.hx-marcos { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 8px; }
+.hx-marcos li { display: grid; align-content: start; padding: 12px 12px 10px; border-radius: 16px; background: color-mix(in srgb, var(--panel) 82%, transparent); border: 1px solid color-mix(in srgb, var(--area-accent) 20%, transparent); }
+.hx-marcos b { font: 750 30px/1 var(--f-ui); color: var(--area-ink); letter-spacing: -.02em; }
+.hx-marcos span { font-size: 12px; font-weight: 650; color: var(--area-ink); }
+.hx-marcos small { margin-top: 6px; font-size: 12.5px; line-height: 1.3; color: var(--ink2); }
+
+/* Cultura: os 12 domingos e o tema da vez */
+.hx-domingos { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(12, 1fr); gap: 5px; }
+.hx-domingos li { aspect-ratio: 1; border-radius: 7px; border: 1.5px dashed color-mix(in srgb, var(--area-accent) 40%, var(--line)); }
+.hx-domingos .fez { background: var(--area-accent); border: 0; }
+.hx-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.hx-chips > * { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 5px 11px; border-radius: 99px; background: color-mix(in srgb, var(--panel) 82%, transparent); border: 1px solid color-mix(in srgb, var(--area-accent) 22%, transparent); color: var(--ink); font: 500 13px/1.3 var(--f-ui); text-align: left; }
+.hx-casos button { cursor: pointer; }
+.hx-casos button:hover { background: var(--panel); }
+@media (min-width: 1021px) { .hero { padding: 24px 26px 20px; } .hero::after { font-size: 150px; } }

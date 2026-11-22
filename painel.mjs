@@ -1,15 +1,16 @@
 /* ─────────────── utilidades ─────────────── */
-import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDaNota, linkDeRegistro, metasDaTabela, notaSolta, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=b960b59f0d6b';
-import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=b960b59f0d6b';
-import { visaoBemEstar } from './bem-estar.mjs?v=b960b59f0d6b';
-import { blocosDaSemanaModelo, casosEmAndamento, pontoDeParada, textoDaBusca } from './memoria.mjs?v=b960b59f0d6b';
-import { APPS, agendaPorDia, idadeDoEspelho, momento, resumoFinanceiro, tarefasEmGrupos } from './espelho.mjs?v=b960b59f0d6b';
-import { linhasCaptura, lerCaptura, tipoAnexo, extAudio, lerOrganizados, destinoLegivel } from './captura.mjs?v=b960b59f0d6b';
+import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDaNota, linkDeRegistro, metasDaTabela, notaSolta, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=13ee44f54df8';
+import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=13ee44f54df8';
+import { visaoBemEstar } from './bem-estar.mjs?v=13ee44f54df8';
+import { blocosDaSemanaModelo, casosEmAndamento, pontoDeParada, textoDaBusca } from './memoria.mjs?v=13ee44f54df8';
+import { APPS, agendaPorDia, idadeDoEspelho, momento, resumoFinanceiro, tarefasEmGrupos } from './espelho.mjs?v=13ee44f54df8';
+import { humorRecente, marcosDaArea, nivelDeIngles, proximosDaArea, semanaDaArea, trilha } from './visual.mjs?v=13ee44f54df8';
+import { linhasCaptura, lerCaptura, tipoAnexo, extAudio, lerOrganizados, destinoLegivel } from './captura.mjs?v=13ee44f54df8';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const h = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=b960b59f0d6b';
+import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=13ee44f54df8';
 const DOW = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 const DOWL = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
 const MON = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
@@ -839,7 +840,7 @@ function route() {
 
 const isChecked = g => { const o = taskOv(g); return o ? o.kind === 'feita' : g.checked; };
 const byDue = (a, b) => (a.due || '9').localeCompare(b.due || '9') || (b.prio === 'alta') - (a.prio === 'alta');
-import { organizarTarefas, primeiroPasso, prioridadesDoDia } from './tarefas.mjs?v=b960b59f0d6b';
+import { organizarTarefas, primeiroPasso, prioridadesDoDia } from './tarefas.mjs?v=13ee44f54df8';
 function estadoTarefa(g) {
   if (g.nova) return { feita:false, data:'' };
   const item = taskOv(g);
@@ -1187,6 +1188,91 @@ function blocoDoDia(dia) {
   }).join('');
 }
 
+/* ─────────────── topo próprio de cada área (22/11/2026) ───────────────
+   Cada área mostra primeiro o que importa nela, num desenho dela. Tudo vem das notas e do espelho. */
+const HERO = {
+  saude: { kicker: 'Corpo e treino', marca: '🏃' },
+  ingles: { kicker: 'Inglês, uma sessão de cada vez', marca: '🗣️' },
+  carreira: { kicker: 'Trilha até pleno', marca: '🧗' },
+  emocional: { kicker: 'Cuidar de você', marca: '🌙' },
+  'casa-familia': { kicker: 'Família e a chegada do Rafael', marca: '🏡' },
+  cultura: { kicker: 'Um tema por domingo', marca: '🧭' },
+  trabalho: { kicker: 'Apsis e renda extra', marca: '💼' },
+};
+const DIA1 = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
+const ICONE_TREINO = { academia: '🏋️', corrida: '🏃', caminhada: '🚶', outro: '•' };
+const quandoCurto = (data, hora, hoje) => {
+  const dif = Math.round((pymd(data) - pymd(hoje)) / 864e5);
+  const dia = dif === 0 ? 'hoje' : dif === 1 ? 'amanhã' : dayLabel(data);
+  return hora ? `${dia} · ${hora}` : dia;
+};
+function heroDaArea(C, T) {
+  const { area, hoje } = C;
+  const H = HERO[area];
+  if (!H) return '';
+  const metas = T.metasSec.flatMap(s => metasDaTabela(s.texto));
+  const status = norm(C.principal?.meta.status || '');
+  const prox = proximosDaArea(S.fin, S.agenda.events, area, hoje, 2);
+  let titulo = '', corpo = '';
+  if (area === 'saude') {
+    const semana = semanaDaArea(S.habits, area, hoje);
+    const feitos = semana.flatMap(d => d.itens).filter(x => x.st === 'feito' && x.tipo !== 'outro').length;
+    titulo = `<b>${feitos}</b> ${feitos === 1 ? 'treino' : 'treinos'} nesta semana`;
+    corpo = `<ol class="hx-semana" aria-label="Treinos da semana">${semana.map(d => {
+      const fez = d.itens.filter(x => x.st === 'feito' && x.tipo !== 'outro'), faltou = d.itens.some(x => x.st === 'nao');
+      const cls = [d.dia === hoje ? 'hoje' : '', d.dia > hoje ? 'futuro' : '', fez.length ? 'fez' : faltou ? 'faltou' : ''].filter(Boolean).join(' ');
+      const rot = fez.map(x => x.oque).join(', ') || (faltou ? 'faltou' : 'nada registrado');
+      return `<li class="${cls}" title="${h(dayLabel(d.dia) + ': ' + rot)}"><span class="hx-d">${DIA1[pymd(d.dia).getDay()]}</span><span class="hx-c" aria-label="${h(rot)}">${fez.length ? fez.map(x => ICONE_TREINO[x.tipo]).join('') : faltou ? '✕' : ''}</span></li>`;
+    }).join('')}</ol>`;
+  } else if (area === 'ingles') {
+    const ses = metas.find(m => /^sess/i.test(m.meta));
+    const nv = nivelDeIngles(metas);
+    const a = parseInt(ses?.atual, 10) || 0, b = parseInt(ses?.alvo, 10) || 0, pct = b ? Math.min(100, a / b * 100) : 0;
+    titulo = ses ? `<b>${a}</b> de ${b} sessões` : 'Sessões de inglês';
+    corpo = `<div class="hx-ingles"><svg class="hx-anel" viewBox="0 0 44 44" role="img" aria-label="${Math.round(pct)}% das sessões"><circle cx="22" cy="22" r="18"/><circle class="v" cx="22" cy="22" r="18" stroke-dasharray="${(pct / 100 * 113.1).toFixed(1)} 113.1"/><text x="22" y="26">${Math.round(pct)}%</text></svg>
+      ${nv.atual >= 0 ? `<ol class="hx-niveis" aria-label="Nível">${nv.niveis.map((n, i) => `<li class="${i < nv.atual ? 'passou' : i === nv.atual ? 'agora' : i === nv.alvo ? 'alvo' : ''}">${n}${i === nv.atual ? '<small>você</small>' : i === nv.alvo ? '<small>meta</small>' : ''}</li>`).join('')}</ol>` : ''}</div>`;
+  } else if (area === 'carreira') {
+    const fases = trilha(S.files['areas/carreira/plano-carreira.md']?.body);
+    const atual = fases.findIndex(f => !f.feita);
+    titulo = atual >= 0 ? `Fase <b>${h(fases[atual].fase)}</b>: ${h(fases[atual].tema)}` : fases.length ? 'Trilha concluída' : 'Trilha de carreira';
+    corpo = fases.length ? `<ol class="hx-trilha">${fases.map((f, i) => `<li class="${f.feita ? 'feita' : i === atual ? 'agora' : ''}"><span>${h(f.fase)}</span><small>${h(f.tema)}</small></li>`).join('')}</ol>` : '';
+  } else if (area === 'emocional') {
+    const textos = C.notas.filter(f => /\/journal-\d{4}-\d{2}\.md$/.test(f.path)).map(f => f.body);
+    const hum = humorRecente(textos, hoje, 14);
+    const dias7 = [...Array(7)].map((_, i) => ymd(addDays(pymd(hoje), i - 6)));
+    const feitos = new Set(hum.map(x => x.date));
+    const k = dias7.filter(d => feitos.has(d)).length;
+    titulo = `Registro em <b>${k}</b> dos últimos 7 dias`;
+    const pts = hum.filter(x => x.humor);
+    const desde = addDays(pymd(hoje), -13);
+    const xy = pts.map(x => [Math.round((pymd(x.date) - desde) / 864e5) / 13 * 280 + 10, 52 - (x.humor - 1) / 4 * 44]);
+    corpo = `<ol class="hx-pontos" aria-label="Registros dos últimos 7 dias">${dias7.map(d => `<li class="${feitos.has(d) ? 'fez' : ''}${d === hoje ? ' hoje' : ''}"><span>${DIA1[pymd(d).getDay()]}</span><i></i></li>`).join('')}</ol>
+      ${xy.length > 1 ? `<figure class="hx-humor"><svg viewBox="0 0 300 60" role="img" aria-label="Humor dos últimos 14 dias, de 1 a 5"><polyline points="${xy.map(p => p.join(',')).join(' ')}"/>${xy.map(p => `<circle cx="${p[0]}" cy="${p[1]}" r="3.2"/>`).join('')}</svg><figcaption>Humor de 1 a 5, últimos 14 dias</figcaption></figure>` : ''}`;
+  } else if (area === 'casa-familia') {
+    const marcos = marcosDaArea(C.principal?.meta, hoje);
+    titulo = marcos[0] ? `<b>${marcos[0].dias}</b> ${marcos[0].dias === 1 ? 'dia' : 'dias'} até ${h(marcos[0].nome)}` : 'Casa e família';
+    const semArtigo = t => maiuscula(t.replace(/^(o|a|os|as)\s+/i, ''));
+    corpo = marcos.length ? `<ul class="hx-marcos">${marcos.slice(0, 3).map(m => `<li><b>${m.dias}</b><span>${m.dias === 1 ? 'dia' : 'dias'}</span><small>${h(semArtigo(m.nome))}<br>${dm(m.data)}/${m.data.slice(2, 4)}</small></li>`).join('')}</ul>` : '';
+  } else if (area === 'cultura') {
+    const dom = metas.find(m => /domingo/i.test(m.meta));
+    const a = parseInt(dom?.atual, 10) || 0, b = parseInt(dom?.alvo, 10) || 12;
+    titulo = `<b>${a}</b> de ${b} domingos`;
+    const tema = (S.files['areas/cultura/leituras.md']?.body.match(/^##\s+Tema\s*\d*\s*:\s*(.+?)(?:\s*\(.*)?$/m) || [])[1];
+    const musica = (S.files['areas/cultura/musicas.md']?.body.match(/\*\*(.+?)\*\*,\s*de\s*\*\*(.+?)\*\*/) || []);
+    corpo = `<ol class="hx-domingos" aria-label="${a} de ${b} domingos">${[...Array(b)].map((_, i) => `<li class="${i < a ? 'fez' : ''}"></li>`).join('')}</ol>
+      <div class="hx-chips">${tema ? `<span>📖 ${h(tema)}</span>` : ''}${musica[1] ? `<span>🎵 ${h(musica[1])} · ${h(musica[2])}</span>` : ''}</div>`;
+  } else if (area === 'trabalho') {
+    const abertos = C.casos.filter(f => !/^(fechado|resolvido|concluido|encerrado)$/.test(norm(f.meta.status || '')));
+    titulo = `<b>${abertos.length}</b> ${abertos.length === 1 ? 'assunto aberto' : 'assuntos abertos'}`;
+    corpo = abertos.length ? `<div class="hx-chips hx-casos">${abertos.slice(0, 5).map(f => `<button type="button" data-open="${h(f.path)}">📂 ${h(short(plain(f.title), 42))}</button>`).join('')}</div>` : '';
+  }
+  return `<section class="hero hero-${area}" data-marca="${H.marca}">
+    <div class="hero-top"><p class="hero-kicker">${h(H.kicker)}</p>${Object.hasOwn(STATUS, status) ? `<span class="area-status lamp s-${status}">${STATUS[status]}</span>` : ''}</div>
+    <h2 class="hero-titulo">${titulo}</h2>${corpo}
+    ${prox.length ? `<ul class="hero-prox">${prox.map(e => `<li><span>${h(quandoCurto(e.data, e.inicio, hoje))}</span>${h(plain(e.titulo))}</li>`).join('')}</ul>` : ''}
+  </section>`;
+}
+
 function corpoDoTopico(C, T, vista) {
   const { area, principal } = C;
   const id = vista.vista;
@@ -1201,9 +1287,10 @@ function corpoDoTopico(C, T, vista) {
     const status = norm(principal?.meta.status || '');
     const prox = [...C.tarefas.atrasadas, ...C.tarefas.hoje, ...C.tarefas.proximas, ...C.tarefas.semdata].slice(0, 3);
     const dias = ultimosDias(C, 3);
-    return `<div class="area-overview">
-      <section class="area-card focus-card"><div class="area-card-head"><h3>Como está</h3>${Object.hasOwn(STATUS, status) ? `<span class="area-status lamp s-${status}">${STATUS[status]}</span>` : ''}</div>
-        <p>${h(short(plain(principal?.meta.resumo || 'Ainda sem resumo. O assessor escreve um quando você contar como está esta área.'), 240))}</p>
+    const hero = heroDaArea(C, T);
+    return `${hero}<div class="area-overview">
+      <section class="area-card focus-card"><div class="area-card-head"><h3>${agora ? 'Agora' : 'Como está'}</h3>${!hero && Object.hasOwn(STATUS, status) ? `<span class="area-status lamp s-${status}">${STATUS[status]}</span>` : ''}</div>
+        ${agora ? '' : `<p>${h(short(plain(principal?.meta.resumo || 'Ainda sem resumo. O assessor escreve um quando você contar como está esta área.'), 240))}</p>`}
         ${agora ? (() => { const { inicio, resto, n } = cortarLista(agora.text, 4); return `<div class="md resumo-agora">${md(inicio, principal.path, true)}</div>${n ? `<details class="resumo-mais" data-section="agora-mais"><summary>Mais ${n} ${n === 1 ? 'item' : 'itens'} em “Agora”</summary><div class="md resumo-agora">${md(resto, principal.path, true)}</div></details>` : ''}`; })() : ''}</section>
       ${tambem.map(t => { const nome = plain(t.title).replace(/^também\s*:?\s*/i, ''); return `<section class="area-card area-tambem"><div class="area-card-head"><h3><small>Também nesta área</small>${h(nome.charAt(0).toUpperCase() + nome.slice(1))}</h3></div><div class="md">${md(t.text, principal.path, true)}</div></section>`; }).join('')}
       ${meta || metaLista ? `<section class="area-card"><div class="area-card-head"><h3>Meta em foco</h3><a class="area-link" href="${linkTopico(area, 'metas')}">Metas →</a></div>
@@ -2266,7 +2353,7 @@ function enviarCaptura(f) {
 }
 
 /* ─────────────── Finanças: o resumo do Minhas Economias (espelho gravado pelo assessor) ─────────────── */
-import { brl, pnum } from './financas.mjs?v=b960b59f0d6b';
+import { brl, pnum } from './financas.mjs?v=13ee44f54df8';
 const V = (v, cls = '') => `<span class="veil${cls ? ' ' + cls : ''}">${brl(v)}</span>`;
 const corSegura = c => /^#[0-9a-f]{3,8}$/i.test(String(c || '')) ? c : /^[0-9a-f]{6}$/i.test(String(c || '')) ? '#' + c : 'var(--ink3)';
 function renderFinancas() {
