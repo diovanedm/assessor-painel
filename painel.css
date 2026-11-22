@@ -701,3 +701,7 @@ body.sheet-on{overflow:hidden}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important}
 }
+
+/* Busca: resultado arquivado */
+#findRes .rp.arq { background: color-mix(in srgb, var(--line) 60%, transparent); color: var(--ink); border-radius: 999px; padding: 1px 8px; }
+#findRes button.arquivada .rt { opacity: .72; }

@@ -1,18 +1,18 @@
 /* ─────────────── utilidades ─────────────── */
-import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDaNota, linkDeRegistro, metasDaTabela, notaSolta, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=284e0f19e740';
-import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=284e0f19e740';
-import { visaoBemEstar } from './bem-estar.mjs?v=284e0f19e740';
-import { blocosDaSemanaModelo, casosEmAndamento, pontoDeParada, textoDaBusca } from './memoria.mjs?v=284e0f19e740';
-import { APPS, agendaPorDia, comAoVivo, idadeDoEspelho, momento, resumoFinanceiro, tarefasEmGrupos } from './espelho.mjs?v=284e0f19e740';
-import { humorRecente, marcosDaArea, nivelDeIngles, semanaDaArea, trilha } from './visual.mjs?v=284e0f19e740';
-import { projetos as listaDeProjetos, situacao as situacaoDoCaso } from './projetos.mjs?v=284e0f19e740';
-import { TICKTICK, tickTick, situacaoDaTarefa, tarefasDoAssunto, foraDoTickTick, partesDoTitulo, compromissosDaArea, semanaDosBlocos, progressoDasMetas, cardapio, diaDoCardapio, partesDoCaso } from './organizar.mjs?v=284e0f19e740';
-import { linhasCaptura, lerCaptura, tipoAnexo, extAudio, lerOrganizados, destinoLegivel } from './captura.mjs?v=284e0f19e740';
+import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDaNota, linkDeRegistro, metasDaTabela, notaSolta, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=18740ad18408';
+import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=18740ad18408';
+import { visaoBemEstar } from './bem-estar.mjs?v=18740ad18408';
+import { blocosDaSemanaModelo, casosEmAndamento, pontoDeParada, textoDaBusca } from './memoria.mjs?v=18740ad18408';
+import { APPS, agendaPorDia, comAoVivo, idadeDoEspelho, momento, resumoFinanceiro, tarefasEmGrupos } from './espelho.mjs?v=18740ad18408';
+import { humorRecente, marcosDaArea, nivelDeIngles, semanaDaArea, trilha } from './visual.mjs?v=18740ad18408';
+import { projetos as listaDeProjetos, situacao as situacaoDoCaso } from './projetos.mjs?v=18740ad18408';
+import { TICKTICK, tickTick, situacaoDaTarefa, tarefasDoAssunto, foraDoTickTick, partesDoTitulo, compromissosDaArea, semanaDosBlocos, progressoDasMetas, cardapio, diaDoCardapio, partesDoCaso } from './organizar.mjs?v=18740ad18408';
+import { linhasCaptura, lerCaptura, tipoAnexo, extAudio, lerOrganizados, destinoLegivel } from './captura.mjs?v=18740ad18408';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const h = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=284e0f19e740';
+import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=18740ad18408';
 const DOW = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 const DOWL = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
 const MON = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
@@ -153,7 +153,7 @@ const incluir = p => p.endsWith('.md') && !/^(?:\.|arquivo\/|_modelos\/|ferramen
 
 /* ─────────────── estado ─────────────── */
 const S = {
-  head: null, etag: null, files: {}, commits: [], ours: new Set(),
+  head: null, etag: null, todos: {}, files: {}, arquivados: {}, commits: [], ours: new Set(),
   tasks: [], compras: { secs: [], heads: [] }, agenda: { series: [], events: [] }, habits: [], inbox: [], stems: {}, name: '',
   cx: [], ov: null, pendAdd: [], pendDel: new Set(),
   syncing: false, lastSync: 0, lastTry: 0, pending: 0, err: null, rateReset: 0, wrote: {}, resync: false,
@@ -384,7 +384,13 @@ function taskOv(g) {
   return null;
 }
 
+/* Arquivo (22/11/2026, recomeço): nota com `arquivado:` no frontmatter sai de Hoje, Projetos e
+   Memória; só a busca acha, com o selo "Arquivado". O assessor tira o campo para a nota voltar. */
+const arquivada = f => Boolean(f?.meta?.arquivado);
+const dataBR = s => /^\d{4}-\d{2}-\d{2}/.test(s || '') ? `${s.slice(8, 10)}/${s.slice(5, 7)}/${s.slice(0, 4)}` : '';
 function reindex() {
+  S.files = {}; S.arquivados = {};
+  for (const p in S.todos) (arquivada(S.todos[p]) ? S.arquivados : S.files)[p] = S.todos[p];
   S.stems = {};
   for (const p in S.files) S.stems[S.files[p].stem.toLowerCase()] = p;
   const groups = new Map();
@@ -462,20 +468,20 @@ async function pool(items, n, fn) {
 }
 function saveSnap() {
   const files = {};
-  for (const p in S.files) files[p] = S.files[p].sha;
+  for (const p in S.todos) files[p] = S.todos[p].sha;
   LS.set(K + 'snap', { repo: cfg.repo, head: S.head, files, commits: S.commits.slice(0, 30), finSha: S.finSha });
 }
 async function loadSnap() {
   const s = LS.get(K + 'snap', null);
   if (!s || s.repo !== cfg.repo) return false;
   await Blobs.load([...Object.values(s.files), s.finSha]);
-  for (const p in s.files) { if (!incluir(p)) continue; const t = Blobs.get(s.files[p]); if (t != null) S.files[p] = parseFile(p, s.files[p], t); }
+  for (const p in s.files) { if (!incluir(p)) continue; const t = Blobs.get(s.files[p]); if (t != null) S.todos[p] = parseFile(p, s.files[p], t); }
   S.head = s.head; S.commits = s.commits || [];
   if (s.finSha) { const t = Blobs.get(s.finSha); if (t != null) { try { S.finBase = JSON.parse(t); S.finSha = s.finSha; aplicarVivo(); } catch { } } }
-  return Object.keys(S.files).length > 0;
+  return Object.keys(S.todos).length > 0;
 }
 function gcBlobs() {
-  const keep = new Set(Object.values(S.files).map(f => f.sha));
+  const keep = new Set(Object.values(S.todos).map(f => f.sha));
   if (S.finSha) keep.add(S.finSha);
   Blobs.gc(keep);
 }
@@ -519,7 +525,7 @@ async function sync(force = false) {
     if (!ref.ok) throw erro('http', 'ref ' + ref.status);
     const novoEtag = ref.etag;
     const sha = ref.json.object.sha;
-    if (sha === S.head && !force && Object.keys(S.files).length) { done(); return; }
+    if (sha === S.head && !force && Object.keys(S.todos).length) { done(); return; }
     const tr = await gh(`/repos/${cfg.repo}/git/trees/${sha}?recursive=1`);
     if (!tr.ok) throw erro('http', 'tree ' + tr.status);
     const next = {};
@@ -527,11 +533,11 @@ async function sync(force = false) {
     for (const e of tr.json.tree) { if (e.type !== 'blob') continue; if (e.path === FIN) finSha = e.sha; else if (incluir(e.path)) next[e.path] = e.sha; }
     if (finSha !== S.finSha) { if (finSha) { try { await Blobs.load([finSha]); S.finBase = JSON.parse(await getBlob(finSha)); S.finSha = finSha; } catch { throw erro('http', 'leitura do espelho'); } } else { S.finBase = null; S.finSha = null; } aplicarVivo(); }
     const fresh = p => (S.wrote[p] || 0) >= t0;
-    const changed = Object.keys(next).filter(p => (!S.files[p] || S.files[p].sha !== next[p]) && !fresh(p));
-    const removed = Object.keys(S.files).filter(p => !(p in next) && !fresh(p));
+    const changed = Object.keys(next).filter(p => (!S.todos[p] || S.todos[p].sha !== next[p]) && !fresh(p));
+    const removed = Object.keys(S.todos).filter(p => !(p in next) && !fresh(p));
     await Blobs.load(changed.map(p => next[p]));
-    await pool(changed, 6, async p => { S.files[p] = parseFile(p, next[p], await getBlob(next[p])); });
-    for (const p of removed) delete S.files[p];
+    await pool(changed, 6, async p => { S.todos[p] = parseFile(p, next[p], await getBlob(next[p])); });
+    for (const p of removed) delete S.todos[p];
     const prev = S.head;
     S.head = sha;
     const cm = await gh(`/repos/${cfg.repo}/commits?sha=${encodeURIComponent(cfg.branch)}&per_page=30`);
@@ -570,7 +576,7 @@ function write(path, transform, message, { onOk, onErr } = {}) {
   return job;
 }
 async function doWrite(path, transform, message) {
-  const f = S.files[path];
+  const f = S.todos[path];
   let base = f ? f.text : null, sha = f ? f.sha : undefined;
   for (let i = 0; i < 3; i++) {
     let out = transform(base);
@@ -582,7 +588,7 @@ async function doWrite(path, transform, message) {
     if (r.ok) {
       const nsha = r.json.content.sha;
       Blobs.put(nsha, out);
-      S.files[path] = parseFile(path, nsha, out);
+      S.todos[path] = parseFile(path, nsha, out);
       S.ours.add(r.json.commit.sha);
       S.wrote[path] = Date.now();
       if (S.syncing) S.resync = true;
@@ -887,7 +893,7 @@ function seloTickTick(sit, id) {
 }
 const isChecked = g => { const o = taskOv(g); if (o) return o.kind === 'feita'; const s = situacaoDoGrupo(g); return s === 'feita' || s === 'fechada'; };
 const byDue = (a, b) => (a.due || '9').localeCompare(b.due || '9') || (b.prio === 'alta') - (a.prio === 'alta');
-import { organizarTarefas, primeiroPasso, prioridadesDoDia } from './tarefas.mjs?v=284e0f19e740';
+import { organizarTarefas, primeiroPasso, prioridadesDoDia } from './tarefas.mjs?v=18740ad18408';
 function estadoTarefa(g) {
   if (g.nova) return { feita:false, data:'' };
   const item = taskOv(g);
@@ -1681,14 +1687,15 @@ function renderNotaPage() {
   const el = $('#notaPage');
   if (!el) return;
   if (S.page !== 'nota') { if (el.childElementCount) el.replaceChildren(); lastNotaMarkup = ''; return; }
-  const f = S.files[S.notaPath];
+  const f = S.files[S.notaPath] || S.arquivados[S.notaPath];
   const openDetails = new Map();
   const same = el.dataset.route === location.hash;
   if (same) for (const d of $$('details', el)) openDetails.set(d.dataset.section, d.open);
   el.dataset.route = location.hash;
   el.style.setProperty('--area-accent', areaColor(f?.area));
   const corpo = !f ? `<p class="area-card">${S.head ? 'Esta nota não foi encontrada.' : 'Carregando a nota…'}</p>` : notaVelada(f) ? veuDaNota(f) : f.path.startsWith('casos/') ? paginaDoCaso(f) : leituraDaNota(f);
-  const markup = `${voltarDaNota('#areas')}<div class="area-main nota-solta">${corpo}</div>`;
+  const aviso = arquivada(f) ? `<p class="nota-arquivada" role="note">📦 <b>Arquivado</b>${dataBR(f.meta.arquivado) ? ` em ${dataBR(f.meta.arquivado)}` : ''}. Conteúdo antigo, só pra consulta.</p>` : '';
+  const markup = `${voltarDaNota('#areas')}<div class="area-main nota-solta">${aviso}${corpo}</div>`;
   if (same && markup === lastNotaMarkup) return;
   lastNotaMarkup = markup;
   el.innerHTML = markup;
@@ -1764,6 +1771,7 @@ function renderCases() {
 
 /* ─────────────── abrir nota: sempre na página, com o mesmo layout ─────────────── */
 function openNote(path) {
+  if (S.arquivados[path]) { if (S.open) closeNote(); location.hash = '#nota/' + path.replace(/\.md$/, '').split('/').map(encodeURIComponent).join('/'); return; }
   if (!S.files[path]) return;
   if (S.open) closeNote();
   const alvo = linkDaNota(path, S.files[path].area, S.page === 'area' ? S.areaRoute?.area : null, AREA_ORDER);
@@ -1859,13 +1867,14 @@ function doFind() {
     res = Object.values(S.files).filter(f => f.meta.atualizado && !f.path.startsWith('painel/')).sort((a, b) => b.meta.atualizado.localeCompare(a.meta.atualizado)).slice(0, 8).map(f => ({ f, sn: plain(f.meta.resumo || '') }));
   } else {
     res = [];
-    for (const f of Object.values(S.files)) {
+    for (const f of [...Object.values(S.files), ...Object.values(S.arquivados)]) {
       const nt = norm(f.title), nm = norm([f.meta.resumo, ...(Array.isArray(f.meta.tags) ? f.meta.tags : [f.meta.tags || ''])].join(' '));
       f._n = f._n || f.body.split('\n').map(l => [l, norm(l)]);
       if (!terms.every(t => nt.includes(t) || nm.includes(t) || f._n.some(x => x[1].includes(t)))) continue;
       let sc = 0, best = null, bestN = 0;
       for (const t of terms) { if (nt.includes(t)) sc += 10; if (nm.includes(t)) sc += 4; }
       for (const [l, nl] of f._n) { const c = terms.filter(t => nl.includes(t)).length; if (c) { sc += c; if (c > bestN && l.trim() && !/^#/.test(l)) { bestN = c; best = l; } } }
+      if (arquivada(f)) sc -= 0.5;
       res.push({ f, sc, sn: plain(best || f.meta.resumo || '') });
     }
     res.sort((a, b) => b.sc - a.sc);
@@ -1888,7 +1897,8 @@ function doFind() {
     const titulo = textoDaBusca(plain(f.title)).replace(/ — registros de /i, ' · ');
     const rotulo = AREAS[f.area]?.nome || tipoDaNota(f).replace(/^\S+ /, '');
     const trecho = reservado ? 'Conteúdo reservado' : mark(short(textoDaBusca(r.sn), 220));
-    return `<li><button role="option" aria-selected="${i === 0}" data-find="${i}"><span class="rt">${h(titulo)}</span>${rotulo !== titulo ? `<span class="rp">${h(rotulo)}</span>` : ''}<div class="sn">${trecho}</div></button></li>`;
+    const selo = arquivada(f) ? `<span class="rp arq" title="Arquivado em ${h(dataBR(f.meta.arquivado))}">📦 Arquivado</span>` : '';
+    return `<li><button role="option" aria-selected="${i === 0}" data-find="${i}"${arquivada(f) ? ' class="arquivada"' : ''}><span class="rt">${h(titulo)}</span>${selo}${rotulo !== titulo ? `<span class="rp">${h(rotulo)}</span>` : ''}<div class="sn">${trecho}</div></button></li>`;
   }).join('') : `<li class="empty" style="padding:14px 12px">Nada encontrado com “${h($('#findIn').value)}”.</li>`;
 }
 function moveFind(d) {
@@ -1932,7 +1942,7 @@ function showSetup(msg) {
       if (r.status === 404) throw erro('notfound');
       if (!r.ok) throw erro('http', String(r.status));
       cfg.branch = r.json.default_branch || 'main';
-      if (prevRepo !== repo) { S.files = {}; S.head = null; S.commits = []; }
+      if (prevRepo !== repo) { S.todos = {}; S.files = {}; S.arquivados = {}; S.head = null; S.commits = []; }
       saveCfg(); start();
     } catch (e) {
       cfg.token = prevTok; cfg.repo = prevRepo;
@@ -1962,7 +1972,7 @@ function showCfg() {
   $('#cOut').onclick = () => {
     cfg.token = ''; cfg.branch = ''; saveCfg();
     Blobs.clear(); LS.del(K + 'snap'); capturePanes.clear(); $('#regBody').replaceChildren();
-    S.files = {}; S.head = null; S.commits = []; S.etag = null;
+    S.todos = {}; S.files = {}; S.arquivados = {}; S.head = null; S.commits = []; S.etag = null;
     o.hidden = true; showSetup();
   };
   o.onclick = ev => { if (ev.target === o) o.hidden = true; };
@@ -2597,7 +2607,7 @@ function enviarCaptura(f) {
 }
 
 /* ─────────────── Finanças: o resumo do Minhas Economias (espelho gravado pelo assessor) ─────────────── */
-import { brl, pnum } from './financas.mjs?v=284e0f19e740';
+import { brl, pnum } from './financas.mjs?v=18740ad18408';
 const V = (v, cls = '') => `<span class="veil${cls ? ' ' + cls : ''}">${brl(v)}</span>`;
 const corSegura = c => /^#[0-9a-f]{3,8}$/i.test(String(c || '')) ? c : /^[0-9a-f]{6}$/i.test(String(c || '')) ? '#' + c : 'var(--ink3)';
 function renderFinancas() {
