@@ -1,8 +1,8 @@
 // Organização das páginas de área e de caso (22/11/2026).
 // Regra: tarefa é do TickTick. O painel mostra as tarefas abertas lá (pelo espelho) e aponta
 // para o TickTick; o que só existe nas notas aparece como "fora do TickTick".
-import { norm, pymd, ymd, addDays } from './datas.mjs?v=284e0f19e740';
-import { secoesDeLeitura } from './areas.mjs?v=284e0f19e740';
+import { norm, pymd, ymd, addDays } from './datas.mjs?v=048d9ab09640';
+import { secoesDeLeitura } from './areas.mjs?v=048d9ab09640';
 
 export const TICKTICK = 'https://ticktick.com/webapp/';
 const ID_RE = /^[0-9a-f]{24}$/i;
