@@ -17,6 +17,7 @@ test('links e rotas da área: tópico, dias, um dia e notas de apoio, inclusive 
   assert.equal(destinoDaArea('#area/cultura', ['cultura']).vista, 'resumo');
   assert.equal(destinoDaArea('#area/cultura/combinados', ['cultura']).vista, 'combinados');
   assert.equal(destinoDaArea('#area/cultura/registros', ['cultura']).vista, 'dias');
+  assert.equal(destinoDaArea('#area/cultura/notas', ['cultura']).vista, 'notas');
   assert.deepEqual(destinoDaArea('#area/cultura/dia/2026-11-18', ['cultura']), { area: 'cultura', vista: 'dia', dia: '2026-11-18', path: null });
   assert.equal(destinoDaArea('#area/cultura/dia/ontem', ['cultura']).vista, 'resumo');
   // links antigos de "Registros escritos" continuam abrindo a nota

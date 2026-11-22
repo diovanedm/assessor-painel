@@ -1,6 +1,6 @@
 // Aba Projetos (22/11/2026): tudo que tem começo e fim (as notas de casos/), com o andamento de cada um.
 // Só leitura: o painel calcula a partir das notas; quem atualiza é o assessor.
-import { norm, pymd } from './datas.mjs?v=0f137dc75bcf';
+import { norm, pymd } from './datas.mjs?v=9c31fcd4636f';
 
 const ENCERRADO = /^(fechado|resolvido|concluido|encerrado)$/;
 const diasEntre = (a, b) => Math.round((pymd(b) - pymd(a)) / 864e5);

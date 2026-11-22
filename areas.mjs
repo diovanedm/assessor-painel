@@ -1,4 +1,4 @@
-import { norm, pad, pymd, ymd } from './datas.mjs?v=0f137dc75bcf';
+import { norm, pad, pymd, ymd } from './datas.mjs?v=9c31fcd4636f';
 
 /* Tópicos fixos de toda área, na ordem do sumário. `re` acha as seções (## …) das notas
    que alimentam o tópico; os tópicos sem `re` são montados pelo painel. */
@@ -91,6 +91,7 @@ export function destinoDaArea(hash, areas) {
   if (sub === 'ver' && extra) return { ...base, vista: 'nota', path: caminhoDoLink([extra, ...resto]) };
   if (TOPICO_IDS.has(sub) && !extra) return { ...base, vista: sub };
   if ((sub === 'dias' || sub === 'registros') && !extra) return { ...base, vista: 'dias' };
+  if (sub === 'notas' && !extra) return { ...base, vista: 'notas' };
   if (sub === 'dia' && /^\d{4}-\d{2}-\d{2}$/.test(extra || '') && !resto.length) return { ...base, vista: 'dia', dia: extra };
   if ((sub === 'nota' || sub === 'registros') && extra && !resto.length) {
     let path = null;

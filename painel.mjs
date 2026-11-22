@@ -1,17 +1,18 @@
 /* ─────────────── utilidades ─────────────── */
-import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDaNota, linkDeRegistro, metasDaTabela, notaSolta, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=0f137dc75bcf';
-import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=0f137dc75bcf';
-import { visaoBemEstar } from './bem-estar.mjs?v=0f137dc75bcf';
-import { blocosDaSemanaModelo, casosEmAndamento, pontoDeParada, textoDaBusca } from './memoria.mjs?v=0f137dc75bcf';
-import { APPS, agendaPorDia, idadeDoEspelho, momento, resumoFinanceiro, tarefasEmGrupos } from './espelho.mjs?v=0f137dc75bcf';
-import { humorRecente, marcosDaArea, nivelDeIngles, proximosDaArea, semanaDaArea, trilha } from './visual.mjs?v=0f137dc75bcf';
-import { projetos as listaDeProjetos } from './projetos.mjs?v=0f137dc75bcf';
-import { linhasCaptura, lerCaptura, tipoAnexo, extAudio, lerOrganizados, destinoLegivel } from './captura.mjs?v=0f137dc75bcf';
+import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDaNota, linkDeRegistro, metasDaTabela, notaSolta, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=9c31fcd4636f';
+import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=9c31fcd4636f';
+import { visaoBemEstar } from './bem-estar.mjs?v=9c31fcd4636f';
+import { blocosDaSemanaModelo, casosEmAndamento, pontoDeParada, textoDaBusca } from './memoria.mjs?v=9c31fcd4636f';
+import { APPS, agendaPorDia, idadeDoEspelho, momento, resumoFinanceiro, tarefasEmGrupos } from './espelho.mjs?v=9c31fcd4636f';
+import { humorRecente, marcosDaArea, nivelDeIngles, semanaDaArea, trilha } from './visual.mjs?v=9c31fcd4636f';
+import { projetos as listaDeProjetos, situacao as situacaoDoCaso } from './projetos.mjs?v=9c31fcd4636f';
+import { TICKTICK, tickTick, situacaoDaTarefa, tarefasDoAssunto, foraDoTickTick, partesDoTitulo, compromissosDaArea, semanaDosBlocos, progressoDasMetas, cardapio, diaDoCardapio, partesDoCaso } from './organizar.mjs?v=9c31fcd4636f';
+import { linhasCaptura, lerCaptura, tipoAnexo, extAudio, lerOrganizados, destinoLegivel } from './captura.mjs?v=9c31fcd4636f';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const h = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=0f137dc75bcf';
+import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=9c31fcd4636f';
 const DOW = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 const DOWL = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
 const MON = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
@@ -753,13 +754,13 @@ function renderList(items, path) {
     while (stack.length && it.ind < stack[stack.length - 1].ind) close();
     if (!stack.length || it.ind > stack[stack.length - 1].ind) open(it.ol, it.ind);
     const tm = it.raw.match(TASK_RE);
-    if (tm) {
-      const tid = (tm[3].match(/🆔\s*(\S+)/) || [])[1];
-      const key = tid ? 'id:' + tid : path + '\n' + it.raw;
-      const g = S.tasks.find(x => x.key === key);
-      const st = g ? isChecked(g) : tm[2] !== ' ';
-      const box = g && taskOv(g);
-      html += `<li class="tk${st ? ' done' : ''}"><button class="chk" role="checkbox" aria-checked="${st}" data-mdt="${h(key)}" data-mdpath="${h(path)}" data-mdraw="${h(it.raw)}" aria-label="${st ? 'Reabrir' : 'Marcar como feita'}">${ICON.check}</button><span>${inline(tm[3].replace(/\s*🆔\s*\S+/g, '') + (it.cont || ''))}${box ? ' <span class="tag">na caixa</span>' : ''}</span></li>`;
+    if (tm && path !== COMPRAS) {
+      // Tarefa é do TickTick: aqui só mostra a situação de lá e leva pra lá (22/11/2026).
+      const tid = (tm[3].match(/🆔\s*(\S+)/) || [])[1] || null;
+      const sit = situacaoDaTarefa({ id: tid, checked: tm[2] !== ' ' }, TT());
+      html += `<li class="tk tk-${sit}${sit === 'feita' || sit === 'fechada' ? ' done' : ''}">${caixaDaTarefa(sit)}<span>${inline(tm[3].replace(/\s*🆔\s*\S+/g, '') + (it.cont || ''))}${seloTickTick(sit, tid)}</span></li>`;
+    } else if (tm) {
+      html += `<li class="tk${tm[2] !== ' ' ? ' done' : ''}"><span class="tk-box" aria-hidden="true">${tm[2] !== ' ' ? ICON.check : ''}</span><span>${inline(tm[3] + (it.cont || ''))}</span></li>`;
     } else {
       html += `<li>${inline(it.raw.replace(/^\s*([-*+]|\d+\.)\s+/, '') + (it.cont || ''))}</li>`;
     }
@@ -842,13 +843,62 @@ function route() {
   }
 }
 
-const isChecked = g => { const o = taskOv(g); return o ? o.kind === 'feita' : g.checked; };
+/* ─────────────── tarefas: quem manda é o TickTick (22/11/2026) ───────────────
+   O painel lê as tarefas abertas no espelho do TickTick. A tarefa escrita numa nota só vale
+   como aberta se estiver aberta lá; sem 🆔, ela está "fora do TickTick". */
+let _tt = null, _ttFin;
+function TT() { if (!_tt || _ttFin !== S.fin) { _tt = tickTick(S.fin); _ttFin = S.fin; } return _tt; }
+const idDoGrupo = g => (g.key.startsWith('id:') ? g.key.slice(3) : null);
+const situacaoDoGrupo = g => situacaoDaTarefa({ id: idDoGrupo(g), checked: g.checked }, TT());
+const TT_ICON = '<svg class="tt-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-4.3-7.1"/><path d="m8.5 11.5 3.3 3.3L20.5 6"/></svg>';
+const CAL_ICON = '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5.5" width="16" height="14.5" rx="2.5"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/></svg>';
+const CLOCK_ICON = '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>';
+/* Caixinha só de leitura ao lado da tarefa de uma nota: feita (✓) ou vazia. Não é botão. */
+const caixaDaTarefa = sit => `<span class="tk-box" aria-hidden="true">${sit === 'feita' || sit === 'fechada' ? ICON.check : ''}</span>`;
+/* Selo depois do texto: onde a tarefa está de verdade. */
+function seloTickTick(sit, id) {
+  const t = id && TT().porId.get(id);
+  if (sit === 'aberta') return ` <a class="tk-tt" href="${h(safeUrl(t?.link) || TICKTICK)}" target="_blank" rel="noopener noreferrer" title="Marcar, mudar ou ver no TickTick">${TT_ICON}TickTick <span aria-hidden="true">↗</span></a>`;
+  if (sit === 'fechada') return ` <span class="tk-tt fechada" title="Concluída no TickTick; a nota ainda não foi atualizada">${TT_ICON}concluída no TickTick</span>`;
+  if (sit === 'fora') return ` <span class="tk-tt fora" title="Esta tarefa só existe na nota. Peça ao assessor pra criar no TickTick.">fora do TickTick</span>`;
+  if (sit === 'desconhecida') return ` <a class="tk-tt" href="${TICKTICK}" target="_blank" rel="noopener noreferrer">${TT_ICON}TickTick <span aria-hidden="true">↗</span></a>`;
+  return '';
+}
+const isChecked = g => { const o = taskOv(g); if (o) return o.kind === 'feita'; const s = situacaoDoGrupo(g); return s === 'feita' || s === 'fechada'; };
 const byDue = (a, b) => (a.due || '9').localeCompare(b.due || '9') || (b.prio === 'alta') - (a.prio === 'alta');
-import { organizarTarefas, primeiroPasso, prioridadesDoDia } from './tarefas.mjs?v=0f137dc75bcf';
+import { organizarTarefas, primeiroPasso, prioridadesDoDia } from './tarefas.mjs?v=9c31fcd4636f';
 function estadoTarefa(g) {
   if (g.nova) return { feita:false, data:'' };
   const item = taskOv(g);
-  return item ? { feita:item.kind === 'feita', data:item.date } : { feita:g.checked, data:g.done };
+  return item ? { feita:item.kind === 'feita', data:item.date } : { feita:isChecked(g), data:g.done || '' };
+}
+/* Uma tarefa aberta no TickTick, numa linha que leva até ela no app. */
+function ttLi(t, hoje) {
+  const amanha = ymd(addDays(pymd(hoje), 1)), late = !!(t.prazo && t.prazo < hoje);
+  const quando = !t.prazo ? '' : late ? `${dm(t.prazo)} · atrasada` : t.prazo === hoje ? `Hoje${t.hora ? ', ' + t.hora : ''}` : t.prazo === amanha ? `Amanhã${t.hora ? ', ' + t.hora : ''}` : dm(t.prazo);
+  return `<li class="tt-item${late ? ' atrasada' : ''}${t.prioridade === 'alta' ? ' alta' : ''}"><a href="${h(safeUrl(t.link) || TICKTICK)}" target="_blank" rel="noopener noreferrer" title="Abrir no TickTick">
+    <span class="tt-box" aria-hidden="true"></span><span class="tt-nome">${h(t.titulo)}${t.prioridade === 'alta' ? '<small>Prioridade alta</small>' : ''}</span>
+    ${quando ? `<span class="tt-quando">${CAL_ICON}${h(quando)}</span>` : ''}<span class="tt-abrir" aria-hidden="true">↗</span><span class="sr"> (abre no TickTick)</span></a></li>`;
+}
+const ordemTickTick = (lista, hoje) => { const G = tarefasEmGrupos({ tarefas: lista }, hoje); return [...G.atrasadas, ...G.hoje, ...G.semana, ...G.depois, ...G.semPrazo]; };
+const fonteTickTick = () => { const q = quandoEspelho(); return `<p class="tt-fonte">${TT_ICON}<span>Do <b>TickTick</b>${q ? `, atualizado ${q}` : ''}. Marcar, criar e mudar: lá.</span></p>`; };
+/* Tarefas das notas que não batem com o TickTick: a lista, com a nota de onde vieram. */
+function avisoForaDoTickTick(pend, { compacto = false } = {}) {
+  const n = pend.fora.length + pend.fechadas.length;
+  if (!n) return '';
+  const titulo = n === 1 ? '1 tarefa da nota não bate com o TickTick' : `${n} tarefas das notas não batem com o TickTick`;
+  if (compacto && typeof compacto === 'string') return `<p class="tt-aviso tt-aviso-curto"><b>${titulo}</b>. <a href="${compacto}">Ver quais</a></p>`;
+  const item = (t, motivo) => `<li><span>${inline(cleanTask(t.text || ''))}</span><small>${motivo}${t.path && S.files[t.path] && !compacto ? ` · ${srcLink(t.path)}` : ''}</small></li>`;
+  return `<div class="tt-aviso" role="note"><p><b>${titulo}</b>. Peça ao assessor: <i>“sincroniza as tarefas com o TickTick”</i>.</p>
+    <ul>${pend.fora.map(t => item(t, 'só na nota')).join('')}${pend.fechadas.map(t => item(t, 'já concluída no TickTick')).join('')}</ul></div>`;
+}
+/* Cartão de tarefas do TickTick (área ou caso). */
+function cartaoTickTick({ titulo, tarefas, hoje, link = '', max = 5, vazio = 'Nada aberto no TickTick.', pend = null }) {
+  if (!S.fin) return `<section class="area-card org-card"><div class="area-card-head"><h3>${titulo}</h3></div>${semEspelho('tarefas')}</section>`;
+  const lista = ordemTickTick(tarefas, hoje);
+  return `<section class="area-card org-card org-tarefas"><div class="area-card-head"><h3>${titulo}${lista.length ? ` <span class="org-n">${lista.length}</span>` : ''}</h3>${link ? `<a class="area-link" href="${link}">Ver todas →</a>` : `<a class="area-link" href="${TICKTICK}" target="_blank" rel="noopener noreferrer">TickTick ↗</a>`}</div>
+    ${lista.length ? `<ul class="tt-lista">${lista.slice(0, max).map(t => ttLi(t, hoje)).join('')}</ul>${lista.length > max && link ? `<a class="org-mais" href="${link}">Mais ${lista.length - max}</a>` : ''}` : `<p class="area-empty">${vazio}</p>`}
+    ${pend ? avisoForaDoTickTick(pend, { compacto: link || false }) : ''}${fonteTickTick()}</section>`;
 }
 
 function gruposDeTarefas() {
@@ -889,7 +939,8 @@ function taskLi(g) {
   const seen = new Set();
   for (const m of g.members) if (!seen.has(m.path) && m.path !== 'tarefas.md') { seen.add(m.path); meta.push(srcLink(m.path)); }
   if (o) meta.push('<span class="tag">na caixa</span>');
-  return `<li class="task${ch ? ' done' : ''}${o && o.pending ? ' busy' : ''}"><button class="chk" role="checkbox" aria-checked="${ch}" data-task="${h(g.key)}" aria-label="${o ? 'Desfazer' : ch ? 'Reabrir' : 'Marcar como feita'}: ${h(plain(g.text))}">${ICON.check}</button><div class="tx"><div class="t">${inline(g.text)}</div>${meta.length ? `<div class="meta">${meta.join('')}</div>` : ''}</div></li>`;
+  const sit = situacaoDoGrupo(g);
+  return `<li class="task${ch ? ' done' : ''}${o && o.pending ? ' busy' : ''}">${caixaDaTarefa(ch ? 'feita' : sit)}<div class="tx"><div class="t">${inline(g.text)}${seloTickTick(sit, idDoGrupo(g))}</div>${meta.length ? `<div class="meta">${meta.join('')}</div>` : ''}</div></li>`;
 }
 function grupoTarefas(titulo, itens, chave, expandidos, mostrar) {
   const visiveis = itens.filter(mostrar);
@@ -899,6 +950,19 @@ function grupoTarefas(titulo, itens, chave, expandidos, mostrar) {
     <ul class="tasks">${visiveis.slice(0, 5).map(taskLi).join('')}</ul>
     ${extras.length ? `<details class="tarefa-extras" data-task-lista="${chave}"${expandidos.has(chave) ? ' open' : ''}>
       <summary>Mais ${extras.length} ${extras.length === 1 ? 'tarefa' : 'tarefas'}</summary><ul class="tasks">${extras.map(taskLi).join('')}</ul></details>` : ''}</section>`;
+}
+
+/* Casos com as tarefas como estão no TickTick: fechada lá conta como feita; prazo de lá vale. */
+function casosComTickTick() {
+  const T = TT(), out = {};
+  for (const [p, f] of Object.entries(S.files)) {
+    if (!p.startsWith('casos/')) continue;
+    out[p] = { ...f, tasks: f.tasks.map(t => {
+      const s = situacaoDaTarefa(t, T), noTT = t.id && T.porId.get(t.id);
+      return { ...t, checked: s === 'feita' || s === 'fechada', due: noTT?.prazo || t.due, text: noTT?.titulo || t.text };
+    }) };
+  }
+  return out;
 }
 
 /* ─────────────── Projetos: tudo que tem começo e fim, com o andamento (22/11/2026) ─────────────── */
@@ -915,7 +979,7 @@ function cartaoProjeto(p, hoje) {
     <strong class="pj-titulo">${h(plain(p.titulo))}</strong>
     ${reservado ? `<span class="pj-agora pj-res">${ICON.lock} Detalhes reservados</span>` : agora ? `<span class="pj-agora">${h(short(agora, 150))}</span>` : ''}
     ${pct !== null && !reservado ? `<span class="pj-prog"><span class="pj-barra" role="img" aria-label="${p.feitas} de ${p.total} tarefas feitas"><i style="width:${pct}%"></i></span><small>${p.feitas} de ${p.total} tarefas</small></span>` : ''}
-    ${prox && !reservado ? `<span class="pj-prox${p.atrasada ? ' atrasada' : ''}"><b>Próximo:</b> ${h(prox)}</span>` : ''}
+    ${prox && !reservado ? `<span class="pj-prox${p.atrasada ? ' atrasada' : ''}"><b>Próximo:</b> ${h(prox)}${{ aberta: ` <span class="tk-tt">${TT_ICON}TickTick</span>`, fora: ' <span class="tk-tt fora">fora do TickTick</span>' }[situacaoDaTarefa({ id: p.proxima.id, checked: false }, TT())] || ''}</span>` : ''}
     <span class="pj-pe">${parado ? `<span class="pj-parado">Sem movimento há ${p.parado} dias</span>` : p.atualizado ? `<span>${relDay(p.atualizado)}</span>` : ''}<span aria-hidden="true">›</span></span>
   </button></li>`;
 }
@@ -924,7 +988,7 @@ function renderProjetos() {
   if (!el) return;
   const hoje = ymd(now());
   if (!S.head && !Object.keys(S.files).length) { el.innerHTML = '<p class="hj-loading">Carregando suas notas…</p>'; return; }
-  const P = listaDeProjetos(S.files, hoje);
+  const P = listaDeProjetos(casosComTickTick(), hoje);
   const filtro = S.projArea || 'todos';
   const areas = [...new Set([...P.andamento, ...P.concluidos].map(p => p.area))];
   const ok = p => filtro === 'todos' || p.area === filtro;
@@ -1175,34 +1239,6 @@ function topicosDaArea(C) {
   return { n, secoes, decisoesFora, docs, padroes, pessoas: [...pessoas].map(p => S.files[p]).filter(Boolean), metasSec, esperando, compromissos, fixos, custos, custosAntes, links, temFin: false };
 }
 
-const SM_CARET = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-/* Sumário (22/11/2026): só aparece o que tem conteúdo. Tópico vazio não ocupa espaço;
-   ele surge sozinho quando o assessor grava algo naquela seção. */
-function sumarioDaArea(C, T, vista) {
-  const { area } = C;
-  // caso ou pessoa aberto dentro da área acende "Pessoas e casos"
-  const atual = vista.vista !== 'nota' ? vista.vista : /^(casos|pessoas)\//.test(vista.path || '') ? 'pessoas' : null;
-  const item = t => `<li><a class="sm-row" href="${linkTopico(area, t.id)}"${atual === t.id ? ' aria-current="page"' : ''}><span class="sm-ic" aria-hidden="true">${t.emoji}</span><span class="sm-nome">${t.curto || t.nome}</span>${t.id !== 'resumo' && T.n[t.id] ? `<span class="sm-n">${T.n[t.id]}</span>` : ''}</a></li>`;
-  const visiveis = TOPICOS.filter(t => t.id === 'resumo' || T.n[t.id] > 0 || t.id === atual);
-  const meses = new Map();
-  for (const d of C.dias) { const k = d.date.slice(0, 7); if (!meses.has(k)) meses.set(k, []); meses.get(k).push(d); }
-  const mesAtual = (vista.dia || C.dias[0]?.date || C.hoje).slice(0, 7);
-  const dias = [...meses.entries()].map(([k, ds]) => `<li><details class="sm-tg sm-mes"${k === mesAtual && vista.dia ? ' open' : ''} data-section="mes-${k}"><summary class="sm-row"><span class="sm-caret">${SM_CARET}</span><span class="sm-nome">${MESES[+k.slice(5) - 1]} ${k.slice(0, 4)}</span><span class="sm-n">${ds.length}</span></summary>
-    <ul class="sm-sub">${ds.map(d => `<li><a class="sm-row" href="#area/${area}/dia/${d.date}"${vista.dia === d.date ? ' aria-current="page"' : ''}><span class="sm-nome">${dayLabel(d.date)}</span><span class="sm-n">${itensDoDia(d)}</span></a></li>`).join('')}</ul></details></li>`).join('');
-  const notas = [C.principal ? `<li><a class="sm-row" href="${linkDeNota(area)}"${vista.path === C.principal.path ? ' aria-current="page"' : ''}><span class="sm-ic" aria-hidden="true">📄</span><span class="sm-nome">Nota principal</span></a></li>` : '',
-    ...C.apoio.map(f => `<li><a class="sm-row" href="${h(linkDeRegistro(f.path))}"${vista.path === f.path ? ' aria-current="page"' : ''}><span class="sm-ic" aria-hidden="true">📄</span><span class="sm-nome">${h(plain(f.title))}</span></a></li>`)].join('');
-  const emDias = atual === 'dias' || !!vista.dia;
-  const emNotas = vista.vista === 'nota' && !atual;
-  const blocoDias = C.dias.length ? `<li><details class="sm-tg" data-section="sm-dias"${emDias ? ' open' : ''}><summary class="sm-row${atual === 'dias' ? ' sm-atual' : ''}"><span class="sm-caret">${SM_CARET}</span><span class="sm-ic" aria-hidden="true">📅</span><span class="sm-nome">Registros diários</span><span class="sm-n">${C.dias.length}</span></summary>
-    <ul class="sm-sub"><li><a class="sm-row" href="#area/${area}/dias"${atual === 'dias' ? ' aria-current="page"' : ''}><span class="sm-nome">Todos os dias</span></a></li>${dias}</ul></details></li>` : '';
-  const blocoNotas = notas ? `<li><details class="sm-tg" data-section="sm-notas"${emNotas ? ' open' : ''}><summary class="sm-row"><span class="sm-caret">${SM_CARET}</span><span class="sm-ic" aria-hidden="true">📚</span><span class="sm-nome">Notas da área</span><span class="sm-n">${C.apoio.length + (C.principal ? 1 : 0)}</span></summary><ul class="sm-sub">${notas}</ul></details></li>` : '';
-  return `<nav class="sumario" id="areaSumario" aria-label="Sumário de ${h(AREAS[area].nome)}">
-    <div class="sm-topo"><span>${h(AREAS[area].nome)}</span><button type="button" class="ib sm-fechar" data-sumario="fechar" aria-label="Fechar sumário">${ICON.x}</button></div>
-    <ul class="sm-lista">${visiveis.map(item).join('')}</ul>
-    ${blocoDias || blocoNotas ? `<ul class="sm-lista sm-arquivo">${blocoDias}${blocoNotas}</ul>` : ''}
-  </nav>`;
-}
-
 const vazioTopico = id => `<div class="area-card topico-vazio"><p>${h(DICA[id] || 'Nada aqui ainda.')}</p></div>`;
 const cartaoSecao = s => `<section class="area-card secao-card"><header class="secao-h"><h3>${h(plain(s.titulo))}</h3>${s.titulo !== s.fonte ? `<button type="button" class="secao-fonte" data-open="${h(s.path)}">${h(short(plain(s.fonte), 34))} <span aria-hidden="true">↗</span></button>` : `<button type="button" class="secao-fonte" data-open="${h(s.path)}">abrir <span aria-hidden="true">↗</span></button>`}</header><div class="md">${md(s.texto, s.path, true)}</div></section>`;
 function barraMeta(m) {
@@ -1244,18 +1280,12 @@ const HERO = {
 };
 const DIA1 = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
 const ICONE_TREINO = { academia: '🏋️', corrida: '🏃', caminhada: '🚶', outro: '•' };
-const quandoCurto = (data, hora, hoje) => {
-  const dif = Math.round((pymd(data) - pymd(hoje)) / 864e5);
-  const dia = dif === 0 ? 'hoje' : dif === 1 ? 'amanhã' : dayLabel(data);
-  return hora ? `${dia} · ${hora}` : dia;
-};
 function heroDaArea(C, T) {
   const { area, hoje } = C;
   const H = HERO[area];
   if (!H) return '';
   const metas = T.metasSec.flatMap(s => metasDaTabela(s.texto));
   const status = norm(C.principal?.meta.status || '');
-  const prox = proximosDaArea(S.fin, S.agenda.events, area, hoje, 2);
   let titulo = '', corpo = '';
   if (area === 'saude') {
     const semana = semanaDaArea(S.habits, area, hoje);
@@ -1312,40 +1342,127 @@ function heroDaArea(C, T) {
   return `<section class="hero hero-${area}" data-marca="${H.marca}">
     <div class="hero-top"><p class="hero-kicker">${h(H.kicker)}</p>${Object.hasOwn(STATUS, status) ? `<span class="area-status lamp s-${status}">${STATUS[status]}</span>` : ''}</div>
     <h2 class="hero-titulo">${titulo}</h2>${corpo}
-    ${prox.length ? `<ul class="hero-prox">${prox.map(e => `<li><span>${h(quandoCurto(e.data, e.inicio, hoje))}</span>${h(plain(e.titulo))}</li>`).join('')}</ul>` : ''}
   </section>`;
+}
+
+/* ─────────────── página da área em abas: Visão geral · Agenda · Tarefas · Notas (22/11/2026) ─────────────── */
+const ABAS_AREA = [
+  ['resumo', 'Visão geral', '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V19a1.5 1.5 0 0 1-1.5 1.5h-4v-6h-5v6h-4A1.5 1.5 0 0 1 4 19Z"/></svg>'],
+  ['agenda', 'Agenda', CAL_ICON],
+  ['tarefas', 'Tarefas', '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3.5"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg>'],
+  ['notas', 'Notas', '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 3.5h7l4 4v13h-11Z"/><path d="M13.5 3.5v4h4M9 12h6M9 15.5h6"/></svg>'],
+];
+const abaDaVista = v => ['resumo', 'agenda', 'tarefas'].includes(v.vista) ? v.vista : 'notas';
+function abasDaArea(area, vista) {
+  const atual = abaDaVista(vista);
+  return `<nav class="org-abas" aria-label="Seções de ${h(AREAS[area].nome)}">${ABAS_AREA.map(([id, nome, ic]) =>
+    `<a href="${linkTopico(area, id)}"${atual === id ? ' aria-current="page"' : ''}>${ic}<span>${nome}</span></a>`).join('')}</nav>`;
+}
+/* Anel de progresso (0–100). Sem número: só o emoji. */
+const anel = (pct, emoji) => pct === null || pct === undefined
+  ? `<span class="org-anel vazio" aria-hidden="true">${emoji}</span>`
+  : `<svg class="org-anel" viewBox="0 0 44 44" role="img" aria-label="${pct}%"><circle cx="22" cy="22" r="18"/><circle class="v" cx="22" cy="22" r="18" stroke-dasharray="${(pct / 100 * 113.1).toFixed(1)} 113.1"/><text x="22" y="26">${pct}%</text></svg>`;
+/* Um compromisso: dia em destaque, ícone, nome com complemento e o horário. */
+function eventoLi(e) {
+  const P = partesDoTitulo(e.titulo), d = pymd(e.data), link = safeUrl(e.link);
+  const hora = e.inicio ? `${CLOCK_ICON}${h(e.inicio)}${e.fim ? ' – ' + h(e.fim) : ''}` : `${CAL_ICON}Dia inteiro`;
+  const miolo = `<span class="org-data"><b>${d.getDate()}</b><small>${MON[d.getMonth()]}</small></span>
+    <span class="org-ev-ic" aria-hidden="true">${P.icone || '<i></i>'}</span>
+    <span class="org-ev-t"><b>${h(P.nome)}</b>${P.sub ? `<small>${h(P.sub)}</small>` : ''}</span>
+    <span class="org-hora">${hora}</span>`;
+  return `<li>${link ? `<a class="org-ev" href="${h(link)}" target="_blank" rel="noopener noreferrer" title="Abrir no Google Agenda">${miolo}</a>` : `<div class="org-ev">${miolo}</div>`}</li>`;
+}
+/* Tarefas do TickTick desta área: da lista da área, ligadas às notas da área ou com 🆔 nas notas e casos dela. */
+function tarefasDaAreaTT(C) {
+  const fontes = [...C.notas, ...C.casos].filter(f => f.path !== COMPRAS);
+  return tarefasDoAssunto(TT(), { area: C.area, paths: fontes.map(f => f.path), ids: fontes.flatMap(f => f.tasks.map(t => t.id).filter(Boolean)) });
+}
+const pendentesDaArea = C => foraDoTickTick([...C.notas, ...C.casos].filter(f => f.path !== COMPRAS).flatMap(f => f.tasks.map(t => ({ ...t, path: f.path }))), TT());
+const ICONE_CARDAPIO = { proteina: '🥩', legume: '🥕', legumes: '🥕', verdura: '🥬', feijao: '🫘', carboidrato: '🥔', salada: '🥗', fruta: '🍎' };
+function cartaoCardapio(C) {
+  const fonte = C.notas.find(f => cardapio(f.body));
+  if (!fonte) return '';
+  const K = cardapio(fonte.body), hoje = diaDoCardapio(K, C.hoje);
+  const sel = K.dias.find(d => d.dia === S.cardapioDia) || hoje || K.dias[0];
+  const nomeDia = { seg: 'Segunda-feira', ter: 'Terça-feira', qua: 'Quarta-feira', qui: 'Quinta-feira', sex: 'Sexta-feira', sab: 'Sábado', dom: 'Domingo' }[norm(sel.dia).slice(0, 3)] || sel.dia;
+  return `<section class="area-card org-card org-cardapio"><div class="area-card-head"><h3>🍽️ Cardápio da semana</h3><a class="area-link" href="${h(linkDeRegistro(fonte.path) || '#')}">Ver completo →</a></div>
+    <div class="org-dias" role="group" aria-label="Dia do cardápio">${K.dias.map(d => `<button type="button" data-cardapio-dia="${h(d.dia)}" aria-pressed="${d === sel}"${d === hoje ? ' class="hoje"' : ''}>${h(d.dia)}</button>`).join('')}</div>
+    <div class="org-prato"><p class="org-prato-dia">${h(nomeDia)}${sel === hoje ? ' <small>hoje</small>' : ''}</p>
+      <dl>${sel.itens.map(([k, v]) => `<div><dt><span aria-hidden="true">${ICONE_CARDAPIO[norm(k)] || '•'}</span>${h(k)}</dt><dd>${inline(v)}</dd></div>`).join('')}</dl></div>
+    ${K.obs ? `<p class="org-obs">${inline(K.obs)}</p>` : ''}</section>`;
+}
+
+function visaoGeralDaArea(C, T) {
+  const { area, principal, hoje } = C;
+  const secs = principal ? secoesDeLeitura(principal.body) : [];
+  const agora = secs.find(s => /^agora\b/.test(norm(s.title)));
+  const importante = secs.find(s => /^importante\b/.test(norm(s.title)));
+  const tambem = secs.filter(s => /^tambem\b/.test(norm(s.title)));
+  const metas = T.metasSec.flatMap(s => metasDaTabela(s.texto));
+  const PM = progressoDasMetas(metas);
+  const SB = semanaDosBlocos({ series: S.agenda.series, habitos: S.habits, area, hoje });
+  const kpis = `<div class="org-kpis">
+    <a class="org-kpi" href="${linkTopico(area, 'metas')}">${anel(PM.pct, '🎯')}<span><b>Metas do trimestre</b><small>${PM.total ? `${PM.total} ${PM.total === 1 ? 'meta' : 'metas'}${PM.pct === null ? ' · sem número ainda' : ''}` : 'Nenhuma meta combinada'}</small></span><span class="org-seta" aria-hidden="true">›</span></a>
+    <div class="org-kpi">${anel(SB.pct, '🗓️')}<span><b>Blocos da semana</b><small>${SB.previstos ? `${SB.feitos} de ${SB.previstos} ${SB.previstos === 1 ? 'feito' : 'feitos'}` : 'Sem bloco fixo nesta área'}</small></span></div>
+  </div>`;
+  const status = norm(principal?.meta.status || '');
+  const hero = heroDaArea(C, T);
+  const foco = `<section class="area-card focus-card org-agora"><div class="area-card-head"><h3>${agora ? 'Agora' : 'Como está'}</h3>${!hero && Object.hasOwn(STATUS, status) ? `<span class="area-status lamp s-${status}">${STATUS[status]}</span>` : ''}</div>
+    ${agora ? (() => { const { inicio, resto, n } = cortarLista(agora.text, 4); return `<div class="md resumo-agora">${md(inicio, principal.path, true)}</div>${n ? `<details class="resumo-mais" data-section="agora-mais"><summary>Mais ${n} ${n === 1 ? 'item' : 'itens'} em “Agora”</summary><div class="md resumo-agora">${md(resto, principal.path, true)}</div></details>` : ''}`; })()
+      : `<p>${h(short(plain(principal?.meta.resumo || 'Ainda sem resumo. O assessor escreve um quando você contar como está esta área.'), 240))}</p>`}</section>`;
+  const tambemHtml = tambem.map(t => { const nome = plain(t.title).replace(/^também\s*:?\s*/i, ''); return `<section class="area-card area-tambem"><div class="area-card-head"><h3><small>Também nesta área</small>${h(maiuscula(nome))}</h3></div><div class="md">${md(t.text, principal.path, true)}</div></section>`; }).join('');
+  const prox = compromissosDaArea({ espelho: S.fin, eventos: S.agenda.events, area, hoje, n: 4 });
+  const agendaCard = `<section class="area-card org-card"><div class="area-card-head"><h3>Próximos compromissos</h3><a class="area-link" href="${linkTopico(area, 'agenda')}">Ver agenda →</a></div>
+    ${prox.length ? `<ul class="org-eventos">${prox.map(eventoLi).join('')}</ul>` : '<p class="area-empty">Nada marcado para esta área.</p>'}</section>`;
+  const tarefas = cartaoTickTick({ titulo: 'Tarefas', tarefas: tarefasDaAreaTT(C), hoje, link: linkTopico(area, 'tarefas'), pend: pendentesDaArea(C), vazio: 'Nada aberto no TickTick nesta área.' });
+  return `${hero}<div class="org-geral">${kpis}${foco}${tambemHtml}
+    <div class="org-par">${agendaCard}${tarefas}</div>
+    ${cartaoCardapio(C)}
+    ${importante ? `<section class="area-card"><h3>Importante</h3><div class="md">${md(importante.text, principal.path, true)}</div></section>` : ''}
+    ${area === 'financas' ? `<a class="area-card fin-atalho" href="#financas"><b>💰 Abrir Finanças</b><span>Saldo, extrato, orçamento e cartões →</span></a>` : ''}
+  </div>${SENS.has(area) ? visaoBemEstar(area, Object.values(S.files), hoje) : ''}`;
+}
+
+function tarefasDaAreaAba(C) {
+  const { hoje } = C;
+  const topo = `<div class="tt-topo">${TT_ICON}<p>As tarefas ficam no <b>TickTick</b>, que avisa no celular. Aqui é só pra ver; marcar, criar e mudar a data é lá.</p><a class="btn ghost" href="${TICKTICK}" target="_blank" rel="noopener noreferrer">Abrir TickTick ↗</a></div>`;
+  if (!S.fin) return topo + semEspelho('tarefas');
+  const G = tarefasEmGrupos({ tarefas: tarefasDaAreaTT(C) }, hoje);
+  const grupo = (titulo, itens) => itens.length ? `<section class="area-card org-card"><div class="area-card-head"><h3>${titulo} <span class="org-n">${itens.length}</span></h3></div><ul class="tt-lista">${itens.map(t => ttLi(t, hoje)).join('')}</ul></section>` : '';
+  const html = grupo('Atrasadas', G.atrasadas) + grupo('Hoje', G.hoje) + grupo('Próximos 7 dias', G.semana) + grupo('Mais adiante', G.depois) + grupo('Sem prazo', G.semPrazo);
+  const pend = pendentesDaArea(C);
+  return `${topo}${html || '<div class="area-card"><p class="area-empty" style="margin:0">Nada aberto no TickTick nesta área.</p></div>'}
+    ${pend.fora.length || pend.fechadas.length ? `<section class="area-card org-card">${avisoForaDoTickTick(pend)}</section>` : ''}${fonteTickTick()}`;
+}
+
+function agendaDaAreaAba(C, T) {
+  const lista = compromissosDaArea({ espelho: S.fin, eventos: S.agenda.events, area: C.area, hoje: C.hoje, n: 40 });
+  const ordemDow = [1, 2, 3, 4, 5, 6, 0];
+  const quando = x => x.days.mday ? `Dia ${x.days.mday}` : ordemDow.filter(d => x.days.dows.has(d)).map(d => DOW[d]).join(', ');
+  const hora = e => e.allDay ? 'dia inteiro' : `${e.start}–${e.end}`;
+  if (!lista.length && !T.fixos.length) return vazioTopico('agenda', C.area);
+  return `${lista.length ? `<section class="area-card org-card"><div class="area-card-head"><h3>Próximos compromissos <span class="org-n">${lista.length}</span></h3><a class="area-link" href="${APPS.agenda.url}" target="_blank" rel="noopener noreferrer">Google Agenda ↗</a></div><ul class="org-eventos">${lista.map(eventoLi).join('')}</ul></section>` : ''}
+    ${T.fixos.length ? `<section class="area-card org-card"><div class="area-card-head"><h3>Blocos fixos da semana</h3></div><ul class="dia-linhas">${T.fixos.map(x => `<li class="dia-linha"><span class="dia-st dia-data">${h(quando(x))}</span><span>${inline(x.name)}<small>${hora(x)}${x.from && x.from > C.hoje ? ' · a partir de ' + dm(x.from) : ''}</small></span></li>`).join('')}</ul></section>` : ''}
+    <p class="area-nota">Do Google Agenda e do espelho <button type="button" class="secao-fonte" data-open="agenda.md">agenda.md ↗</button>. O Google Agenda manda.</p>`;
+}
+
+function notasDaAreaAba(C, T) {
+  const { area } = C;
+  const topicos = TOPICOS.filter(t => !['resumo', 'tarefas', 'agenda'].includes(t.id) && T.n[t.id] > 0);
+  const dias = ultimosDias(C, 5);
+  const notas = [C.principal, ...C.apoio].filter(Boolean);
+  return `${topicos.length ? `<section class="area-card org-card"><div class="area-card-head"><h3>Tópicos</h3></div><ul class="org-topicos">${topicos.map(t => `<li><a href="${linkTopico(area, t.id)}"><span class="org-top-ic" aria-hidden="true">${t.emoji}</span><b>${t.nome}</b><small>${T.n[t.id]}</small></a></li>`).join('')}</ul></section>` : ''}
+    ${dias.length ? `<section class="area-card org-card"><div class="area-card-head"><h3>Registros diários</h3><a class="area-link" href="#area/${area}/dias">Todos →</a></div>
+      <ul class="ultimos">${dias.map(d => `<li><a href="#area/${area}/dia/${d.date}"><b>${dayLabel(d.date)}</b><span>${h(short(linhasDoDia(d).slice(0, 2).join(' · '), 110))}</span></a></li>`).join('')}</ul></section>` : ''}
+    ${notas.length ? `<section class="area-card org-card"><div class="area-card-head"><h3>Notas da área</h3></div>${areaRecordList(notas, area)}</section>` : ''}
+    ${!topicos.length && !dias.length && !notas.length ? vazioTopico('dias', area) : ''}`;
 }
 
 function corpoDoTopico(C, T, vista) {
   const { area, principal } = C;
   const id = vista.vista;
-  if (id === 'resumo') {
-    const secs = principal ? secoesDeLeitura(principal.body) : [];
-    const agora = secs.find(s => /^agora\b/.test(norm(s.title)));
-    const importante = secs.find(s => /^importante\b/.test(norm(s.title)));
-    // "## Também: …" na nota da área = assunto paralelo (ex.: renda extra no Trabalho), num cartão à parte
-    const tambem = secs.filter(s => /^tambem\b/.test(norm(s.title)));
-    const meta = T.metasSec.flatMap(s => metasDaTabela(s.texto))[0];
-    const metaLista = !meta && primeiraMeta(secs);
-    const status = norm(principal?.meta.status || '');
-    const prox = [...C.tarefas.atrasadas, ...C.tarefas.hoje, ...C.tarefas.proximas, ...C.tarefas.semdata].slice(0, 3);
-    const dias = ultimosDias(C, 3);
-    const hero = heroDaArea(C, T);
-    return `${hero}<div class="area-overview">
-      <section class="area-card focus-card"><div class="area-card-head"><h3>${agora ? 'Agora' : 'Como está'}</h3>${!hero && Object.hasOwn(STATUS, status) ? `<span class="area-status lamp s-${status}">${STATUS[status]}</span>` : ''}</div>
-        ${agora ? '' : `<p>${h(short(plain(principal?.meta.resumo || 'Ainda sem resumo. O assessor escreve um quando você contar como está esta área.'), 240))}</p>`}
-        ${agora ? (() => { const { inicio, resto, n } = cortarLista(agora.text, 4); return `<div class="md resumo-agora">${md(inicio, principal.path, true)}</div>${n ? `<details class="resumo-mais" data-section="agora-mais"><summary>Mais ${n} ${n === 1 ? 'item' : 'itens'} em “Agora”</summary><div class="md resumo-agora">${md(resto, principal.path, true)}</div></details>` : ''}`; })() : ''}</section>
-      ${tambem.map(t => { const nome = plain(t.title).replace(/^também\s*:?\s*/i, ''); return `<section class="area-card area-tambem"><div class="area-card-head"><h3><small>Também nesta área</small>${h(nome.charAt(0).toUpperCase() + nome.slice(1))}</h3></div><div class="md">${md(t.text, principal.path, true)}</div></section>`; }).join('')}
-      ${meta || metaLista ? `<section class="area-card"><div class="area-card-head"><h3>Meta em foco</h3><a class="area-link" href="${linkTopico(area, 'metas')}">Metas →</a></div>
-        ${meta ? `<ul class="metas">${barraMeta(meta)}</ul>` : `<p class="area-empty">${inline(metaLista)}</p>`}</section>` : ''}
-      ${prox.length ? `<section class="area-card"><div class="area-card-head"><h3>Próximos passos</h3><a class="area-link" href="${linkTopico(area, 'tarefas')}">Tarefas →</a></div>
-        <ul class="area-steps">${prox.map(taskLi).join('')}</ul></section>` : ''}
-      ${dias.length ? `<section class="area-card area-recent"><div class="area-card-head"><h3>Últimos dias</h3><a class="area-link" href="#area/${area}/dias">Todos →</a></div>
-        <ul class="ultimos">${dias.map(d => `<li><a href="#area/${area}/dia/${d.date}"><b>${dayLabel(d.date)}</b><span>${h(short(linhasDoDia(d).slice(0, 2).join(' · '), 110))}</span></a></li>`).join('')}</ul></section>` : ''}
-      ${importante ? `<section class="area-card area-recent"><h3>Importante</h3><div class="md">${md(importante.text, principal.path, true)}</div></section>` : ''}
-      ${area === 'financas' ? `<a class="area-card area-recent fin-atalho" href="#financas"><b>💰 Abrir Finanças</b><span>Saldo, extrato, orçamento e cartões, direto da planilha →</span></a>` : ''}
-    </div>${SENS.has(area) ? visaoBemEstar(area, Object.values(S.files), C.hoje) : ''}`;
-  }
+  if (id === 'resumo') return visaoGeralDaArea(C, T);
+  if (id === 'notas') return notasDaAreaAba(C, T);
   if (id === 'metas') {
     if (!T.metasSec.length) return vazioTopico('metas', area);
     const hj = pymd(C.hoje), seg = addDays(hj, -((hj.getDay() + 6) % 7));
@@ -1359,14 +1476,7 @@ function corpoDoTopico(C, T, vista) {
     }).join('') + (hab.length ? `<section class="area-card"><h3>Esta semana</h3><p class="semana-hab"><b>${feitos} de ${hab.length}</b> blocos e hábitos feitos (${Math.round(feitos / hab.length * 100)}%)</p>
       <ul class="dia-linhas">${hab.sort((a, b) => a.date.localeCompare(b.date)).map(x => `<li class="dia-linha"><span class="dia-st">${x.st === 'feito' ? '✅' : x.st === 'nao' ? '❌' : '🚫'}</span><span>${h(x.oque)} <small>${dayLabel(x.date)}${x.motivo && !/^[—–-]$/.test(x.motivo.trim()) ? ' · ' + h(x.motivo) : ''}</small></span></li>`).join('')}</ul></section>` : '');
   }
-  if (id === 'tarefas') {
-    const G = C.tarefas, todos = () => true, exp = new Set(LS.get(K + 'area-tarefas', []));
-    const html = grupoTarefas('Atrasadas e de hoje', [...G.atrasadas, ...G.hoje], 'area-hoje', exp, todos)
-      + grupoTarefas('Próximas', G.proximas, 'area-proximas', exp, todos)
-      + grupoTarefas('Sem prazo', G.semdata, 'area-semdata', exp, todos)
-      + grupoTarefas('Feitas por último', G.feitas.slice(0, 8), 'area-feitas', exp, todos);
-    return html ? `<div class="area-tarefas">${html}</div>` : vazioTopico('tarefas', area);
-  }
+  if (id === 'tarefas') return tarefasDaAreaAba(C);
   if (id === 'pessoas') {
     if (!T.n.pessoas) return vazioTopico('pessoas', area);
     const caso = f => { const open = S.tasks.filter(g => !isChecked(g) && g.members.some(m => m.path === f.path)); return `<button class="case" data-open="${h(f.path)}"><div class="hd"><span class="ct">${h(plain(f.title))}</span><span class="st">${h(f.meta.status || '')}</span></div><p class="rs">${h(plain(f.meta.resumo || ''))}</p><div class="ft">${open.length ? `<span>${open.length} ${open.length > 1 ? 'tarefas' : 'tarefa'}</span>` : ''}<span>${relDay(f.meta.atualizado)}</span></div></button>`; };
@@ -1384,15 +1494,7 @@ function corpoDoTopico(C, T, vista) {
     const nav = `<nav class="dia-nav" aria-label="Outros dias">${velho ? `<a href="#area/${area}/dia/${velho.date}">← ${dayLabel(velho.date)}</a>` : '<span></span>'}${novo ? `<a href="#area/${area}/dia/${novo.date}">${dayLabel(novo.date)} →</a>` : ''}</nav>`;
     return `${dia ? blocoDoDia(dia) : `<div class="area-card topico-vazio"><p>Nada registrado nesta área em ${dm(vista.dia)}.</p></div>`}${nav}`;
   }
-  if (id === 'agenda') {
-    if (!T.n.agenda) return vazioTopico('agenda', area);
-    const ordemDow = [1, 2, 3, 4, 5, 6, 0];
-    const quando = x => x.days.mday ? `Dia ${x.days.mday}` : ordemDow.filter(d => x.days.dows.has(d)).map(d => DOW[d]).join(', ');
-    const hora = e => e.allDay ? 'dia inteiro' : `${e.start}–${e.end}`;
-    return `${T.compromissos.length ? `<section class="area-card"><h3>Próximos compromissos</h3><ul class="dia-linhas">${T.compromissos.slice(0, 20).map(e => `<li class="dia-linha"><span class="dia-st dia-data">${dm(e.date)}</span><span>${inline(e.name)}<small>${DOW[pymd(e.date).getDay()]} · ${hora(e)}${e.obs ? ' · ' + h(short(plain(e.obs), 90)) : ''}</small></span></li>`).join('')}</ul></section>` : ''}
-      ${T.fixos.length ? `<section class="area-card"><h3>Blocos fixos da semana</h3><ul class="dia-linhas">${T.fixos.map(x => `<li class="dia-linha"><span class="dia-st dia-data">${h(quando(x))}</span><span>${inline(x.name)}<small>${hora(x)}${x.from && x.from > C.hoje ? ' · a partir de ' + dm(x.from) : ''}</small></span></li>`).join('')}</ul></section>` : ''}
-      <p class="area-nota">Espelho da agenda (<button type="button" class="secao-fonte" data-open="agenda.md">agenda.md ↗</button>). O Google Agenda manda.</p>`;
-  }
+  if (id === 'agenda') return agendaDaAreaAba(C, T);
   if (id === 'esperando') {
     const secs = T.secoes('esperando');
     if (!T.n.esperando) return vazioTopico('esperando', area);
@@ -1473,8 +1575,72 @@ function leituraDaNota(f) {
     ${!secoes.length && !intro && !f.meta.resumo ? '<p class="area-empty">Esta nota ainda está vazia.</p>' : ''}
     </article>`;
 }
+/* ─────────────── página do caso em abas (22/11/2026) ───────────────
+   Visão geral (situação, próxima ação do TickTick, o resto do assunto) · Linha do tempo · Contatos · Documentos.
+   Nada some: seção sem aba própria vira cartão na visão geral. */
+const SIT_CASO = { andamento: 'Em andamento', esperando: 'Esperando', parado: 'Parado', concluido: 'Concluído' };
+const dataDoCaso = s => {
+  const m = String(s || '').match(/^(\d{4})-(\d{2})-(\d{2})(.*)$/);
+  if (m) return `${+m[3]} ${MON[+m[2] - 1]} ${m[1]}${m[4] ? ' ' + m[4].trim() : ''}`;
+  const m2 = String(s || '').match(/^(\d{4})-(\d{2})$/);
+  return m2 ? `${MON[+m2[2] - 1]} ${m2[1]}` : String(s || '');
+};
+function paginaDoCaso(f) {
+  const P = partesDoCaso(f.body), T = TT(), hoje = ymd(now());
+  const sit = situacaoDoCaso(f.meta.status);
+  const pessoas = [].concat(f.meta.pessoas || []).map(p => String(p).replace(/^\[\[|\]\]$/g, '').trim()).filter(Boolean);
+  const numeros = P.numeros?.rows || [];
+  const abas = [['geral', 'Visão geral', 0], ['linha', 'Linha do tempo', P.linha.length], ['contatos', 'Contatos', 0], ['docs', 'Documentos', numeros.length]]
+    .filter(([id]) => id === 'geral' || (id === 'linha' && (P.linha.length || P.historico || P.linhaResto)) || (id === 'contatos' && (P.contatos || pessoas.length)) || (id === 'docs' && (numeros.length || P.arquivos || P.numeros?.resto)));
+  const pedida = (S.casoAba || {})[f.path];
+  const aba = abas.some(([id]) => id === pedida) ? pedida : 'geral';
+  const date = String(f.meta.atualizado || '').slice(0, 10);
+  const ghUrl = `https://github.com/${cfg.repo}/blob/${encodeURIComponent(cfg.branch || 'main')}/${repoPath(f.path)}`;
+  const areaChip = AREAS[f.area] ? `${AREAS[f.area].emoji} ${AREAS[f.area].nome}` : '🙋 Pessoal';
+  const cab = `<header class="org-caso-cab"><p class="rn-chips"><span>📂 Caso</span><span>${h(areaChip)}</span></p>
+    <h2 tabindex="-1">${h(plain(f.title))}</h2>
+    ${f.meta.resumo ? `<p class="org-resumo">${inline(f.meta.resumo)}</p>` : ''}
+    <p class="rn-meta">${/^\d{4}-\d{2}-\d{2}$/.test(date) ? `<time datetime="${date}">Atualizado em ${dm(date)}/${date.slice(0, 4)}</time>` : ''}${pessoas.length ? `<span>👥 ${pessoas.map(p => wl(p)).join(', ')}</span>` : ''}<a href="${h(ghUrl)}" target="_blank" rel="noopener noreferrer">nota no GitHub ↗</a></p></header>`;
+  const tabs = abas.length > 1 ? `<div class="org-abas org-abas-caso" role="tablist" aria-label="Partes do caso">${abas.map(([id, nome, n]) =>
+    `<button type="button" role="tab" id="caso-aba-${id}" aria-selected="${id === aba}" aria-controls="caso-painel" data-caso-aba="${id}">${nome}${n ? ` <span class="org-n">${n}</span>` : ''}</button>`).join('')}</div>` : '';
+  let corpo = '';
+  if (aba === 'geral') {
+    const ag = P.onde?.agora;
+    const status = `<section class="org-status s-${sit}"><p class="org-status-t"><span class="org-dot" aria-hidden="true"></span><b>${SIT_CASO[sit]}</b>${ag?.rotulo ? `<small>${h(ag.rotulo)}</small>` : ''}</p>
+      ${ag ? `<div class="md">${md(maiuscula(ag.texto), f.path, true)}</div>` : !f.meta.resumo && !P.onde?.resto ? '<p class="area-empty">O assessor escreve aqui onde o caso está quando você contar.</p>' : ''}
+      ${P.onde?.resto ? ag ? `<details class="org-mais-det" data-section="caso-onde"><summary>Mais sobre a situação</summary><div class="md">${md(P.onde.resto, f.path, true)}</div></details>` : `<div class="md">${md(P.onde.resto, f.path, true)}</div>` : ''}</section>`;
+    const ids = f.tasks.map(t => t.id).filter(Boolean);
+    const feitas = f.tasks.filter(t => ['feita', 'fechada'].includes(situacaoDaTarefa(t, T)));
+    const acao = cartaoTickTick({ titulo: 'Próxima ação', tarefas: tarefasDoAssunto(T, { paths: [f.path], ids }), hoje, max: 3, vazio: 'Nenhuma tarefa aberta no TickTick para este caso.', pend: foraDoTickTick(f.tasks, T) })
+      .replace('</section>', feitas.length ? `<details class="org-mais-det" data-section="caso-feitas"><summary>Já feitas (${feitas.length})</summary><ul class="org-feitas">${feitas.map(t => `<li>${ICON.check}<span>${inline(t.text)}${t.done ? ` <small>${dm(t.done)}</small>` : ''}</span></li>`).join('')}</ul></details></section>` : '</section>');
+    const outras = [...(P.intro ? [{ titulo: '', texto: P.intro }] : []), ...P.outras].map(o => `<section class="area-card org-card">${o.titulo ? `<div class="area-card-head"><h3>${h(plain(o.titulo))}</h3></div>` : ''}<div class="md">${md(o.texto, f.path, true)}</div></section>`).join('');
+    const nums = numeros.length ? `<section class="area-card org-card"><div class="area-card-head"><h3>Números e protocolos <span class="org-n">${numeros.length}</span></h3>${numeros.length > 3 ? '<button type="button" class="area-link" data-caso-aba="docs">Ver todos →</button>' : ''}</div>${listaDeNumeros(numeros.slice(0, 3), f.path)}</section>` : '';
+    const ult = P.linha.length ? `<section class="area-card org-card"><div class="area-card-head"><h3>Últimos acontecimentos</h3><button type="button" class="area-link" data-caso-aba="linha">Linha do tempo →</button></div>${linhaDoTempo(P.linha.slice(0, 3))}</section>` : '';
+    corpo = `${status}${acao}${outras}${nums && ult ? `<div class="org-par">${nums}${ult}</div>` : nums || ult}`;
+  } else if (aba === 'linha') {
+    corpo = `${P.linha.length ? `<section class="area-card org-card">${linhaDoTempo(P.linha)}</section>` : ''}
+      ${P.linhaResto ? `<section class="area-card org-card"><div class="md">${md(P.linhaResto, f.path, true)}</div></section>` : ''}
+      ${P.historico ? `<section class="area-card org-card"><details class="org-mais-det" data-section="caso-historico"><summary>Histórico da situação</summary><div class="md">${md(P.historico, f.path, true)}</div></details></section>` : ''}`;
+  } else if (aba === 'contatos') {
+    corpo = `${P.contatos ? `<section class="area-card org-card"><div class="md org-contatos">${md(P.contatos, f.path, true)}</div></section>` : ''}
+      ${pessoas.length ? `<section class="area-card org-card"><div class="area-card-head"><h3>Pessoas</h3></div><ul class="org-pessoas">${pessoas.map(p => `<li>${wl(p)}</li>`).join('')}</ul></section>` : ''}`;
+  } else if (aba === 'docs') {
+    corpo = `${numeros.length ? `<section class="area-card org-card"><div class="area-card-head"><h3>Números e protocolos <span class="org-n">${numeros.length}</span></h3></div>${listaDeNumeros(numeros, f.path, false)}${P.numeros.resto ? `<div class="md">${md(P.numeros.resto, f.path, true)}</div>` : ''}</section>` : ''}
+      ${P.arquivos ? `<section class="area-card org-card"><div class="area-card-head"><h3>Arquivos</h3></div><div class="md org-arquivos">${md(P.arquivos, f.path, true)}</div></section>` : ''}`;
+  }
+  return `<article class="reading-note org-caso" style="--sit:var(--sit-${sit})">${cab}${tabs}<div id="caso-painel" class="org-caso-corpo"${tabs ? ` role="tabpanel" aria-labelledby="caso-aba-${aba}"` : ''}>${corpo}</div></article>`;
+}
+function listaDeNumeros(rows, path, curto = true) {
+  return `<ul class="org-nums">${rows.map(r => {
+    const [num, oque = '', ...resto] = r;
+    const vazio = !num || /^[—–-]$/.test(num);
+    return `<li><span class="org-num${vazio ? ' vazio' : ''}">${vazio ? '—' : h(num)}</span><span class="org-num-t">${curto ? h(short(plain(oque), 110)) : inline(oque)}${resto.filter(x => x && !/^[—–-]$/.test(x)).length ? `<small>${resto.filter(x => x && !/^[—–-]$/.test(x)).map(x => /^\d{4}-\d{2}(-\d{2})?$/.test(x) ? dataDoCaso(x) : inline(x)).join(' · ')}</small>` : ''}</span></li>`;
+  }).join('')}</ul>`;
+}
+const linhaDoTempo = linhas => `<ol class="org-linha">${linhas.map(l => `<li><time>${h(dataDoCaso(l.data))}</time><div>${inline(l.texto)}</div></li>`).join('')}</ol>`;
+
 /* Nota reservada com o modo discreto ligado: pede um toque antes de mostrar. */
-const notaVelada = (f, base) => cfg.discreet && (f.sens || VEIL.has(f.area) || f.path === CAIXA) && !S.reveal.has(f.path) && !(base && S.reveal.has(base));
+const notaVelada =(f, base) => cfg.discreet && (f.sens || VEIL.has(f.area) || f.path === CAIXA) && !S.reveal.has(f.path) && !(base && S.reveal.has(base));
 const veuDaNota = f => `<div class="area-gate">${ICON.lock}<h2>Nota reservada</h2><p>Esta nota é de ${h(AREAS[f.area]?.nome || 'um assunto reservado')} e o modo discreto está ativo.</p><button class="btn" data-reveal="${h(f.path)}">Mostrar a nota</button></div>`;
 const voltarDaNota = destino => `<a class="area-back nota-voltar" href="${destino}"${S.voltas > 1 ? ' data-voltar' : ''}><span aria-hidden="true">←</span> Voltar</a>`;
 
@@ -1490,7 +1656,7 @@ function renderNotaPage() {
   if (same) for (const d of $$('details', el)) openDetails.set(d.dataset.section, d.open);
   el.dataset.route = location.hash;
   el.style.setProperty('--area-accent', areaColor(f?.area));
-  const corpo = !f ? `<p class="area-card">${S.head ? 'Esta nota não foi encontrada.' : 'Carregando a nota…'}</p>` : notaVelada(f) ? veuDaNota(f) : leituraDaNota(f);
+  const corpo = !f ? `<p class="area-card">${S.head ? 'Esta nota não foi encontrada.' : 'Carregando a nota…'}</p>` : notaVelada(f) ? veuDaNota(f) : f.path.startsWith('casos/') ? paginaDoCaso(f) : leituraDaNota(f);
   const markup = `${voltarDaNota('#areas')}<div class="area-main nota-solta">${corpo}</div>`;
   if (same && markup === lastNotaMarkup) return;
   lastNotaMarkup = markup;
@@ -1527,26 +1693,23 @@ function renderAreaPage() {
   } else {
     const C = contextoDaArea(area, base), T = topicosDaArea(C);
     let titulo = '', corpo;
+    // Abas (Visão geral, Agenda, Tarefas, Notas). Tópico, dia e nota ficam dentro de "Notas", com o caminho de volta.
+    const naAba = ['resumo', 'agenda', 'tarefas', 'notas'].includes(route.vista);
+    const voltaNotas = `<a class="org-crumb" href="${linkTopico(area, 'notas')}"><span aria-hidden="true">←</span> Notas</a>`;
     if (route.vista === 'nota') {
       const f = S.files[route.path];
-      corpo = !f ? `<p class="area-card">${S.head ? 'Esta nota não foi encontrada.' : 'Carregando a nota…'}</p>` : notaVelada(f, base) ? veuDaNota(f) : leituraDaNota(f);
+      corpo = !f ? `<p class="area-card">${S.head ? 'Esta nota não foi encontrada.' : 'Carregando a nota…'}</p>` : notaVelada(f, base) ? veuDaNota(f) : f.path.startsWith('casos/') ? paginaDoCaso(f) : leituraDaNota(f);
     } else {
       const t = TOPICOS.find(x => x.id === route.vista);
-      titulo = `<h2 class="topico-titulo">${t ? `${t.emoji} ${t.nome}` : route.vista === 'dias' ? '📅 Registros diários' : `📅 ${diaLongo(route.dia)}`}</h2>`;
+      if (!naAba) titulo = `${voltaNotas}<h2 class="topico-titulo">${t ? `${t.emoji} ${t.nome}` : route.vista === 'dias' ? '📅 Registros diários' : `📅 ${diaLongo(route.dia)}`}</h2>`;
       corpo = S.head || Object.keys(S.files).length ? corpoDoTopico(C, T, route) : '<p class="area-card">Carregando suas notas…</p>';
     }
-    markup = head + `<div class="area-shell"><div class="area-sumario-col">${sumarioDaArea(C, T, route)}</div>
-      <div class="area-main">${route.vista === 'nota' ? voltarDaNota(base) : ''}${titulo}${corpo}</div></div>
-      <button type="button" class="sumario-fab" data-sumario="abrir" aria-controls="areaSumario" aria-expanded="${S.sumario ? 'true' : 'false'}">${SUMARIO_ICON}<span>Sumário</span></button>
-      <div class="sumario-scrim" data-sumario="fechar" aria-hidden="true"></div>`;
+    markup = head + abasDaArea(area, route) + `<div class="area-main org-main">${route.vista === 'nota' ? voltarDaNota(base) : ''}${titulo}${corpo}</div>`;
   }
-  el.classList.toggle('sumario-on', !!S.sumario && !gate);
+  el.classList.remove('sumario-on');
   if (same && markup === lastAreaMarkup) return;
   lastAreaMarkup = markup;
-  const smScroll = $('.area-sumario-col', el)?.scrollTop || 0;
   el.innerHTML = markup;
-  const smCol = $('.area-sumario-col', el);
-  if (smCol) smCol.scrollTop = smScroll;
   for (const node of $$('details', el)) if (openDetails.has(detailKey(node))) node.open = openDetails.get(detailKey(node));
 }
 function sumario(abrir) {
@@ -2396,7 +2559,7 @@ function enviarCaptura(f) {
 }
 
 /* ─────────────── Finanças: o resumo do Minhas Economias (espelho gravado pelo assessor) ─────────────── */
-import { brl, pnum } from './financas.mjs?v=0f137dc75bcf';
+import { brl, pnum } from './financas.mjs?v=9c31fcd4636f';
 const V = (v, cls = '') => `<span class="veil${cls ? ' ' + cls : ''}">${brl(v)}</span>`;
 const corSegura = c => /^#[0-9a-f]{3,8}$/i.test(String(c || '')) ? c : /^[0-9a-f]{6}$/i.test(String(c || '')) ? '#' + c : 'var(--ink3)';
 function renderFinancas() {
@@ -2726,7 +2889,7 @@ function copiar(txt, ok) {
 }
 function bind() {
   document.addEventListener('click', ev => {
-    const t = ev.target.closest('[data-projarea],[data-projetos-privacidade],[data-humor],[data-reveal-sentir],[data-tarefa-privacidade],[data-commit],[data-open],[data-task],[data-compra],[data-cxdel],[data-tab],[data-mdt],[data-reveal],[data-find],[data-reg],[data-mood],[data-emo],#copyAsk,[data-act],[data-st],[data-day],[data-wk],[data-pick],[data-ficha],[data-regficha],[data-fmes],[data-ftab],[data-fo],[data-fedit],[data-fnova],[data-faba],[data-fcart],[data-fvenc],[data-fdia],[data-fcat],[data-alitab],[data-pessoa],[data-dias],[data-pego],[data-trocagrupo],[data-ref],[data-trocap],[data-close],[data-reveal-area],[data-ocultar-area],[data-area-captura],[data-anotar-nota],[data-box-remove],[data-sumario],[data-voltar]');
+    const t = ev.target.closest('[data-projarea],[data-projetos-privacidade],[data-humor],[data-reveal-sentir],[data-tarefa-privacidade],[data-commit],[data-open],[data-task],[data-compra],[data-cxdel],[data-tab],[data-mdt],[data-reveal],[data-find],[data-reg],[data-mood],[data-emo],#copyAsk,[data-act],[data-st],[data-day],[data-wk],[data-pick],[data-ficha],[data-regficha],[data-fmes],[data-ftab],[data-fo],[data-fedit],[data-fnova],[data-faba],[data-fcart],[data-fvenc],[data-fdia],[data-fcat],[data-alitab],[data-pessoa],[data-dias],[data-pego],[data-trocagrupo],[data-ref],[data-trocap],[data-close],[data-reveal-area],[data-ocultar-area],[data-area-captura],[data-anotar-nota],[data-box-remove],[data-sumario],[data-voltar],[data-caso-aba],[data-cardapio-dia]');
     if (!t) return;
     const d = t.dataset;
     // Painel só de leitura (22/11/2026): nada que grave nas notas, na caixa ou nas listas responde ao toque.
@@ -2738,6 +2901,15 @@ function bind() {
       return;
     }
     if (d.revealSentir !== undefined) { S.reveal.add('#sentir'); renderSentir(); return; }
+    if (d.casoAba) {
+      const path = S.page === 'nota' ? S.notaPath : S.areaRoute?.path;
+      if (!path) return;
+      S.casoAba = { ...(S.casoAba || {}), [path]: d.casoAba };
+      if (S.page === 'nota') renderNotaPage(); else renderAreaPage();
+      $(`[data-caso-aba="${d.casoAba}"][role="tab"]`)?.focus({ preventScroll: true });
+      return;
+    }
+    if (d.cardapioDia) { S.cardapioDia = d.cardapioDia; renderAreaPage(); $(`[data-cardapio-dia="${CSS.escape(d.cardapioDia)}"]`)?.focus({ preventScroll: true }); return; }
     if (d.projarea) { S.projArea = d.projarea; LS.set(K + 'projarea', d.projarea); renderProjetos(); return; }
     if (d.projetosPrivacidade !== undefined) { if (S.reveal.has('#projetos')) S.reveal.delete('#projetos'); else S.reveal.add('#projetos'); renderProjetos(); return; }
     if (d.tarefaPrivacidade !== undefined) {
