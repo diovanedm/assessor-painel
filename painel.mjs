@@ -1,15 +1,15 @@
 /* ─────────────── utilidades ─────────────── */
-import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDaNota, linkDeRegistro, metasDaTabela, notaSolta, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=0c2eb376f006';
-import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=0c2eb376f006';
-import { visaoBemEstar } from './bem-estar.mjs?v=0c2eb376f006';
-import { blocosDaSemanaModelo, casosEmAndamento, pontoDeParada, textoDaBusca } from './memoria.mjs?v=0c2eb376f006';
-import { APPS, agendaPorDia, idadeDoEspelho, momento, resumoFinanceiro, tarefasEmGrupos } from './espelho.mjs?v=0c2eb376f006';
-import { linhasCaptura, lerCaptura, tipoAnexo, extAudio, lerOrganizados, destinoLegivel } from './captura.mjs?v=0c2eb376f006';
+import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDaNota, linkDeRegistro, metasDaTabela, notaSolta, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=b960b59f0d6b';
+import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=b960b59f0d6b';
+import { visaoBemEstar } from './bem-estar.mjs?v=b960b59f0d6b';
+import { blocosDaSemanaModelo, casosEmAndamento, pontoDeParada, textoDaBusca } from './memoria.mjs?v=b960b59f0d6b';
+import { APPS, agendaPorDia, idadeDoEspelho, momento, resumoFinanceiro, tarefasEmGrupos } from './espelho.mjs?v=b960b59f0d6b';
+import { linhasCaptura, lerCaptura, tipoAnexo, extAudio, lerOrganizados, destinoLegivel } from './captura.mjs?v=b960b59f0d6b';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const h = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=0c2eb376f006';
+import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=b960b59f0d6b';
 const DOW = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 const DOWL = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
 const MON = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
@@ -26,9 +26,7 @@ const PAGES = [
   { id: 'inicio', nome: 'Hoje', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7" rx="2.2"/><rect x="13" y="4" width="7" height="7" rx="2.2"/><rect x="4" y="13" width="7" height="7" rx="2.2"/><rect x="13" y="13" width="7" height="7" rx="2.2"/></svg>' },
   { id: 'tarefas', nome: 'Tarefas', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="7" r="2"/><path d="M11 7h9M11 17h9"/><path d="m4.5 17 1.5 1.5L8.5 15.5"/></svg>' },
   { id: 'financas', nome: 'Finanças', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="6" width="17" height="13" rx="3"/><path d="M3.5 10.5h17"/><path d="M15 15h2.5"/></svg>' },
-  { id: 'alimentacao', nome: 'Refeições e compras', mais: true, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5h16a8 8 0 0 1-16 0Z"/><path d="M9.5 9c0-1.6 1.2-2 1.2-3.6M13.5 9c0-1.6 1.2-2 1.2-3.6"/></svg>' },
-  { id: 'registrar', nome: 'Capturar', mais: true, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/></svg>' },
-  { id: 'sentir', nome: 'Como estou', mais: true, icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z"/></svg>' },
+  { id: 'alimentacao', nome: 'Refeições e compras', curto: 'Refeições', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5h16a8 8 0 0 1-16 0Z"/><path d="M9.5 9c0-1.6 1.2-2 1.2-3.6M13.5 9c0-1.6 1.2-2 1.2-3.6"/></svg>' },
   { id: 'areas', nome: 'Memória', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="m15.5 8.5-2 5-5 2 2-5 5-2Z"/></svg>' },
 ];
 const MAIS_ICON = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5.5" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="18.5" cy="12" r="1.9"/></svg>';
@@ -133,6 +131,8 @@ const ROTULOS = {
   caso: '📂 Caso', obsidian: '✏️ Você no Obsidian', vault: '✏️ Você no Obsidian', painel: '📲 Painel',
 };
 const TECNICOS = new Set(['indice', 'repo', 'inicio', 'plugin', 'merge', 'ferramentas', 'espelho']);
+/* Painel só de leitura (22/11/2026): estes atributos gravavam na caixa ou nas notas. */
+const ESCRITA = ['humor', 'task', 'compra', 'cxdel', 'mdt', 'pego', 'boxRemove', 'areaCaptura', 'anotarNota', 'ficha', 'regficha', 'reg'];
 const TASK_RE = /^(\s*)- \[([ xX])\] (.*)$/;
 const ITEM_RE = /^- (\d{4}-\d{2}-\d{2}) (\d{1,2}:\d{2}) — (.+)$/;
 
@@ -779,8 +779,8 @@ function renderNav() {
   const active = S.page === 'area' ? (S.areaRoute.area === 'financas' ? 'financas' : 'areas') : S.page === 'nota' ? 'areas' : S.page;
   $('#nav').innerHTML = PAGES.map(p => `<a href="#${p.id}"${active === p.id ? ' aria-current="page"' : ''}>${p.icon}<span>${p.nome}</span></a>`).join('');
   const naMais = PAGES.some(p => p.mais && p.id === active);
-  $('#tabbar').innerHTML = PAGES.filter(p => !p.mais).map(p => `<a href="#${p.id}"${active === p.id ? ' aria-current="page"' : ''}>${p.icon}<span>${p.nome}</span></a>`).join('') +
-    `<a href="#" data-act="mais"${naMais ? ' aria-current="page"' : ''} aria-label="Mais opções">${MAIS_ICON}<span>Mais</span></a>`;
+  $('#tabbar').innerHTML = PAGES.filter(p => !p.mais).map(p => `<a href="#${p.id}"${active === p.id ? ' aria-current="page"' : ''}>${p.icon}<span>${p.curto || p.nome}</span></a>`).join('') +
+    (PAGES.some(p => p.mais) ? `<a href="#" data-act="mais"${naMais ? ' aria-current="page"' : ''} aria-label="Mais opções">${MAIS_ICON}<span>Mais</span></a>` : '');
 }
 function route() {
   let [id, sub] = location.hash.slice(1).split('/');
@@ -839,7 +839,7 @@ function route() {
 
 const isChecked = g => { const o = taskOv(g); return o ? o.kind === 'feita' : g.checked; };
 const byDue = (a, b) => (a.due || '9').localeCompare(b.due || '9') || (b.prio === 'alta') - (a.prio === 'alta');
-import { organizarTarefas, primeiroPasso, prioridadesDoDia } from './tarefas.mjs?v=0c2eb376f006';
+import { organizarTarefas, primeiroPasso, prioridadesDoDia } from './tarefas.mjs?v=b960b59f0d6b';
 function estadoTarefa(g) {
   if (g.nova) return { feita:false, data:'' };
   const item = taskOv(g);
@@ -1132,16 +1132,14 @@ function topicosDaArea(C) {
 }
 
 const SM_CARET = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-// Sumário no estilo do Notion: Resumo e Tarefas sempre à vista; o resto dentro de "Ver mais".
-const SM_FIXOS = new Set(['resumo', 'tarefas']);
+/* Sumário (22/11/2026): só aparece o que tem conteúdo. Tópico vazio não ocupa espaço;
+   ele surge sozinho quando o assessor grava algo naquela seção. */
 function sumarioDaArea(C, T, vista) {
   const { area } = C;
-  // caso ou pessoa aberto dentro da área acende "Pessoas e casos"; nota da área acende "Notas da área"
+  // caso ou pessoa aberto dentro da área acende "Pessoas e casos"
   const atual = vista.vista !== 'nota' ? vista.vista : /^(casos|pessoas)\//.test(vista.path || '') ? 'pessoas' : null;
-  const item = t => {
-    const vazio = t.id !== 'resumo' && !T.n[t.id];
-    return `<li><a class="sm-row${vazio ? ' vazio' : ''}" href="${linkTopico(area, t.id)}"${atual === t.id ? ' aria-current="page"' : ''}><span class="sm-ic" aria-hidden="true">${t.emoji}</span><span class="sm-nome">${t.curto || t.nome}</span>${!vazio && t.id !== 'resumo' ? `<span class="sm-n">${T.n[t.id]}</span>` : ''}</a></li>`;
-  };
+  const item = t => `<li><a class="sm-row" href="${linkTopico(area, t.id)}"${atual === t.id ? ' aria-current="page"' : ''}><span class="sm-ic" aria-hidden="true">${t.emoji}</span><span class="sm-nome">${t.curto || t.nome}</span>${t.id !== 'resumo' && T.n[t.id] ? `<span class="sm-n">${T.n[t.id]}</span>` : ''}</a></li>`;
+  const visiveis = TOPICOS.filter(t => t.id === 'resumo' || T.n[t.id] > 0 || t.id === atual);
   const meses = new Map();
   for (const d of C.dias) { const k = d.date.slice(0, 7); if (!meses.has(k)) meses.set(k, []); meses.get(k).push(d); }
   const mesAtual = (vista.dia || C.dias[0]?.date || C.hoje).slice(0, 7);
@@ -1151,24 +1149,17 @@ function sumarioDaArea(C, T, vista) {
     ...C.apoio.map(f => `<li><a class="sm-row" href="${h(linkDeRegistro(f.path))}"${vista.path === f.path ? ' aria-current="page"' : ''}><span class="sm-ic" aria-hidden="true">📄</span><span class="sm-nome">${h(plain(f.title))}</span></a></li>`)].join('');
   const emDias = atual === 'dias' || !!vista.dia;
   const emNotas = vista.vista === 'nota' && !atual;
-  const fixos = TOPICOS.filter(t => SM_FIXOS.has(t.id));
-  const resto = TOPICOS.filter(t => !SM_FIXOS.has(t.id));
-  const totalMais = resto.reduce((total, t) => total + (T.n[t.id] || 0), 0);
-  const dentro = resto.some(t => t.id === atual) || emDias || emNotas;
-  const abertoMais = dentro || LS.get('sm-mais-' + area, false);
-  const blocoDias = `<li><details class="sm-tg" data-section="sm-dias"${emDias ? ' open' : ''}><summary class="sm-row${atual === 'dias' ? ' sm-atual' : ''}"><span class="sm-caret">${SM_CARET}</span><span class="sm-ic" aria-hidden="true">📅</span><span class="sm-nome">Registros diários</span><span class="sm-n">${C.dias.length || ''}</span></summary>
-    <ul class="sm-sub"><li><a class="sm-row" href="#area/${area}/dias"${atual === 'dias' ? ' aria-current="page"' : ''}><span class="sm-nome">Todos os dias</span></a></li>${dias || '<li class="sm-vazio">Nenhum dia registrado ainda.</li>'}</ul></details></li>`;
+  const blocoDias = C.dias.length ? `<li><details class="sm-tg" data-section="sm-dias"${emDias ? ' open' : ''}><summary class="sm-row${atual === 'dias' ? ' sm-atual' : ''}"><span class="sm-caret">${SM_CARET}</span><span class="sm-ic" aria-hidden="true">📅</span><span class="sm-nome">Registros diários</span><span class="sm-n">${C.dias.length}</span></summary>
+    <ul class="sm-sub"><li><a class="sm-row" href="#area/${area}/dias"${atual === 'dias' ? ' aria-current="page"' : ''}><span class="sm-nome">Todos os dias</span></a></li>${dias}</ul></details></li>` : '';
   const blocoNotas = notas ? `<li><details class="sm-tg" data-section="sm-notas"${emNotas ? ' open' : ''}><summary class="sm-row"><span class="sm-caret">${SM_CARET}</span><span class="sm-ic" aria-hidden="true">📚</span><span class="sm-nome">Notas da área</span><span class="sm-n">${C.apoio.length + (C.principal ? 1 : 0)}</span></summary><ul class="sm-sub">${notas}</ul></details></li>` : '';
   return `<nav class="sumario" id="areaSumario" aria-label="Sumário de ${h(AREAS[area].nome)}">
     <div class="sm-topo"><span>${h(AREAS[area].nome)}</span><button type="button" class="ib sm-fechar" data-sumario="fechar" aria-label="Fechar sumário">${ICON.x}</button></div>
-    <ul class="sm-lista">${fixos.map(item).join('')}
-      <li><details class="sm-tg sm-mais" data-section="sm-mais" data-sm-area="${area}"${abertoMais ? ' open' : ''}><summary class="sm-row"><span class="sm-caret">${SM_CARET}</span><span class="sm-nome">Ver mais</span>${totalMais ? `<span class="sm-n">${totalMais}</span>` : ''}</summary>
-        <ul class="sm-sub sm-sub-mais">${resto.map(item).join('')}${blocoDias}${blocoNotas}</ul></details></li>
-    </ul>
+    <ul class="sm-lista">${visiveis.map(item).join('')}</ul>
+    ${blocoDias || blocoNotas ? `<ul class="sm-lista sm-arquivo">${blocoDias}${blocoNotas}</ul>` : ''}
   </nav>`;
 }
 
-const vazioTopico = (id, area) => `<div class="area-card topico-vazio"><p>${h(DICA[id] || 'Nada aqui ainda.')}</p><button type="button" class="btn ghost" data-area-captura="${area}">＋ Anotar agora</button></div>`;
+const vazioTopico = id => `<div class="area-card topico-vazio"><p>${h(DICA[id] || 'Nada aqui ainda.')}</p></div>`;
 const cartaoSecao = s => `<section class="area-card secao-card"><header class="secao-h"><h3>${h(plain(s.titulo))}</h3>${s.titulo !== s.fonte ? `<button type="button" class="secao-fonte" data-open="${h(s.path)}">${h(short(plain(s.fonte), 34))} <span aria-hidden="true">↗</span></button>` : `<button type="button" class="secao-fonte" data-open="${h(s.path)}">abrir <span aria-hidden="true">↗</span></button>`}</header><div class="md">${md(s.texto, s.path, true)}</div></section>`;
 function barraMeta(m) {
   return `<li class="meta-item"><div class="meta-t">${inline(m.meta)}</div><div class="meta-nums"><span>Atual <b>${inline(m.atual || '—')}</b></span><span>Alvo <b>${inline(m.alvo || '—')}</b></span></div>${m.pct !== null ? `<div class="meta-barra" role="img" aria-label="${m.pct}% do alvo"><i style="width:${m.pct}%"></i></div>` : ''}</li>`;
@@ -1215,12 +1206,12 @@ function corpoDoTopico(C, T, vista) {
         <p>${h(short(plain(principal?.meta.resumo || 'Ainda sem resumo. O assessor escreve um quando você contar como está esta área.'), 240))}</p>
         ${agora ? (() => { const { inicio, resto, n } = cortarLista(agora.text, 4); return `<div class="md resumo-agora">${md(inicio, principal.path, true)}</div>${n ? `<details class="resumo-mais" data-section="agora-mais"><summary>Mais ${n} ${n === 1 ? 'item' : 'itens'} em “Agora”</summary><div class="md resumo-agora">${md(resto, principal.path, true)}</div></details>` : ''}`; })() : ''}</section>
       ${tambem.map(t => { const nome = plain(t.title).replace(/^também\s*:?\s*/i, ''); return `<section class="area-card area-tambem"><div class="area-card-head"><h3><small>Também nesta área</small>${h(nome.charAt(0).toUpperCase() + nome.slice(1))}</h3></div><div class="md">${md(t.text, principal.path, true)}</div></section>`; }).join('')}
-      <section class="area-card"><div class="area-card-head"><h3>Meta em foco</h3><a class="area-link" href="${linkTopico(area, 'metas')}">Metas →</a></div>
-        ${meta ? `<ul class="metas">${barraMeta(meta)}</ul>` : metaLista ? `<p class="area-empty">${inline(metaLista)}</p>` : `<p class="area-empty">Nenhuma meta definida para o trimestre.</p>`}</section>
-      <section class="area-card"><div class="area-card-head"><h3>Próximos passos</h3><a class="area-link" href="${linkTopico(area, 'tarefas')}">Tarefas →</a></div>
-        ${prox.length ? `<ul class="area-steps">${prox.map(taskLi).join('')}</ul>` : '<p class="area-empty">Nenhuma tarefa aberta nesta área.</p>'}</section>
-      <section class="area-card area-recent"><div class="area-card-head"><h3>Últimos dias</h3><a class="area-link" href="#area/${area}/dias">Todos →</a></div>
-        ${dias.length ? `<ul class="ultimos">${dias.map(d => `<li><a href="#area/${area}/dia/${d.date}"><b>${dayLabel(d.date)}</b><span>${h(short(linhasDoDia(d).slice(0, 2).join(' · '), 110))}</span></a></li>`).join('')}</ul>` : '<p class="area-empty">Nenhum registro com data ainda.</p>'}</section>
+      ${meta || metaLista ? `<section class="area-card"><div class="area-card-head"><h3>Meta em foco</h3><a class="area-link" href="${linkTopico(area, 'metas')}">Metas →</a></div>
+        ${meta ? `<ul class="metas">${barraMeta(meta)}</ul>` : `<p class="area-empty">${inline(metaLista)}</p>`}</section>` : ''}
+      ${prox.length ? `<section class="area-card"><div class="area-card-head"><h3>Próximos passos</h3><a class="area-link" href="${linkTopico(area, 'tarefas')}">Tarefas →</a></div>
+        <ul class="area-steps">${prox.map(taskLi).join('')}</ul></section>` : ''}
+      ${dias.length ? `<section class="area-card area-recent"><div class="area-card-head"><h3>Últimos dias</h3><a class="area-link" href="#area/${area}/dias">Todos →</a></div>
+        <ul class="ultimos">${dias.map(d => `<li><a href="#area/${area}/dia/${d.date}"><b>${dayLabel(d.date)}</b><span>${h(short(linhasDoDia(d).slice(0, 2).join(' · '), 110))}</span></a></li>`).join('')}</ul></section>` : ''}
       ${importante ? `<section class="area-card area-recent"><h3>Importante</h3><div class="md">${md(importante.text, principal.path, true)}</div></section>` : ''}
       ${area === 'financas' ? `<a class="area-card area-recent fin-atalho" href="#financas"><b>💰 Abrir Finanças</b><span>Saldo, extrato, orçamento e cartões, direto da planilha →</span></a>` : ''}
     </div>${SENS.has(area) ? visaoBemEstar(area, Object.values(S.files), C.hoje) : ''}`;
@@ -1342,7 +1333,7 @@ function leituraDaNota(f) {
     pessoas.length ? `<span>👥 ${pessoas.map(p => wl(p)).join(', ')}</span>` : '',
     `<a href="${h(ghUrl)}" target="_blank" rel="noopener noreferrer">abrir no GitHub ↗</a>`].filter(Boolean).join('');
   return `<article class="reading-note">
-    <header><div class="rn-topo"><p class="rn-chips">${chips}</p><button type="button" class="btn ghost" data-anotar-nota="${h(f.path)}">✏️ Anotar aqui</button></div>
+    <header><div class="rn-topo"><p class="rn-chips">${chips}</p></div>
       <h2 tabindex="-1">${h(plain(f.title))}</h2>
       <p class="rn-meta">${meta}</p></header>
     ${f.meta.resumo ? `<section class="rn-resumo"><h3>📌 Resumo</h3><p>${inline(f.meta.resumo)}</p></section>` : ''}
@@ -1399,7 +1390,7 @@ function renderAreaPage() {
   el.style.setProperty('--area-accent', areaColor(area));
   const hide = cfg.discreet && S.reveal.has(base) ? `<button class="btn ghost" data-ocultar-area="${area}">Ocultar área</button>` : '';
   const head = `<a class="area-back" href="#areas"><span aria-hidden="true">←</span> Todas as áreas</a>
-    <div class="area-heading"><h1 tabindex="-1">${label}</h1><div class="area-tools">${hide}${gate ? '' : `<button class="btn ghost" data-area-captura="${area}">＋ Anotar</button>`}</div></div>`;
+    <div class="area-heading"><h1 tabindex="-1">${label}</h1><div class="area-tools">${hide}</div></div>`;
   let markup;
   if (gate) {
     markup = head + `<div class="area-gate">${ICON.lock}<h2>Área reservada</h2><p>O modo discreto está ativo.</p><button class="btn" data-reveal-area="${area}">Mostrar esta área</button></div>`;
@@ -1827,12 +1818,12 @@ function renderInicio() {
   S.minute = hr * 60 + n.getMinutes(); S.day = ymd(n);
   const pronto = Boolean(S.head || Object.keys(S.files).length);
   const saudacao = `<header class="hj-heading"><div><p>${DOWL[n.getDay()]}, ${n.getDate()} de ${MESES[n.getMonth()]}</p>
-    <h1>${sauda}${S.name ? ', ' + h(S.name) : ''}.</h1></div><a class="hj-capture" href="#registrar"><span aria-hidden="true">＋</span> Capturar</a></header>`;
+    <h1>${sauda}${S.name ? ', ' + h(S.name) : ''}.</h1></div><button type="button" class="hj-capture" data-act="buscar"><span aria-hidden="true">⌕</span> Buscar</button></header>`;
   if (!pronto) {
     el.innerHTML = `${saudacao}<p class="hj-loading" role="status">${S.err ? 'Não foi possível carregar suas notas.' : 'Carregando suas notas…'}</p>`;
     return;
   }
-  el.innerHTML = `${saudacao}<div class="hj-board es-board">${wAgenda()}${wTarefas()}${wDinheiro()}${wSentir()}${wRetomar()}</div>
+  el.innerHTML = `${saudacao}<div class="hj-board es-board">${wAgenda()}${wTarefas()}${wDinheiro()}${wRetomar()}</div>
     <section class="hj-tools"><div class="hj-channels es-canais">${wRefeicao()}</div></section>`;
   for (const section of $$('details[data-home-fold]', el)) section.open = abertos.has(section.dataset.homeFold);
 }
@@ -1861,8 +1852,6 @@ function closeSheet() {
 const sheetOpen = () => !$('#sheet').hidden;
 function sheetMais() {
   openSheet('Mais', `<ul class="menu">
-    <li><a href="#registrar" data-close><span class="e">📝</span>Capturar</a></li>
-    <li><a href="#sentir" data-close><span class="e">💭</span>Como estou</a></li>
     <li><a href="#alimentacao" data-close><span class="e">🥗</span>Refeições e compras</a></li>
   </ul>
 `);
@@ -2277,7 +2266,7 @@ function enviarCaptura(f) {
 }
 
 /* ─────────────── Finanças: o resumo do Minhas Economias (espelho gravado pelo assessor) ─────────────── */
-import { brl, pnum } from './financas.mjs?v=0c2eb376f006';
+import { brl, pnum } from './financas.mjs?v=b960b59f0d6b';
 const V = (v, cls = '') => `<span class="veil${cls ? ' ' + cls : ''}">${brl(v)}</span>`;
 const corSegura = c => /^#[0-9a-f]{3,8}$/i.test(String(c || '')) ? c : /^[0-9a-f]{6}$/i.test(String(c || '')) ? '#' + c : 'var(--ink3)';
 function renderFinancas() {
@@ -2578,27 +2567,20 @@ function comprasDoPlano(L) {
     <progress id="aliProg" max="${L.itens.length}" value="${feitos}"></progress></div>
     <div class="ali-days"><span>Comprar para</span><div class="days" role="group" aria-label="Dias de refeições">${[1,3,7,15].map(d=>`<button type="button" data-dias="${d}" aria-pressed="${d===S.dias}">${d} ${d===1 ? 'dia':'dias'}</button>`).join('')}</div></div></section>
     <div class="ali-subhead"><h2>Lista por setor</h2><p>Quantidades somadas dos dois planos para ${S.dias} ${S.dias===1?'dia':'dias'}.</p></div>
-    <div class="ali-shop-groups">${[...grupos].map(([key,itens])=>`<details class="ali-card ali-disclosure" data-stay="setor-${h(key)}"${key===open ? ' open':''}><summary>${h(key)}<small>${itens.filter(it=>it.pego).length}/${itens.length} pegos</small></summary><ul class="tasks shop">${itens.map(item).join('')}</ul></details>`).join('')}</div>
-    <details class="ali-card ali-disclosure" data-stay="peguei-outro"><summary>Peguei outro alimento</summary><form class="ali-form" data-form="outro" autocomplete="off">
-      <label>Alimento<input type="text" data-keep="outro" name="txt" placeholder="O que você pegou?"></label>
-      <label>No lugar de<select data-keep="substitui" name="lugar"><option value="">Nenhum item específico</option>${L.itens.map(it=>`<option value="${h(it.n)}">${h(it.n)}</option>`).join('')}</select></label>
-      <button class="btn" type="submit">Marcar como comprado</button></form></details>`;
+    <div class="ali-shop-groups">${[...grupos].map(([key,itens])=>`<details class="ali-card ali-disclosure" data-stay="setor-${h(key)}"${key===open ? ' open':''}><summary>${h(key)}<small>${itens.filter(it=>it.pego).length}/${itens.length} pegos</small></summary><ul class="tasks shop">${itens.map(item).join('')}</ul></details>`).join('')}</div>`;
 }
 function aliCompras() {
   const L = listaCompras();
   const secs = S.compras.secs;
   const extra = secs.map(s=>({...s,pendentes:S.ov.comprar.filter(it=>norm(it.sec) === norm(s.name))})).filter(s=>s.items.length || s.pendentes.length);
   const orphan = S.ov.comprar.filter(it=>!secs.some(s=>norm(s.name) === norm(it.sec)));
-  const heads = S.compras.heads.length ? S.compras.heads : ['Mercado','Feira','Farmácia','Casa','Bebê','Outro'];
   return `${L ? comprasDoPlano(L) : '<p class="ali-nodata">A lista de compras do plano ainda não está nas notas.</p>'}
     <section class="ali-card ali-other"><h2>Outras compras</h2>${extra.map(s=>`<h3>${h(s.name)}</h3><ul class="tasks">${s.items.map(t=>{
       const checked = S.ov.comprado.get(norm(t.text));
       return `<li class="task${checked ? ' done':''}${checked?.pending ? ' busy':''}"><button type="button" class="chk" role="checkbox" aria-checked="${!!checked}" data-compra="${h(t.raw)}" aria-label="${checked ? 'Desfazer':'Comprado'}: ${h(t.text)}">${ICON.check}</button><div class="tx"><div class="t">${inline(t.text)}</div>${checked ? '<small>Na caixa</small>':''}</div></li>`;
     }).join('')}${s.pendentes.map(cxCompraLi).join('')}</ul>`).join('')}${orphan.length ? `<h3>Na caixa</h3><ul class="tasks">${orphan.map(cxCompraLi).join('')}</ul>`:''}
     ${extra.length || orphan.length ? '':'<p>A lista da casa está vazia.</p>'}
-    <form class="ali-form" data-form="addcompra" autocomplete="off"><label>Adicionar à lista<input type="text" data-keep="addcompra" name="txt" placeholder="Nome do item"></label>
-      <label>Seção<select name="sec" data-keep="sec">${heads.map(x=>`<option${x==='Casa'?' selected':''}>${h(x)}</option>`).join('')}</select></label>
-      <button class="btn" type="submit">Adicionar</button></form></section>`;
+</section>`;
 }
 function clickPego(key) {
   const L = listaCompras(); if (!L) return;
@@ -2617,6 +2599,8 @@ function bind() {
     const t = ev.target.closest('[data-humor],[data-reveal-sentir],[data-tarefa-privacidade],[data-commit],[data-open],[data-task],[data-compra],[data-cxdel],[data-tab],[data-mdt],[data-reveal],[data-find],[data-reg],[data-mood],[data-emo],#copyAsk,[data-act],[data-st],[data-day],[data-wk],[data-pick],[data-ficha],[data-regficha],[data-fmes],[data-ftab],[data-fo],[data-fedit],[data-fnova],[data-faba],[data-fcart],[data-fvenc],[data-fdia],[data-fcat],[data-alitab],[data-pessoa],[data-dias],[data-pego],[data-trocagrupo],[data-ref],[data-trocap],[data-close],[data-reveal-area],[data-ocultar-area],[data-area-captura],[data-anotar-nota],[data-box-remove],[data-sumario],[data-voltar]');
     if (!t) return;
     const d = t.dataset;
+    // Painel só de leitura (22/11/2026): nada que grave nas notas, na caixa ou nas listas responde ao toque.
+    if (ESCRITA.some(k => d[k] !== undefined)) { ev.preventDefault(); return; }
     if (d.humor) {
       const fi = fichasAll()[0];
       openSheet(`${fi.emoji} ${fi.nome}`, formFicha(fi), { focus: 'textarea[name=livre]' });
@@ -2725,7 +2709,7 @@ function bind() {
   document.addEventListener('submit', ev => {
     const f = ev.target;
     const kind = f.dataset.form;
-    if (kind) ev.preventDefault();
+    if (kind) { ev.preventDefault(); return; }
     if (kind === 'captura') { enviarCaptura(f); return; }
     if (kind === 'nota') { concluirCaptura(f, () => saveNota(f.elements.txt.value, f.elements.areaNota.value)); return; }
     if (kind === 'ficha') { submitFicha(f); return; }
@@ -2749,7 +2733,6 @@ function bind() {
     if (ev.key === 'Enter' && !ev.shiftKey && !ev.isComposing && t.matches && t.matches('form[data-form="captura"] textarea') && matchMedia('(pointer: fine)').matches) { ev.preventDefault(); t.form.requestSubmit(); }
   });
   // "Ver mais" do sumário lembra se ele abriu ou fechou (só quando é ele quem clica)
-  document.addEventListener('click', ev => { const sm = ev.target.closest?.('details[data-sm-area] > summary'); if (sm) LS.set('sm-mais-' + sm.parentElement.dataset.smArea, !sm.parentElement.open); }, true);
   $('#eye').onclick = () => { cfg.discreet = !cfg.discreet; saveCfg(); S.reveal.clear(); render(); };
   $('#openCfg').onclick = showCfg;
   $('#openFind').onclick = openFind;

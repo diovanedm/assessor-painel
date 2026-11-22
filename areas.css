@@ -291,7 +291,6 @@
 .sm-row { display: flex; align-items: center; gap: 6px; min-height: 30px; padding: 3px 8px; border-radius: 6px; color: var(--ink2); font-size: 14px; font-weight: 500; line-height: 1.3; text-decoration: none; cursor: pointer; user-select: none; }
 .sm-row:hover { background: var(--sm-hover); color: var(--ink); }
 .sumario a.sm-row[aria-current="page"], .sm-row.sm-atual { background: var(--sm-ativo); color: var(--ink); font-weight: 600; }
-.sm-row.vazio { color: var(--ink3); }
 .sm-ic { width: 20px; flex: none; text-align: center; font-size: 15px; line-height: 1; }
 .sm-nome { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sm-n { margin-left: auto; color: var(--ink3); font-size: 12px; font-weight: 500; font-variant-numeric: tabular-nums; }
@@ -302,10 +301,9 @@
 .sm-caret svg { width: 14px; height: 14px; transition: transform .15s ease; }
 .sm-tg[open] > summary .sm-caret svg { transform: rotate(90deg); }
 .sm-row:hover .sm-caret { color: var(--ink2); }
-.sm-mais > summary { color: var(--ink3); margin-top: 2px; }
-.sm-mais[open] > summary .sm-n { display: none; }
 .sm-sub { padding-left: 14px !important; }
-.sm-sub-mais { padding-left: 10px !important; }
+/* dias e notas da área ficam num bloco à parte, abaixo dos tópicos */
+.sm-arquivo { margin-top: 10px !important; padding-top: 10px !important; border-top: 1px solid var(--line); }
 .sm-mes > summary { text-transform: capitalize; }
 .sm-vazio { padding: 4px 8px 4px 34px; color: var(--ink3); font-size: 13px; }
 @media (max-width: 1020px) {
@@ -314,7 +312,6 @@
   .sm-row { min-height: 42px; font-size: 15px; }
 }
 @media (prefers-reduced-motion: reduce) { .sm-caret svg { transition: none; } }
-.sm-sub-mais > li > a.sm-row { padding-left: 34px; }
 .sm-sub > li > a.sm-row:not(:has(.sm-ic)) { padding-left: 34px; }
 
 /* "## Também: …" da nota da área (ex.: renda extra e música no Trabalho): cartão à parte, largura toda */
@@ -322,3 +319,6 @@
 .area-tambem h3 small { display: block; font: 600 11px/1.4 var(--f-ui); letter-spacing: .06em; text-transform: uppercase; color: var(--ink3); margin-bottom: 2px; }
 .area-tambem .md { margin-top: 10px; font-size: 14.5px; line-height: 1.6; color: var(--ink2); }
 .area-tambem .md ul { padding-left: 18px; margin: 0; }
+
+/* Painel só de leitura (22/11/2026): caixinhas de tarefa e de compra só mostram o estado */
+.chk[data-task], .chk[data-pego], .chk[data-compra], .chk[data-mdt] { cursor: default; pointer-events: none; }
