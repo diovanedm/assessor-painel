@@ -1,6 +1,6 @@
 // Dados do topo próprio de cada área (22/11/2026). Funções puras: recebem o que o painel já leu
 // das notas e do espelho e devolvem números prontos para desenhar. Nada aqui grava.
-import { addDays, norm, pymd, ymd } from './datas.mjs?v=9c31fcd4636f';
+import { addDays, norm, pymd, ymd } from './datas.mjs?v=608f29e12708';
 
 const ehData = s => /^\d{4}-\d{2}-\d{2}$/.test(String(s || '')) && ymd(pymd(s)) === s;
 const celulas = l => l.trim().replace(/^\|/, '').replace(/\|$/, '').split(/(?<!\\)\|/).map(c => c.trim());

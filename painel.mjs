@@ -1,18 +1,18 @@
 /* ─────────────── utilidades ─────────────── */
-import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDaNota, linkDeRegistro, metasDaTabela, notaSolta, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=9c31fcd4636f';
-import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=9c31fcd4636f';
-import { visaoBemEstar } from './bem-estar.mjs?v=9c31fcd4636f';
-import { blocosDaSemanaModelo, casosEmAndamento, pontoDeParada, textoDaBusca } from './memoria.mjs?v=9c31fcd4636f';
-import { APPS, agendaPorDia, idadeDoEspelho, momento, resumoFinanceiro, tarefasEmGrupos } from './espelho.mjs?v=9c31fcd4636f';
-import { humorRecente, marcosDaArea, nivelDeIngles, semanaDaArea, trilha } from './visual.mjs?v=9c31fcd4636f';
-import { projetos as listaDeProjetos, situacao as situacaoDoCaso } from './projetos.mjs?v=9c31fcd4636f';
-import { TICKTICK, tickTick, situacaoDaTarefa, tarefasDoAssunto, foraDoTickTick, partesDoTitulo, compromissosDaArea, semanaDosBlocos, progressoDasMetas, cardapio, diaDoCardapio, partesDoCaso } from './organizar.mjs?v=9c31fcd4636f';
-import { linhasCaptura, lerCaptura, tipoAnexo, extAudio, lerOrganizados, destinoLegivel } from './captura.mjs?v=9c31fcd4636f';
+import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDaNota, linkDeRegistro, metasDaTabela, notaSolta, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=608f29e12708';
+import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=608f29e12708';
+import { visaoBemEstar } from './bem-estar.mjs?v=608f29e12708';
+import { blocosDaSemanaModelo, casosEmAndamento, pontoDeParada, textoDaBusca } from './memoria.mjs?v=608f29e12708';
+import { APPS, agendaPorDia, idadeDoEspelho, momento, resumoFinanceiro, tarefasEmGrupos } from './espelho.mjs?v=608f29e12708';
+import { humorRecente, marcosDaArea, nivelDeIngles, semanaDaArea, trilha } from './visual.mjs?v=608f29e12708';
+import { projetos as listaDeProjetos, situacao as situacaoDoCaso } from './projetos.mjs?v=608f29e12708';
+import { TICKTICK, tickTick, situacaoDaTarefa, tarefasDoAssunto, foraDoTickTick, partesDoTitulo, compromissosDaArea, semanaDosBlocos, progressoDasMetas, cardapio, diaDoCardapio, partesDoCaso } from './organizar.mjs?v=608f29e12708';
+import { linhasCaptura, lerCaptura, tipoAnexo, extAudio, lerOrganizados, destinoLegivel } from './captura.mjs?v=608f29e12708';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const h = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=9c31fcd4636f';
+import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=608f29e12708';
 const DOW = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 const DOWL = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
 const MON = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
@@ -112,11 +112,11 @@ const API = (devHost && new URLSearchParams(location.search).get('api')) || 'htt
 /* ─────────────── o que o painel sabe do repo ─────────────── */
 const AREAS = {
   financas: { nome: 'Finanças', emoji: '💰' }, saude: { nome: 'Saúde', emoji: '💪' }, ingles: { nome: 'Inglês', emoji: '🗣️' },
-  trabalho: { nome: 'Trabalho', emoji: '💼' }, carreira: { nome: 'Carreira', emoji: '🚀' }, emocional: { nome: 'Emocional', emoji: '💭' },
+  trabalho: { nome: 'Trabalho', emoji: '💼' }, musica: { nome: 'Música', emoji: '🎵' }, carreira: { nome: 'Carreira', emoji: '🚀' }, emocional: { nome: 'Emocional', emoji: '💭' },
   'casa-familia': { nome: 'Casa e família', emoji: '🏡' }, cultura: { nome: 'Cultura', emoji: '📚' },
 };
-const AREA_ORDER = ['financas', 'saude', 'ingles', 'trabalho', 'carreira', 'emocional', 'casa-familia', 'cultura'];
-const NOTA_AREAS = [['geral', '📥 Geral'], ['trabalho', '💼 Trabalho'], ['financas', '💰 Finanças'], ['casa-familia', '🏡 Casa e família'], ['saude', '💪 Saúde'], ['emocional', '💭 Emocional'], ['ingles', '🗣️ Inglês'], ['carreira', '🚀 Carreira'], ['cultura', '📚 Cultura']];
+const AREA_ORDER = ['financas', 'saude', 'ingles', 'trabalho', 'musica', 'carreira', 'emocional', 'casa-familia', 'cultura'];
+const NOTA_AREAS = [['geral', '📥 Geral'], ['trabalho', '💼 Trabalho'], ['musica', '🎵 Música'], ['financas', '💰 Finanças'], ['casa-familia', '🏡 Casa e família'], ['saude', '💪 Saúde'], ['emocional', '💭 Emocional'], ['ingles', '🗣️ Inglês'], ['carreira', '🚀 Carreira'], ['cultura', '📚 Cultura']];
 const EMOCOES = ['irritação', 'raiva', 'ansiedade', 'nervoso', 'cansaço', 'tristeza', 'culpa', 'medo', 'frustração', 'calma', 'alegria', 'gratidão'];
 const HUMOR = [['😣', 'péssimo'], ['🙁', 'mal'], ['😐', 'mais ou menos'], ['🙂', 'bem'], ['😄', 'muito bem']];
 const SENS = new Set(['emocional', 'saude']);
@@ -130,7 +130,7 @@ const STATUS = { bem: 'bem', atencao: 'atenção', alerta: 'alerta', parado: 'pa
 const STATUS_PRIORITARIOS = ['parado', 'alerta', 'atencao'];
 const ROTULOS = {
   financas: '💰 Finanças', agenda: '📅 Agenda', diario: '📓 Diário', emocional: '💭 Emocional', saude: '💪 Saúde', ingles: '🗣️ Inglês',
-  trabalho: '💼 Trabalho', carreira: '🚀 Carreira', 'casa-familia': '🏡 Casa e família', casa: '🏡 Casa', familia: '🏡 Família', cultura: '📚 Cultura',
+  trabalho: '💼 Trabalho', musica: '🎵 Música', carreira: '🚀 Carreira', 'casa-familia': '🏡 Casa e família', casa: '🏡 Casa', familia: '🏡 Família', cultura: '📚 Cultura',
   documentos: '📄 Documentos', eu: '🙋 Você', compras: '🛒 Compras', pessoas: '👥 Pessoas', inbox: '📥 Inbox', tarefas: '✅ Tarefas',
   caso: '📂 Caso', obsidian: '✏️ Você no Obsidian', vault: '✏️ Você no Obsidian', painel: '📲 Painel',
 };
@@ -866,7 +866,7 @@ function seloTickTick(sit, id) {
 }
 const isChecked = g => { const o = taskOv(g); if (o) return o.kind === 'feita'; const s = situacaoDoGrupo(g); return s === 'feita' || s === 'fechada'; };
 const byDue = (a, b) => (a.due || '9').localeCompare(b.due || '9') || (b.prio === 'alta') - (a.prio === 'alta');
-import { organizarTarefas, primeiroPasso, prioridadesDoDia } from './tarefas.mjs?v=9c31fcd4636f';
+import { organizarTarefas, primeiroPasso, prioridadesDoDia } from './tarefas.mjs?v=608f29e12708';
 function estadoTarefa(g) {
   if (g.nova) return { feita:false, data:'' };
   const item = taskOv(g);
@@ -1060,7 +1060,7 @@ function cxLabel(it, compact) {
 function renderRhythm() {
   const n = now(), days = [];
   for (let k = 6; k >= 0; k--) days.push(ymd(addDays(n, -k)));
-  const rows = ['saude', 'ingles', 'carreira', 'emocional', 'cultura', 'financas', 'trabalho'];
+  const rows = ['saude', 'ingles', 'carreira', 'emocional', 'cultura', 'musica', 'financas', 'trabalho'];
   let html = `<div class="rh"><span></span>${days.map(d => { const x = pymd(d); return `<span class="dh${d === days[6] ? ' today' : ''}">${DOW[x.getDay()]}<br>${x.getDate()}</span>`; }).join('')}<span class="dh">feitos</span>`;
   let any = false;
   const boxH = S.cx.filter(i => i.kind === 'habito');
@@ -1276,7 +1276,8 @@ const HERO = {
   emocional: { kicker: 'Cuidar de você', marca: '🌙' },
   'casa-familia': { kicker: 'Família e a chegada do Rafael', marca: '🏡' },
   cultura: { kicker: 'Um tema por domingo', marca: '🧭' },
-  trabalho: { kicker: 'Apsis e renda extra', marca: '💼' },
+  trabalho: { kicker: 'Apsis', marca: '💼' },
+  musica: { kicker: 'Culto, aulas e Drum Groove', marca: '🥁' },
 };
 const DIA1 = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
 const ICONE_TREINO = { academia: '🏋️', corrida: '🏃', caminhada: '🚶', outro: '•' };
@@ -1334,10 +1335,19 @@ function heroDaArea(C, T) {
     const musica = (S.files['areas/cultura/musicas.md']?.body.match(/\*\*(.+?)\*\*,\s*de\s*\*\*(.+?)\*\*/) || []);
     corpo = `<ol class="hx-domingos" aria-label="${a} de ${b} domingos">${[...Array(b)].map((_, i) => `<li class="${i < a ? 'fez' : ''}"></li>`).join('')}</ol>
       <div class="hx-chips">${tema ? `<span>📖 ${h(tema)}</span>` : ''}${musica[1] ? `<span>🎵 ${h(musica[1])} · ${h(musica[2])}</span>` : ''}</div>`;
-  } else if (area === 'trabalho') {
-    const abertos = C.casos.filter(f => !/^(fechado|resolvido|concluido|encerrado)$/.test(norm(f.meta.status || '')));
-    titulo = `<b>${abertos.length}</b> ${abertos.length === 1 ? 'assunto aberto' : 'assuntos abertos'}`;
-    corpo = abertos.length ? `<div class="hx-chips hx-casos">${abertos.slice(0, 5).map(f => `<button type="button" data-open="${h(f.path)}">📂 ${h(short(plain(f.title), 42))}</button>`).join('')}</div>` : '';
+  } else if (area === 'trabalho' || area === 'musica') {
+    const abertos = C.casos.filter(f => !/^(fechado|resolvido|concluido|encerrado)$/.test(norm(f.meta.status || '')))
+      .sort((x, y) => (norm(x.meta.status || '') === 'parado') - (norm(y.meta.status || '') === 'parado') || String(y.meta.atualizado || '').localeCompare(String(x.meta.atualizado || '')));
+    const chips = abertos.length ? `<div class="hx-chips hx-casos">${abertos.slice(0, 8).map(f => `<button type="button" data-open="${h(f.path)}">📂 ${h(short(plain(f.title), 42))}</button>`).join('')}</div>` : '';
+    const culto = area === 'musica' ? metas.find(m => /culto|domingo/i.test(m.meta)) : null;
+    if (culto) {
+      const a = parseInt(culto.atual, 10) || 0, b = parseInt(String(culto.alvo).match(/\d+\s*de\s*(\d+)/)?.[1] || culto.alvo, 10) || 13;
+      titulo = `<b>${a}</b> de ${b} domingos com o repertório estudado`;
+      corpo = `<ol class="hx-domingos" aria-label="${a} de ${b} domingos">${[...Array(b)].map((_, i) => `<li class="${i < a ? 'fez' : ''}"></li>`).join('')}</ol>${chips}`;
+    } else {
+      titulo = `<b>${abertos.length}</b> ${abertos.length === 1 ? 'assunto aberto' : 'assuntos abertos'}`;
+      corpo = chips;
+    }
   }
   return `<section class="hero hero-${area}" data-marca="${H.marca}">
     <div class="hero-top"><p class="hero-kicker">${h(H.kicker)}</p>${Object.hasOwn(STATUS, status) ? `<span class="area-status lamp s-${status}">${STATUS[status]}</span>` : ''}</div>
@@ -2559,7 +2569,7 @@ function enviarCaptura(f) {
 }
 
 /* ─────────────── Finanças: o resumo do Minhas Economias (espelho gravado pelo assessor) ─────────────── */
-import { brl, pnum } from './financas.mjs?v=9c31fcd4636f';
+import { brl, pnum } from './financas.mjs?v=608f29e12708';
 const V = (v, cls = '') => `<span class="veil${cls ? ' ' + cls : ''}">${brl(v)}</span>`;
 const corSegura = c => /^#[0-9a-f]{3,8}$/i.test(String(c || '')) ? c : /^[0-9a-f]{6}$/i.test(String(c || '')) ? '#' + c : 'var(--ink3)';
 function renderFinancas() {

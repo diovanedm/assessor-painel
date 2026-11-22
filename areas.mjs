@@ -1,4 +1,4 @@
-import { norm, pad, pymd, ymd } from './datas.mjs?v=9c31fcd4636f';
+import { norm, pad, pymd, ymd } from './datas.mjs?v=608f29e12708';
 
 /* Tópicos fixos de toda área, na ordem do sumário. `re` acha as seções (## …) das notas
    que alimentam o tópico; os tópicos sem `re` são montados pelo painel. */
@@ -24,7 +24,7 @@ export const TOPICOS = [
 const TOPICO_IDS = new Set(TOPICOS.map(t => t.id));
 
 const APELIDOS = {
-  financas: ['financas', 'dinheiro'], saude: ['saude'], ingles: ['ingles'], trabalho: ['trabalho', 'apsis'],
+  financas: ['financas', 'dinheiro'], saude: ['saude'], ingles: ['ingles'], trabalho: ['trabalho', 'apsis'], musica: ['musica', 'igreja', 'culto'],
   carreira: ['carreira'], emocional: ['emocional'], 'casa-familia': ['casa-familia', 'casa e familia', 'casa', 'familia'], cultura: ['cultura'],
 };
 /** Áreas citadas num texto como "Finanças", "Casa e Família, Trabalho" ou "casa-familia". */
