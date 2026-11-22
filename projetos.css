@@ -18,6 +18,8 @@
 .pj-area { font-size: 12.5px; font-weight: 650; color: color-mix(in srgb, var(--c) 55%, var(--ink)); }
 .pj-sit { flex: none; padding: 3px 9px; border-radius: 99px; font-size: 11.5px; font-weight: 650; background: color-mix(in srgb, var(--c) 14%, var(--panel)); color: color-mix(in srgb, var(--c) 55%, var(--ink)); }
 .pj-sit.s-esperando { background: color-mix(in srgb, var(--warn) 16%, var(--panel)); color: var(--warn); }
+.pj-sit.s-parado { background: color-mix(in srgb, var(--idle) 16%, var(--panel)); color: var(--ink3); }
+.pj-card:has(.s-parado) { opacity: .85; }
 .pj-sit.s-concluido { background: color-mix(in srgb, var(--ok) 14%, var(--panel)); color: var(--ok); }
 .pj-titulo { font-size: 17px; line-height: 1.3; font-weight: 700; letter-spacing: -.01em; }
 .pj-agora { color: var(--ink2); font-size: 14px; line-height: 1.5; }

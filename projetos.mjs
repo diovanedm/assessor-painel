@@ -1,15 +1,16 @@
 // Aba Projetos (22/11/2026): tudo que tem começo e fim (as notas de casos/), com o andamento de cada um.
 // Só leitura: o painel calcula a partir das notas; quem atualiza é o assessor.
-import { norm, pymd } from './datas.mjs?v=d8e3ff85f4ed';
+import { norm, pymd } from './datas.mjs?v=0f137dc75bcf';
 
 const ENCERRADO = /^(fechado|resolvido|concluido|encerrado)$/;
 const diasEntre = (a, b) => Math.round((pymd(b) - pymd(a)) / 864e5);
 
-/** Situação do projeto pelo `status` do frontmatter: 'andamento', 'esperando' ou 'concluido'. */
+/** Situação do projeto pelo `status` do frontmatter: 'andamento', 'esperando', 'parado' ou 'concluido'. */
 export function situacao(status) {
   const s = norm(status || '').trim();
   if (ENCERRADO.test(s)) return 'concluido';
-  if (/^(esperando|aguardando|parado|pausado)/.test(s)) return 'esperando';
+  if (/^(esperando|aguardando)/.test(s)) return 'esperando';
+  if (/^(parado|pausado)/.test(s)) return 'parado';
   return 'andamento';
 }
 
@@ -31,10 +32,11 @@ export function resumoDoProjeto(f, hoje) {
 }
 
 /** Todos os projetos (casos/), separados em andamento e concluídos.
-    Em andamento: atrasados primeiro, depois pelo prazo da próxima tarefa, depois o mexido por último. */
+    Em andamento: atrasados primeiro, parados por último; no meio, pelo prazo da próxima tarefa e o mexido por último. */
 export function projetos(arquivos, hoje) {
   const todos = Object.values(arquivos).filter(f => f.path.startsWith('casos/')).map(f => resumoDoProjeto(f, hoje));
   const ordem = (a, b) => Number(b.atrasada) - Number(a.atrasada)
+    || Number(a.situacao === 'parado') - Number(b.situacao === 'parado')
     || (a.proxima?.due || '9999').localeCompare(b.proxima?.due || '9999')
     || String(b.atualizado || '').localeCompare(String(a.atualizado || ''));
   const andamento = todos.filter(p => p.situacao !== 'concluido').sort(ordem);

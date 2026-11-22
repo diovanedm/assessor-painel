@@ -1,4 +1,4 @@
-import {addDays, norm, pymd, ymd} from './datas.mjs?v=d8e3ff85f4ed';
+import {addDays, norm, pymd, ymd} from './datas.mjs?v=0f137dc75bcf';
 
 const safe = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c]));
 const number = n => n.toLocaleString('pt-BR', {maximumFractionDigits: 2});

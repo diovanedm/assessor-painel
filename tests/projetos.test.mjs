@@ -7,6 +7,7 @@ test('situação pelo status', () => {
   assert.equal(situacao('fechado'), 'concluido');
   assert.equal(situacao('em andamento'), 'andamento');
   assert.equal(situacao('Esperando o Procon'), 'esperando');
+  assert.equal(situacao('parado'), 'parado');
 });
 test('atrasados primeiro, concluídos à parte, andamento das tarefas', () => {
   const P = projetos({
