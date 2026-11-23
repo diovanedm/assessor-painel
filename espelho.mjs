@@ -1,6 +1,6 @@
 // O espelho que o assessor grava em painel/espelho.json: o que está agora no Google Agenda,
 // no TickTick e no Minhas Economias. O painel só lê; quem manda são os aplicativos.
-import { addDays, pymd, ymd, toMin } from './datas.mjs?v=18740ad18408';
+import { addDays, pymd, ymd, toMin } from './datas.mjs?v=0fa1b6c8623c';
 
 export const APPS = {
   agenda: { nome: 'Google Agenda', url: 'https://calendar.google.com/calendar/r' },

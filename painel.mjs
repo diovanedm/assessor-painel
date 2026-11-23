@@ -1,18 +1,19 @@
 /* ─────────────── utilidades ─────────────── */
-import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDaNota, linkDeRegistro, metasDaTabela, notaSolta, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=18740ad18408';
-import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=18740ad18408';
-import { visaoBemEstar } from './bem-estar.mjs?v=18740ad18408';
-import { blocosDaSemanaModelo, casosEmAndamento, pontoDeParada, textoDaBusca } from './memoria.mjs?v=18740ad18408';
-import { APPS, agendaPorDia, comAoVivo, idadeDoEspelho, momento, resumoFinanceiro, tarefasEmGrupos } from './espelho.mjs?v=18740ad18408';
-import { humorRecente, marcosDaArea, nivelDeIngles, semanaDaArea, trilha } from './visual.mjs?v=18740ad18408';
-import { projetos as listaDeProjetos, situacao as situacaoDoCaso } from './projetos.mjs?v=18740ad18408';
-import { TICKTICK, tickTick, situacaoDaTarefa, tarefasDoAssunto, foraDoTickTick, partesDoTitulo, compromissosDaArea, semanaDosBlocos, progressoDasMetas, cardapio, diaDoCardapio, partesDoCaso } from './organizar.mjs?v=18740ad18408';
-import { linhasCaptura, lerCaptura, tipoAnexo, extAudio, lerOrganizados, destinoLegivel } from './captura.mjs?v=18740ad18408';
+import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDaNota, linkDeRegistro, metasDaTabela, notaSolta, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=0fa1b6c8623c';
+import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=0fa1b6c8623c';
+import { visaoBemEstar } from './bem-estar.mjs?v=0fa1b6c8623c';
+import { blocosDaSemanaModelo, casosEmAndamento, pontoDeParada, textoDaBusca } from './memoria.mjs?v=0fa1b6c8623c';
+import { APPS, agendaPorDia, comAoVivo, idadeDoEspelho, momento, resumoFinanceiro, tarefasEmGrupos } from './espelho.mjs?v=0fa1b6c8623c';
+import { humorRecente, marcosDaArea, nivelDeIngles, semanaDaArea, trilha } from './visual.mjs?v=0fa1b6c8623c';
+import { projetos as listaDeProjetos, situacao as situacaoDoCaso } from './projetos.mjs?v=0fa1b6c8623c';
+import { TICKTICK, tickTick, situacaoDaTarefa, tarefasDoAssunto, foraDoTickTick, partesDoTitulo, compromissosDaArea, semanaDosBlocos, progressoDasMetas, cardapio, diaDoCardapio, partesDoCaso } from './organizar.mjs?v=0fa1b6c8623c';
+import { linhasCaptura, lerCaptura, tipoAnexo, extAudio, lerOrganizados, destinoLegivel } from './captura.mjs?v=0fa1b6c8623c';
+import * as E from './escrita.mjs?v=0fa1b6c8623c';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const h = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=18740ad18408';
+import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=0fa1b6c8623c';
 const DOW = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 const DOWL = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
 const MON = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
@@ -608,6 +609,77 @@ async function doWrite(path, transform, message) {
   }
   throw erro('conflito');
 }
+/* Vários arquivos num commit só (Git Data API, 23/11/2026): mover um registro tira de uma nota e
+   põe na outra, e o aviso pro assessor entra junto. Ou grava tudo, ou nada. Sempre parte do que
+   está no GitHub agora; se alguém subir no meio, refaz em cima do novo (até 3 vezes).
+   ops: [{ path, transform(texto atual | null) → texto novo | null (apaga o arquivo) }]. */
+function writeMany(ops, message, { onOk, onErr } = {}) {
+  S.pending++; setLive();
+  const job = queue.then(() => doWriteMany(ops, message))
+    .then(r => { onOk?.(r); return true; }, e => { onErr ? onErr(e) : toastErr(e); return false; })
+    .finally(() => { S.pending--; setLive(); render(); });
+  queue = job.catch(() => { });
+  return job;
+}
+async function shaDoBlob(texto) {
+  const corpo = new TextEncoder().encode(texto);
+  const cab = new TextEncoder().encode(`blob ${corpo.length}\0`);
+  const tudo = new Uint8Array(cab.length + corpo.length);
+  tudo.set(cab); tudo.set(corpo, cab.length);
+  const d = await crypto.subtle.digest('SHA-1', tudo);
+  return [...new Uint8Array(d)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+async function doWriteMany(ops, message) {
+  if (!cfg.branch) {
+    const r = await gh(`/repos/${cfg.repo}`);
+    if (!r.ok) throw erro(r.status === 404 ? 'perm' : 'http', 'repo ' + r.status);
+    cfg.branch = r.json.default_branch || 'main'; saveCfg();
+  }
+  const refUrl = `/repos/${cfg.repo}/git/refs/heads/${encodeURIComponent(cfg.branch)}`;
+  for (let tentativa = 0; tentativa < 3; tentativa++) {
+    const ref = await gh(`/repos/${cfg.repo}/git/ref/heads/${encodeURIComponent(cfg.branch)}`);
+    if (!ref.ok) throw erro('http', 'ref ' + ref.status);
+    const head = ref.json.object.sha;
+    const cm = await gh(`/repos/${cfg.repo}/git/commits/${head}`);
+    if (!cm.ok) throw erro('http', 'commit ' + cm.status);
+    const atuais = {};
+    for (const p of new Set(ops.map(o => o.path))) {
+      const g = await gh(`/repos/${cfg.repo}/contents/${repoPath(p)}?ref=${head}`);
+      if (g.status === 404) atuais[p] = null;
+      else if (!g.ok) throw erro('http', 'contents ' + g.status);
+      else atuais[p] = b64dec(g.json.content);
+    }
+    const novos = { ...atuais };
+    for (const op of ops) { const out = op.transform(novos[op.path]); novos[op.path] = out == null ? null : carimbar(out); }
+    const tree = Object.keys(novos).filter(p => novos[p] !== atuais[p] && !(novos[p] === null && atuais[p] === null))
+      .map(p => novos[p] === null ? { path: p, mode: '100644', type: 'blob', sha: null } : { path: p, mode: '100644', type: 'blob', content: novos[p] });
+    if (!tree.length) return { textos: novos, commit: null };
+    const t = await gh(`/repos/${cfg.repo}/git/trees`, { method: 'POST', body: { base_tree: cm.json.tree.sha, tree } });
+    if (!t.ok) throw [403, 404].includes(t.status) ? erro('perm') : erro('http', 'tree ' + t.status);
+    const c = await gh(`/repos/${cfg.repo}/git/commits`, { method: 'POST', body: { message: message + '\n\nvia painel', tree: t.json.sha, parents: [head] } });
+    if (!c.ok) throw [403, 404].includes(c.status) ? erro('perm') : erro('http', 'commit ' + c.status);
+    const u = await gh(refUrl, { method: 'PATCH', body: { sha: c.json.sha, force: false } });
+    if (u.ok) {
+      for (const e of tree) {
+        if (e.sha === null) { delete S.todos[e.path]; continue; }
+        if (!incluir(e.path)) continue;
+        const sha = await shaDoBlob(e.content).catch(() => null);
+        if (sha) Blobs.put(sha, e.content);
+        S.todos[e.path] = parseFile(e.path, sha || 'local-' + Date.now(), e.content);
+      }
+      for (const e of tree) S.wrote[e.path] = Date.now();
+      S.ours.add(c.json.sha);
+      if (S.syncing) S.resync = true;
+      reindex(); saveSnap();
+      setTimeout(() => sync(), 600);
+      return { textos: novos, commit: c.json.sha };
+    }
+    if ([409, 422].includes(u.status)) continue;
+    if ([403, 404].includes(u.status)) throw erro('perm');
+    throw erro('http', 'ref ' + u.status);
+  }
+  throw erro('conflito');
+}
 const MSGS = {
   offline: 'Sem conexão. Nada foi gravado; tente de novo quando a internet voltar.',
   perm: 'O token não tem permissão de escrita. Gere um com "Contents: Read and write".',
@@ -616,6 +688,7 @@ const MSGS = {
   conflito: 'O arquivo mudou várias vezes seguidas no GitHub. Tente de novo em instantes.',
   rate: 'Limite de chamadas do GitHub atingido. Tente de novo em alguns minutos.',
   token: 'O GitHub recusou o token.',
+  existe: 'Já existe uma nota com esse nome lá. Renomeie a pasta antes de mover.',
 };
 function toastErr(e, pre) { toast((pre ? pre + '. ' : '') + (MSGS[e.code] || 'O GitHub respondeu com erro (' + (e.message || 'desconhecido') + ').'), { err: true }); sync(true); }
 
@@ -893,7 +966,7 @@ function seloTickTick(sit, id) {
 }
 const isChecked = g => { const o = taskOv(g); if (o) return o.kind === 'feita'; const s = situacaoDoGrupo(g); return s === 'feita' || s === 'fechada'; };
 const byDue = (a, b) => (a.due || '9').localeCompare(b.due || '9') || (b.prio === 'alta') - (a.prio === 'alta');
-import { organizarTarefas, primeiroPasso, prioridadesDoDia } from './tarefas.mjs?v=18740ad18408';
+import { organizarTarefas, primeiroPasso, prioridadesDoDia } from './tarefas.mjs?v=0fa1b6c8623c';
 function estadoTarefa(g) {
   if (g.nova) return { feita:false, data:'' };
   const item = taskOv(g);
@@ -1022,13 +1095,13 @@ function renderProjetos() {
   const and = P.andamento.filter(ok), con = P.concluidos.filter(ok);
   const temReservado = cfg.discreet && [...and, ...con].some(p => VEIL.has(p.area));
   const nomeArea = a => AREAS[a] ? `${AREAS[a].emoji} ${AREAS[a].nome}` : '🙋 Pessoal';
-  el.innerHTML = `<header class="es-topo"><div class="page-h"><h1>Projetos</h1><p>Tudo que tem começo e fim: projetos, processos e casos.</p></div></header>
+  el.innerHTML = `<header class="es-topo"><div class="page-h"><h1>Projetos</h1><p>Tudo que tem começo e fim: projetos, processos e casos.</p></div><button type="button" class="btn esc-registrar" data-escrever="caso">＋ Novo projeto</button></header>
     <p class="pj-placar"><span><b>${P.andamento.length}</b> em andamento</span>${P.atrasados ? `<span class="atrasado"><b>${P.atrasados}</b> com tarefa atrasada</span>` : ''}<span><b>${P.concluidos.length}</b> ${P.concluidos.length === 1 ? 'concluído' : 'concluídos'}</span></p>
     ${areas.length > 1 ? `<div class="pj-filtros" role="group" aria-label="Filtrar por área"><button type="button" data-projarea="todos" aria-pressed="${filtro === 'todos'}">Todos</button>${areas.sort((a, b) => nomeArea(a).localeCompare(nomeArea(b), 'pt-BR')).map(a => `<button type="button" data-projarea="${h(a)}" aria-pressed="${filtro === a}">${h(nomeArea(a))}</button>`).join('')}</div>` : ''}
     ${and.length ? `<ul class="pj-lista">${and.map(p => cartaoProjeto(p, hoje)).join('')}</ul>` : '<p class="area-empty">Nenhum projeto em andamento aqui.</p>'}
     ${con.length ? `<details class="pj-concluidos" data-section="pj-concluidos"><summary>✅ Concluídos <span>${con.length}</span></summary><ul class="pj-lista">${con.map(p => cartaoProjeto(p, hoje)).join('')}</ul></details>` : ''}
     ${temReservado ? `<button type="button" class="btn ghost pj-revelar" data-projetos-privacidade>${S.reveal.has('#projetos') ? 'Esconder detalhes reservados' : 'Mostrar detalhes reservados'}</button>` : ''}
-    <p class="es-rodape">O assessor atualiza cada projeto quando você conta como está. Aqui é só pra acompanhar.</p>`;
+    <p class="es-rodape">Abra um projeto pra escrever nele: acontecimento, onde está agora, situação. O assessor revisa a escrita quando você chamar.</p>`;
 }
 
 function renderTasks() {
@@ -1235,14 +1308,16 @@ function linhasDoDia(dia) {
 }
 
 function topicosDaArea(C) {
-  const { area, notas, principal, casos } = C;
+  const { area, notas: todas, principal, casos } = C;
+  // Pastas (23/11/2026) não viram um cartão só no tópico: a de tópico mostra os registros, as outras ficam em "Notas da área".
+  const notas = todas.filter(f => f.meta.tipo !== 'pasta');
   const secoes = id => secoesDoTopico(['decisoes', 'numeros', 'perguntas'].includes(id) ? [...notas, ...casos] : notas, id);
   const decisoesFora = S.files['eu/decisoes.md'] ? entradasDatadas(S.files['eu/decisoes.md']).filter(e => e.tipo === 'linha' && e.campos.some(([k, v]) => /^areas?$/.test(norm(k)) && areasDoTexto(v).has(area))) : [];
   const casoStems = new Set(casos.map(f => f.stem.toLowerCase()));
   const docs = S.files['documentos/documentos.md'] ? entradasDatadas(S.files['documentos/documentos.md']).filter(e => e.tipo === 'linha' && e.campos.some(([k, v]) => norm(k) === 'caso' && [...v.matchAll(/\[\[([^\]|#]+)/g)].some(m => m[1].trim().toLowerCase() === area || casoStems.has(m[1].trim().toLowerCase())))) : [];
   const padroes = padroesDosHabitos(S.habits, area, C.hoje);
   const pessoas = new Set();
-  for (const f of [...notas, ...casos]) {
+  for (const f of [...todas, ...casos]) {
     for (const m of f.text.matchAll(/\[\[([^\]|#]+)/g)) { const p = S.stems[m[1].trim().toLowerCase()]; if (p?.startsWith('pessoas/')) pessoas.add(p); }
     for (const nome of [].concat(f.meta.pessoas || [])) { const p = S.stems[String(nome).replace(/^\[\[|\]\]$/g, '').trim().toLowerCase()]; if (p?.startsWith('pessoas/')) pessoas.add(p); }
   }
@@ -1253,7 +1328,7 @@ function topicosDaArea(C) {
   const fixos = S.agenda.series.filter(x => x.area === area && (!x.until || x.until >= C.hoje));
   // Gastos agora ficam no Minhas Economias: a área não calcula mais custos pela planilha.
   const custos = { itens: [], total: 0 }, custosAntes = custos;
-  const links = linksDasNotas(notas);
+  const links = linksDasNotas(todas);
   const metasSec = secoes('metas');
   const extras = { decisoes: decisoesFora, numeros: docs };
   const n = {
@@ -1263,6 +1338,7 @@ function topicosDaArea(C) {
     custos: custos.itens.length, materiais: secoes('materiais').length + links.length,
   };
   for (const id of ['combinados', 'decisoes', 'numeros', 'perguntas', 'conquistas', 'ideias', 'motivo']) n[id] = secoes(id).length + (extras[id]?.length || 0);
+  for (const f of todas) if (ehTopico(f) && n[f.meta.topico] !== undefined) n[f.meta.topico] += E.registrosDaNota(f.text).registros.length;
   return { n, secoes, decisoesFora, docs, padroes, pessoas: [...pessoas].map(p => S.files[p]).filter(Boolean), metasSec, esperando, compromissos, fixos, custos, custosAntes, links, temFin: false };
 }
 
@@ -1451,7 +1527,8 @@ function visaoGeralDaArea(C, T) {
   </div>`;
   const status = norm(principal?.meta.status || '');
   const hero = heroDaArea(C, T);
-  const foco = `<section class="area-card focus-card org-agora"><div class="area-card-head"><h3>${agora ? 'Agora' : 'Como está'}</h3>${!hero && Object.hasOwn(STATUS, status) ? `<span class="area-status lamp s-${status}">${STATUS[status]}</span>` : ''}</div>
+  const editar = rotulo => `<button type="button" class="esc-mini" data-escrever="agora" data-area="${area}">${rotulo}</button>`;
+  const foco = `<section class="area-card focus-card org-agora"><div class="area-card-head"><h3>${agora ? 'Agora' : 'Como está'}</h3><span class="esc-head-acoes">${!hero && Object.hasOwn(STATUS, status) ? `<span class="area-status lamp s-${status}">${STATUS[status]}</span>` : ''}${editar(agora ? '✏️ Editar' : '✏️ Escrever o Agora')}</span></div>
     ${agora ? (() => { const { inicio, resto, n } = cortarLista(agora.text, 4); return `<div class="md resumo-agora">${md(inicio, principal.path, true)}</div>${n ? `<details class="resumo-mais" data-section="agora-mais"><summary>Mais ${n} ${n === 1 ? 'item' : 'itens'} em “Agora”</summary><div class="md resumo-agora">${md(resto, principal.path, true)}</div></details>` : ''}`; })()
       : `<p>${h(short(plain(principal?.meta.resumo || 'Ainda sem resumo. O assessor escreve um quando você contar como está esta área.'), 240))}</p>`}</section>`;
   const tambemHtml = tambem.map(t => { const nome = plain(t.title).replace(/^também\s*:?\s*/i, ''); return `<section class="area-card area-tambem"><div class="area-card-head"><h3><small>Também nesta área</small>${h(maiuscula(nome))}</h3></div><div class="md">${md(t.text, principal.path, true)}</div></section>`; }).join('');
@@ -1462,7 +1539,7 @@ function visaoGeralDaArea(C, T) {
   return `${guiaFixadoEmocional(area, principal)}${hero}<div class="org-geral">${kpis}${foco}${tambemHtml}
     <div class="org-par">${agendaCard}${tarefas}</div>
     ${cartaoCardapio(C)}
-    ${area !== 'emocional' && importante ? `<section class="area-card"><h3>Importante</h3><div class="md">${md(importante.text, principal.path, true)}</div></section>` : ''}
+    ${area !== 'emocional' && importante ? `<section class="area-card"><div class="area-card-head"><h3>Importante</h3>${editar('✏️ Editar')}</div><div class="md">${md(importante.text, principal.path, true)}</div></section>` : ''}
     ${area === 'financas' ? `<a class="area-card fin-atalho" href="#financas"><b>💰 Abrir Finanças</b><span>Saldo, extrato, orçamento e cartões →</span></a>` : ''}
   </div>${SENS.has(area) ? visaoBemEstar(area, Object.values(S.files), hoje) : ''}`;
 }
@@ -1494,12 +1571,14 @@ function notasDaAreaAba(C, T) {
   const { area } = C;
   const topicos = TOPICOS.filter(t => !['resumo', 'tarefas', 'agenda'].includes(t.id) && T.n[t.id] > 0);
   const dias = ultimosDias(C, 5);
-  const notas = [C.principal, ...C.apoio].filter(f => f && !(area === 'emocional' && /^areas\/emocional\/journal-\d{4}-\d{2}\.md$/.test(f.path)));
-  return `${guiaFixadoEmocional(area, C.principal)}${topicos.length ? `<section class="area-card org-card"><div class="area-card-head"><h3>Tópicos</h3></div><ul class="org-topicos">${topicos.map(t => `<li><a href="${linkTopico(area, t.id)}"><span class="org-top-ic" aria-hidden="true">${t.emoji}</span><b>${t.nome}</b><small>${T.n[t.id]}</small></a></li>`).join('')}</ul></section>` : ''}
-    ${dias.length ? `<section class="area-card org-card"><div class="area-card-head"><h3>Registros diários</h3><a class="area-link" href="#area/${area}/dias">Todos →</a></div>
-      <ul class="ultimos">${dias.map(d => `<li><a href="#area/${area}/dia/${d.date}"><b>${dayLabel(d.date)}</b><span>${h(short(linhasDoDia(d).slice(0, 2).join(' · '), 110))}</span></a></li>`).join('')}</ul></section>` : ''}
-    ${notas.length ? `<section class="area-card org-card"><div class="area-card-head"><h3>Notas da área</h3></div>${areaRecordList(notas, area)}</section>` : ''}
-    ${!topicos.length && !dias.length && !notas.length ? vazioTopico('dias', area) : ''}`;
+  // Escrita (23/11/2026): os três cartões aparecem sempre, com o "＋" de cada um.
+  return `${guiaFixadoEmocional(area, C.principal)}<section class="area-card org-card"><div class="area-card-head"><h3>Tópicos</h3><button type="button" class="area-link esc-link" data-escrever="topicos" data-area="${area}">＋ Tópico</button></div>
+      ${topicos.length ? `<ul class="org-topicos">${topicos.map(t => `<li><a href="${linkTopico(area, t.id)}"><span class="org-top-ic" aria-hidden="true">${t.emoji}</span><b>${t.nome}</b><small>${T.n[t.id]}</small></a></li>`).join('')}</ul>`
+        : '<p class="area-empty">Nenhum tópico ainda: combinados, decisões, ideias, perguntas…</p>'}</section>
+    <section class="area-card org-card"><div class="area-card-head"><h3>Registros diários</h3><span class="esc-head-acoes"><button type="button" class="area-link esc-link" data-escrever="dia" data-area="${area}">＋ ${area === 'emocional' ? 'Como estou' : 'Registro do dia'}</button>${dias.length ? `<a class="area-link" href="#area/${area}/dias">Todos →</a>` : ''}</span></div>
+      ${dias.length ? `<ul class="ultimos">${dias.map(d => `<li><a href="#area/${area}/dia/${d.date}"><b>${dayLabel(d.date)}</b><span>${h(short(linhasDoDia(d).slice(0, 2).join(' · '), 110))}</span></a></li>`).join('')}</ul>`
+        : '<p class="area-empty">Nada registrado ainda. O que você fez ou não fez, dia a dia.</p>'}</section>
+    ${cartaoDasPastas(C)}`;
 }
 
 function corpoDoTopico(C, T, vista) {
@@ -1508,15 +1587,18 @@ function corpoDoTopico(C, T, vista) {
   if (id === 'resumo') return visaoGeralDaArea(C, T);
   if (id === 'notas') return notasDaAreaAba(C, T);
   if (id === 'metas') {
-    if (!T.metasSec.length) return vazioTopico('metas', area);
+    const novaMeta = `<div class="esc-topo"><button type="button" class="btn" data-escrever="meta" data-area="${area}">＋ Meta</button><p>Toque numa meta pra mudar onde ela está.</p></div>`;
+    if (!T.metasSec.length) return novaMeta + vazioTopico('metas', area);
     const hj = pymd(C.hoje), seg = addDays(hj, -((hj.getDay() + 6) % 7));
     const semana = [...Array(7)].map((_, i) => ymd(addDays(seg, i)));
     const hab = S.habits.filter(x => x.area === area && semana.includes(x.date) && x.st);
     const feitos = hab.filter(x => x.st === 'feito').length;
-    return T.metasSec.map(s => {
+    const editavel = (m, path) => barraMeta(m).replace(/^<li class="meta-item">([\s\S]*)<\/li>$/, (_, miolo) =>
+      `<li class="meta-item esc-meta"><button type="button" data-escrever="meta-editar" data-area="${area}" data-path="${h(path)}" data-meta="${h(m.meta)}" aria-label="Mudar a meta ${h(plain(m.meta))}">${miolo}<span class="esc-lapis" aria-hidden="true">✏️</span></button></li>`);
+    return novaMeta + T.metasSec.map(s => {
       const metas = metasDaTabela(s.texto);
       return `<section class="area-card secao-card"><header class="secao-h"><h3>${h(plain(s.titulo))}</h3><button type="button" class="secao-fonte" data-open="${h(s.path)}">abrir <span aria-hidden="true">↗</span></button></header>
-        ${metas.length ? `<ul class="metas">${metas.map(barraMeta).join('')}</ul>` : `<div class="md">${md(s.texto, s.path, true)}</div>`}</section>`;
+        ${metas.length ? `<ul class="metas">${metas.map(m => editavel(m, s.path)).join('')}</ul>` : `<div class="md">${md(s.texto, s.path, true)}</div>`}</section>`;
     }).join('') + (hab.length ? `<section class="area-card"><h3>Esta semana</h3><p class="semana-hab"><b>${feitos} de ${hab.length}</b> blocos e hábitos feitos (${Math.round(feitos / hab.length * 100)}%)</p>
       <ul class="dia-linhas">${hab.sort((a, b) => a.date.localeCompare(b.date)).map(x => `<li class="dia-linha"><span class="dia-st">${x.st === 'feito' ? '✅' : x.st === 'nao' ? '❌' : '🚫'}</span><span>${h(x.oque)} <small>${dayLabel(x.date)}${x.motivo && !/^[—–-]$/.test(x.motivo.trim()) ? ' · ' + h(x.motivo) : ''}</small></span></li>`).join('')}</ul></section>` : '');
   }
@@ -1527,22 +1609,24 @@ function corpoDoTopico(C, T, vista) {
     return `${C.casos.length ? `<section class="area-card"><h3>Casos</h3><div class="cases area-cases">${C.casos.map(caso).join('')}</div></section>` : ''}
       ${T.pessoas.length ? `<section class="area-card"><h3>Pessoas</h3><ul class="pessoas-lista">${T.pessoas.map(f => `<li><button type="button" data-open="${h(f.path)}"><b>${h(plain(f.title))}</b><span>${h(short(plain(f.meta.resumo || ''), 120))}</span></button></li>`).join('')}</ul></section>` : ''}`;
   }
+  const novoDia = (data, rotulo) => `<div class="esc-topo"><button type="button" class="btn" data-escrever="dia" data-area="${area}"${data ? ` data-data="${data}"` : ''}>${rotulo}</button></div>`;
   if (id === 'dias') {
-    if (!C.dias.length) return vazioTopico('dias', area);
-    return `<ol class="dias-lista">${C.dias.map(d => { const ls = linhasDoDia(d); return `<li><a href="#area/${area}/dia/${d.date}"><span class="dl-data"><b>${dayLabel(d.date)}</b><small>${d.date.slice(0, 4)}</small></span><span class="dl-txt">${ls.slice(0, 3).map(l => `<span>${h(short(l, 120))}</span>`).join('')}${ls.length > 3 ? `<small>+${ls.length - 3}</small>` : ''}</span><span aria-hidden="true">›</span></a></li>`; }).join('')}</ol>`;
+    if (!C.dias.length) return novoDia('', `＋ ${area === 'emocional' ? 'Como estou' : 'Registro do dia'}`) + vazioTopico('dias', area);
+    return novoDia('', `＋ ${area === 'emocional' ? 'Como estou' : 'Registro do dia'}`) + `<ol class="dias-lista">${C.dias.map(d => { const ls = linhasDoDia(d); return `<li><a href="#area/${area}/dia/${d.date}"><span class="dl-data"><b>${dayLabel(d.date)}</b><small>${d.date.slice(0, 4)}</small></span><span class="dl-txt">${ls.slice(0, 3).map(l => `<span>${h(short(l, 120))}</span>`).join('')}${ls.length > 3 ? `<small>+${ls.length - 3}</small>` : ''}</span><span aria-hidden="true">›</span></a></li>`; }).join('')}</ol>`;
   }
   if (id === 'dia') {
     const i = C.dias.findIndex(d => d.date === vista.dia);
     const dia = C.dias[i];
     const novo = C.dias[i - 1], velho = i >= 0 ? C.dias[i + 1] : C.dias.find(d => d.date < vista.dia);
     const nav = `<nav class="dia-nav" aria-label="Outros dias">${velho ? `<a href="#area/${area}/dia/${velho.date}">← ${dayLabel(velho.date)}</a>` : '<span></span>'}${novo ? `<a href="#area/${area}/dia/${novo.date}">${dayLabel(novo.date)} →</a>` : ''}</nav>`;
-    return `${dia ? blocoDoDia(dia) : `<div class="area-card topico-vazio"><p>Nada registrado nesta área em ${dm(vista.dia)}.</p></div>`}${nav}`;
+    return `${novoDia(vista.dia, `＋ Registrar em ${dm(vista.dia)}`)}${dia ? blocoDoDia(dia) : `<div class="area-card topico-vazio"><p>Nada registrado nesta área em ${dm(vista.dia)}.</p></div>`}${nav}`;
   }
   if (id === 'agenda') return agendaDaAreaAba(C, T);
   if (id === 'esperando') {
-    const secs = T.secoes('esperando');
-    if (!T.n.esperando) return vazioTopico('esperando', area);
-    return `${T.esperando.length ? `<section class="area-card"><h3>Esperando alguém</h3><ul class="tasks">${T.esperando.map(taskLi).join('')}</ul></section>` : ''}${secs.map(cartaoSecao).join('')}`;
+    const secs = T.secoes('esperando'), tp = pastaDoTopico(area, 'esperando');
+    const add = `<div class="esc-topo"><button type="button" class="btn" data-escrever="topico" data-area="${area}" data-topico="esperando">＋ Adicionar</button></div>`;
+    if (!T.n.esperando) return add + vazioTopico('esperando', area);
+    return `${add}${tp ? `<section class="area-card org-card esc-topico">${listaDeRegistros(tp, area, ordemDa(tp))}</section>` : ''}${T.esperando.length ? `<section class="area-card"><h3>Esperando alguém</h3><ul class="tasks">${T.esperando.map(taskLi).join('')}</ul></section>` : ''}${secs.map(cartaoSecao).join('')}`;
   }
   if (id === 'custos') {
     if (area === 'financas') return `<a class="area-card fin-atalho" href="#financas"><b>💰 Abrir Finanças</b><span>Orçamento por categoria, extrato e cartões →</span></a>`;
@@ -1573,8 +1657,12 @@ function corpoDoTopico(C, T, vista) {
       <ul class="padroes">${P.lista.map(r => { const tot = r.feito + r.nao; return `<li><div class="pd-t"><b>${h(maiuscula(r.nome))}</b><span>${r.feito} de ${tot} feitos${r.cancelado ? ` · ${r.cancelado} cancelado${r.cancelado > 1 ? 's' : ''}` : ''}</span></div>${tot ? `<div class="meta-barra"><i style="width:${Math.round(r.feito / tot * 100)}%"></i></div>` : ''}${r.motivos.length ? `<p class="pd-m">Motivos das faltas: ${r.motivos.slice(-3).map(m => `${dm(m.date)} ${h(semTraco(m.motivo))}`).join(' · ')}</p>` : ''}</li>`; }).join('')}</ul>
       ${P.diaQueMaisFalha !== null ? `<p class="pd-dia">Dia que mais falha: <b>${DOWL[P.diaQueMaisFalha]}</b></p>` : ''}</section>`;
   }
-  if (!secs.length && !extra) return vazioTopico(id, area);
-  return extra + secs.map(cartaoSecao).join('');
+  // Escrita (23/11/2026): o tópico tem a pasta dele, com "＋ Adicionar".
+  const tp = TOPICOS_ESCRITA.includes(id) ? pastaDoTopico(area, id) : null;
+  const add = TOPICOS_ESCRITA.includes(id) ? `<div class="esc-topo"><button type="button" class="btn" data-escrever="topico" data-area="${area}" data-topico="${id}">＋ Adicionar</button>${tp ? `<button type="button" class="ib pasta-mais" data-escrever="pasta-menu" data-area="${area}" data-path="${h(tp.path)}" aria-label="Mais opções do tópico">${MAIS_ICON}</button>` : ''}</div>` : '';
+  const proprios = tp && E.registrosDaNota(tp.text).registros.length ? `<section class="area-card org-card esc-topico">${listaDeRegistros(tp, area, ordemDa(tp))}</section>` : '';
+  if (!secs.length && !extra && !proprios) return add + vazioTopico(id, area);
+  return add + proprios + extra + secs.map(cartaoSecao).join('');
 }
 
 /* ─────────────── leitura de nota: o mesmo layout pra toda nota ─────────────── */
@@ -1672,7 +1760,9 @@ function paginaDoCaso(f) {
     corpo = `${numeros.length ? `<section class="area-card org-card"><div class="area-card-head"><h3>Números e protocolos <span class="org-n">${numeros.length}</span></h3></div>${listaDeNumeros(numeros, f.path, false)}${P.numeros.resto ? `<div class="md">${md(P.numeros.resto, f.path, true)}</div>` : ''}</section>` : ''}
       ${P.arquivos ? `<section class="area-card org-card"><div class="area-card-head"><h3>Arquivos</h3></div><div class="md org-arquivos">${md(P.arquivos, f.path, true)}</div></section>` : ''}`;
   }
-  return `<article class="reading-note org-caso" style="--sit:var(--sit-${sit})">${cab}${tabs}<div id="caso-painel" class="org-caso-corpo"${tabs ? ` role="tabpanel" aria-labelledby="caso-aba-${aba}"` : ''}>${corpo}</div></article>`;
+  const acao = (tipo, rotulo) => `<button type="button" data-escrever="caso-${tipo}" data-area="${h(f.area)}" data-path="${h(f.path)}">${rotulo}</button>`;
+  const barra = arquivada(f) ? '' : `<div class="esc-barra" role="group" aria-label="Escrever no caso">${acao('acontecimento', '＋ Acontecimento')}${acao('agora', '✏️ Agora')}${acao('numero', '＋ Número')}${acao('contato', '＋ Contato')}${acao('status', '⚑ Situação')}</div>`;
+  return `<article class="reading-note org-caso" style="--sit:var(--sit-${sit})">${cab}${barra}${tabs}<div id="caso-painel" class="org-caso-corpo"${tabs ? ` role="tabpanel" aria-labelledby="caso-aba-${aba}"` : ''}>${corpo}</div></article>`;
 }
 function listaDeNumeros(rows, path, curto = true) {
   return `<ul class="org-nums">${rows.map(r => {
@@ -1731,7 +1821,7 @@ function renderAreaPage() {
   el.style.setProperty('--area-accent', areaColor(area));
   const hide = cfg.discreet && S.reveal.has(base) ? `<button class="btn ghost" data-ocultar-area="${area}">Ocultar área</button>` : '';
   const head = `<a class="area-back" href="#areas"><span aria-hidden="true">←</span> Todas as áreas</a>
-    <div class="area-heading"><h1 tabindex="-1">${label}</h1><div class="area-tools">${hide}</div></div>`;
+    <div class="area-heading"><h1 tabindex="-1">${label}</h1><div class="area-tools">${hide}${gate ? '' : botaoRegistrar(area)}</div></div>`;
   let markup;
   if (gate) {
     markup = head + `<div class="area-gate">${ICON.lock}<h2>Área reservada</h2><p>O modo discreto está ativo.</p><button class="btn" data-reveal-area="${area}">Mostrar esta área</button></div>`;
@@ -1743,7 +1833,8 @@ function renderAreaPage() {
     const voltaNotas = `<a class="org-crumb" href="${linkTopico(area, 'notas')}"><span aria-hidden="true">←</span> Notas</a>`;
     if (route.vista === 'nota') {
       const f = S.files[route.path];
-      corpo = !f ? `<p class="area-card">${S.head ? 'Esta nota não foi encontrada.' : 'Carregando a nota…'}</p>` : notaVelada(f, base) ? veuDaNota(f) : f.path.startsWith('casos/') ? paginaDoCaso(f) : leituraDaNota(f);
+      corpo = !f ? `<p class="area-card">${S.head ? 'Esta nota não foi encontrada.' : 'Carregando a nota…'}</p>` : notaVelada(f, base) ? veuDaNota(f)
+        : f.path.startsWith('casos/') ? paginaDoCaso(f) : ehNotaDePasta(f, area) ? paginaDaPasta(f, area) : leituraDaNota(f);
     } else {
       const t = TOPICOS.find(x => x.id === route.vista);
       if (!naAba) titulo = `${voltaNotas}<h2 class="topico-titulo">${t ? `${t.emoji} ${t.nome}` : route.vista === 'dias' ? '📅 Registros diários' : `📅 ${diaLongo(route.dia)}`}</h2>`;
@@ -2614,7 +2705,7 @@ function enviarCaptura(f) {
 }
 
 /* ─────────────── Finanças: o resumo do Minhas Economias (espelho gravado pelo assessor) ─────────────── */
-import { brl, pnum } from './financas.mjs?v=18740ad18408';
+import { brl, pnum } from './financas.mjs?v=0fa1b6c8623c';
 const V = (v, cls = '') => `<span class="veil${cls ? ' ' + cls : ''}">${brl(v)}</span>`;
 const corSegura = c => /^#[0-9a-f]{3,8}$/i.test(String(c || '')) ? c : /^[0-9a-f]{6}$/i.test(String(c || '')) ? '#' + c : 'var(--ink3)';
 function renderFinancas() {
@@ -2942,13 +3033,520 @@ function clickPego(key) {
 function copiar(txt, ok) {
   try { navigator.clipboard.writeText(txt).then(() => toast(ok), () => toast('Não consegui copiar. Tente de novo no computador.', { err: true })); } catch { toast('Não consegui copiar. Tente de novo no computador.', { err: true }); }
 }
+/* ─────────────── escrita na Memória (23/11/2026) ───────────────
+   Ele volta a escrever no painel, pra depender menos do assessor: registro do dia, pastas da área
+   (cada "## …" de uma nota é um registro), metas, tópicos, Agora e Importante, casos; e mover ou
+   arquivar. Grava direto no lugar certo, num commit só, e deixa um item ✍️ na caixa: na próxima
+   conversa o assessor corrige a escrita e deixa no padrão, sem mudar o que ele disse.
+   Tarefas, agenda e dinheiro continuam só de leitura (TickTick, Google Agenda, Minhas Economias). */
+const TOPICOS_ESCRITA = ['combinados', 'decisoes', 'ideias', 'perguntas', 'conquistas', 'materiais', 'padroes', 'esperando', 'numeros', 'motivo'];
+const DICA_TOPICO = {
+  combinados: 'O que você combinou, com alguém ou com você mesmo', decisoes: 'Escolhas que mudam o rumo, com o porquê',
+  ideias: 'O que você quer fazer um dia, sem prazo', perguntas: 'O que ficou pra decidir ou conferir',
+  conquistas: 'O que deu certo, com a data', materiais: 'Cursos, vídeos, livros e links',
+  padroes: 'O que funciona e o que trava', esperando: 'O que depende de outra pessoa',
+  numeros: 'Protocolos, contatos e documentos', motivo: 'Por que esta área importa pra você',
+};
+const EXEMPLO_TOPICO = {
+  combinados: 'Ex.: A daily começa às 9h15', decisoes: 'Ex.: Não pego hora extra em dezembro', ideias: 'Ex.: Curso de testes com Jest',
+  perguntas: 'Ex.: Preciso entrar na planning?', conquistas: 'Ex.: Entreguei a versão sem bug', materiais: 'Ex.: Curso de Jest na Alura',
+  padroes: 'Ex.: Rendo mais de manhã', esperando: 'Ex.: Resposta do Paulo sobre a versão', numeros: 'Ex.: Protocolo 123456', motivo: 'Ex.: Dar segurança pra família',
+};
+const AVISO_REVISAO = 'O assessor revisa a escrita quando você chamar.';
+const notaPrincipal = area => `areas/${area}/${area}.md`;
+const ehNotaDePasta = (f, area) => !!f && f.path.startsWith(`areas/${area}/`) && f.path !== notaPrincipal(area) && !ehRegistroDoMes(f.path);
+const ehTopico = f => f?.meta.tipo === 'pasta' && TOPICOS_ESCRITA.includes(f.meta.topico);
+const nomeTopico = id => TOPICOS.find(t => t.id === id)?.nome || id;
+const emojiTopico = id => TOPICOS.find(t => t.id === id)?.emoji || '🧩';
+const pastaDoTopico = (area, id) => Object.values(S.files).find(f => ehNotaDePasta(f, area) && f.meta.topico === id) || null;
+const porNome = (a, b) => plain(a.title).localeCompare(plain(b.title), 'pt-BR');
+/* Pastas da área (as de tópico ficam em Tópicos). */
+const pastasDaArea = area => Object.values(S.files).filter(f => ehNotaDePasta(f, area) && !ehTopico(f)).sort(porNome);
+const stemsDoCofre = () => new Set(Object.values(S.todos).map(f => f.stem.toLowerCase()));
+const nomeDaArea = area => AREAS[area]?.nome || 'Pessoal';
+const registroDe = (f, chave) => { if (!f) return null; const R = E.registrosDaNota(f.text); return [...R.fixados, ...R.registros].find(r => r.chave === chave) || null; };
+function ir(hash) { if (location.hash !== hash) location.hash = hash; else { render(); } }
+S.ordemPasta = LS.get(K + 'ordem', {});
+S.realce = null;
+
+/* ── pedaços de formulário ── */
+const TXT = 'spellcheck="true" lang="pt-BR" autocapitalize="sentences" autocorrect="on"';
+const campoTexto = (name, rotulo, valor = '', { linhas = 5, dica = '', exemplo = '', obrigatorio = false } = {}) =>
+  `<div class="field"><label for="esc-${name}">${rotulo}</label><textarea id="esc-${name}" name="${name}" rows="${linhas}" ${TXT}${obrigatorio ? ' required' : ''}${exemplo ? ` placeholder="${h(exemplo)}"` : ''}>${h(valor)}</textarea>${dica ? `<p class="hint">${dica}</p>` : ''}</div>`;
+const campoLinha = (name, rotulo, valor = '', { exemplo = '', obrigatorio = false, dica = '' } = {}) =>
+  `<div class="field"><label for="esc-${name}">${rotulo}</label><input id="esc-${name}" type="text" name="${name}" value="${h(valor)}" ${TXT}${obrigatorio ? ' required' : ''}${exemplo ? ` placeholder="${h(exemplo)}"` : ''} autocomplete="off">${dica ? `<p class="hint">${dica}</p>` : ''}</div>`;
+const campoData = (name, rotulo, valor) => `<div class="field esc-data"><label for="esc-${name}">${rotulo}</label><input id="esc-${name}" type="date" name="${name}" value="${h(valor || ymd(now()))}" required></div>`;
+const opcoesDeArea = (sel, { pessoal = false, sem = '' } = {}) => [...AREA_ORDER.filter(a => a !== sem).map(a => [a, `${AREAS[a].emoji} ${AREAS[a].nome}`]), ...(pessoal ? [['pessoal', '🙋 Pessoal (sem área)']] : [])]
+  .map(([v, n]) => `<option value="${v}"${v === sel ? ' selected' : ''}>${h(n)}</option>`).join('');
+const rodape = (rotulo, extra = '') => `<div class="form-foot esc-pe"><button class="btn big" type="submit">${rotulo}</button>${extra}</div>`;
+const opcional = t => `${t} <small>(opcional)</small>`;
+const escolha = (name, rotulo, itens, atual) => `<div class="field"><span class="lbl">${rotulo}</span><div class="chips" role="radiogroup" aria-label="${h(rotulo)}">${itens.map(([v, n]) =>
+  `<button type="button" role="radio" data-pick="${name}" data-v="${h(v)}" aria-checked="${v === atual}">${n}</button>`).join('')}</div></div>`;
+function opcoesDePasta(area, sem = '') {
+  const ps = Object.values(S.files).filter(f => ehNotaDePasta(f, area) && f.path !== sem).sort(porNome);
+  return ps.map(p => `<option value="${h(p.path)}">${ehTopico(p) ? emojiTopico(p.meta.topico) + ' ' : ''}${h(plain(p.title))}</option>`).join('')
+    + `<option value="__nova"${ps.length ? '' : ' selected'}>＋ Pasta nova…</option>`;
+}
+const campoPastaNova = visivel => `<div class="field esc-nova"${visivel ? '' : ' hidden'}><label for="esc-novaPasta">Nome da pasta nova</label><input id="esc-novaPasta" type="text" name="novaPasta" ${TXT} placeholder="Ex.: Como me sinto" autocomplete="off"${visivel ? ' required' : ''}></div>`;
+function mostrarPastaNova(f) {
+  const box = f?.querySelector('.esc-nova');
+  if (!box) return;
+  const nova = f.querySelector('[data-esc-pasta]')?.value === '__nova';
+  box.hidden = !nova;
+  box.querySelector('input').required = nova;
+}
+
+/* ── menus ── */
+const itemDeMenu = (attrs, e, t, d) => `<li><button type="button" ${attrs}><span class="e" aria-hidden="true">${e}</span><span class="esc-mt"><b>${t}</b>${d ? `<small>${d}</small>` : ''}</span></button></li>`;
+function menuRegistrar(area) {
+  const a = acao => `data-escrever="${acao}" data-area="${area}"`;
+  return `<ul class="menu esc-menu">
+    ${itemDeMenu(a('dia'), '📅', area === 'emocional' ? 'Como estou hoje' : 'Registro do dia', area === 'emocional' ? 'Vai pro seu diário emocional do mês' : 'O que você fez ou o que aconteceu')}
+    ${itemDeMenu(a('registro'), '📝', 'Registro numa pasta', 'Num assunto da área, com data e título')}
+    ${itemDeMenu(a('meta'), '🎯', 'Meta do trimestre', 'Onde está e onde quer chegar')}
+    ${itemDeMenu(a('topicos'), '🧩', 'Tópico', 'Combinados, decisões, ideias, perguntas…')}
+    ${itemDeMenu(a('agora'), '✏️', 'Agora e Importante', 'Como esta área está agora')}
+    ${itemDeMenu(a('pasta'), '📁', 'Pasta nova', 'Um lugar pra juntar registros do mesmo assunto')}
+    ${itemDeMenu(a('caso'), '📂', 'Caso ou projeto', 'Algo com começo e fim')}
+  </ul><p class="menu-nota">Vai direto pro lugar certo. ${AVISO_REVISAO}</p>`;
+}
+const menuTopicos = area => `<ul class="menu esc-menu">${TOPICOS_ESCRITA.map(id => itemDeMenu(`data-escrever="topico" data-area="${area}" data-topico="${id}"`, emojiTopico(id), h(nomeTopico(id)), h(DICA_TOPICO[id]))).join('')}
+  ${itemDeMenu(`data-escrever="pasta" data-area="${area}"`, '📁', 'Outro assunto', 'Vira uma pasta com o nome que você der')}</ul>`;
+const FIXAS = /\/(journal|treinos)-\d{4}-\d{2}\.md$/;
+function menuPasta(area, path) {
+  const f = S.files[path];
+  if (!f) return '<p class="area-empty">Essa pasta não está mais aqui.</p>';
+  const a = acao => `data-escrever="${acao}" data-area="${area}" data-path="${h(path)}"`;
+  const gh = `https://github.com/${cfg.repo}/blob/${encodeURIComponent(cfg.branch || 'main')}/${repoPath(path)}`;
+  return `<ul class="menu esc-menu">
+    ${itemDeMenu(a('pasta-renomear'), '✏️', 'Renomear', h(plain(f.title)))}
+    ${FIXAS.test(path) || ehTopico(f) ? '' : itemDeMenu(a('pasta-mover'), '↪️', 'Mover pra outra área', 'A pasta inteira, com os registros')}
+    ${itemDeMenu(a('pasta-arquivar'), '🗄️', 'Arquivar a pasta', 'Some da Memória; a busca ainda acha')}
+    <li><a href="${h(gh)}" target="_blank" rel="noopener noreferrer"><span class="e" aria-hidden="true">↗</span><span class="esc-mt"><b>Abrir no GitHub</b></span></a></li></ul>`;
+}
+
+/* ── formulários ── */
+function formDia(area, data) {
+  const emo = area === 'emocional';
+  return `<form class="f2 esc" data-form="esc-dia" data-area="${area}" autocomplete="off">
+    ${campoData('data', 'Dia', data)}
+    ${emo ? campoLinha('titulo', opcional('Título'), '', { exemplo: 'Ex.: Ansiedade antes da daily' })
+      : escolha('tipo', 'Como foi', [['', '📝 Anotação'], ['✅', '✅ Fiz'], ['❌', '❌ Não fiz']], '')}
+    ${campoTexto('texto', emo ? 'Como você está' : 'O que aconteceu', '', { linhas: 6, obrigatorio: true,
+      exemplo: emo ? 'O que aconteceu, o que sentiu, o que pensou…' : 'Uma coisa por linha',
+      dica: emo ? `Vai pro seu diário emocional do mês. ${AVISO_REVISAO}` : `Cada linha vira um item do dia. ${AVISO_REVISAO}` })}
+    ${rodape('Guardar')}</form>`;
+}
+function formRegistro({ area, path = '', topico = '', chave = '' }) {
+  const f = path ? S.files[path] : null;
+  const r = chave ? registroDe(f, chave) : null;
+  const tituloAtual = r ? (r.data ? (r.temTitulo ? r.rotulo : '') : r.titulo) : '';
+  let pasta = '';
+  if (!path && !topico) {
+    const tem = pastasDaArea(area).length > 0;
+    pasta = `<div class="field"><label for="esc-pasta">Pasta</label><select id="esc-pasta" name="pasta" data-esc-pasta>${opcoesDePasta(area)}</select></div>${campoPastaNova(!tem)}`;
+  }
+  const top = Boolean(topico);
+  return `<form class="f2 esc" data-form="esc-registro" data-area="${area}" data-path="${h(path)}" data-topico="${h(topico)}" data-chave="${h(chave)}" autocomplete="off">
+    ${pasta}
+    ${campoLinha('titulo', top ? 'O que é' : opcional('Título'), tituloAtual, { obrigatorio: top, exemplo: top ? EXEMPLO_TOPICO[topico] : 'Ex.: Conversa com o Paulo' })}
+    ${r && !r.data ? '' : campoData('data', 'Dia', r?.data)}
+    ${campoTexto('texto', top ? opcional('Detalhes') : 'Texto', r?.texto || '', { linhas: top ? 3 : 7, dica: AVISO_REVISAO })}
+    ${rodape(chave ? 'Guardar' : 'Guardar registro')}</form>`;
+}
+function formPasta(area) {
+  return `<form class="f2 esc" data-form="esc-pasta" data-area="${area}" autocomplete="off">
+    ${campoLinha('nome', 'Nome da pasta', '', { obrigatorio: true, exemplo: area === 'emocional' ? 'Ex.: Como me sinto' : 'Ex.: Reuniões com o Paulo' })}
+    ${campoLinha('resumo', opcional('Pra que serve'), '', { exemplo: 'Ex.: O que eu sinto antes das reuniões' })}
+    ${escolha('ordem', 'Organizar os registros por', [['data', '📅 Data'], ['titulo', '🔤 Título']], 'data')}
+    <p class="hint">Dá pra trocar depois, na própria pasta.</p>
+    ${rodape('Criar pasta')}</form>`;
+}
+function formMeta(area, path = '', meta = null) {
+  return `<form class="f2 esc" data-form="esc-meta" data-area="${area}" data-path="${h(path)}" data-original="${h(meta?.meta || '')}" autocomplete="off">
+    ${campoLinha('meta', 'Meta', meta?.meta || '', { obrigatorio: true, exemplo: 'Ex.: Sessões de inglês' })}
+    <div class="esc-par">${campoLinha('atual', 'Onde está agora', meta && meta.atual !== '—' ? meta.atual : '', { exemplo: 'Ex.: 2' })}${campoLinha('alvo', 'Onde quer chegar', meta && meta.alvo !== '—' ? meta.alvo : '', { exemplo: 'Ex.: 24' })}</div>
+    <p class="hint">Com número nos dois, vira barra de progresso.</p>
+    ${rodape(meta ? 'Guardar' : 'Guardar meta', meta ? `<button type="button" class="btn ghost" data-escrever="meta-tirar" data-area="${area}" data-path="${h(path)}" data-meta="${h(meta.meta)}"><b>Tirar meta</b></button>` : '')}</form>`;
+}
+function formAgora(area) {
+  const t = S.files[notaPrincipal(area)]?.text || '';
+  return `<form class="f2 esc" data-form="esc-agora" data-area="${area}" autocomplete="off">
+    ${campoTexto('agora', 'Agora', E.textoDaSecao(t, 'Agora'), { linhas: 5, exemplo: '- O que está acontecendo nesta área agora', dica: 'Em tópicos, cada um começando com “- ”.' })}
+    ${campoTexto('importante', 'Importante', E.textoDaSecao(t, 'Importante'), { linhas: 4, exemplo: '- O que não pode esquecer', dica: `Deixar vazio tira a seção. ${AVISO_REVISAO}` })}
+    ${rodape('Guardar')}</form>`;
+}
+function formCaso(area = '') {
+  return `<form class="f2 esc" data-form="esc-caso" autocomplete="off">
+    ${campoLinha('nome', 'Nome', '', { obrigatorio: true, exemplo: 'Ex.: Conserto da geladeira' })}
+    <div class="field"><label for="esc-area">Área</label><select id="esc-area" name="area">${opcoesDeArea(AREAS[area] ? area : 'pessoal', { pessoal: true })}</select></div>
+    ${campoTexto('resumo', 'O que é', '', { linhas: 2, obrigatorio: true, exemplo: 'Ex.: A geladeira parou de gelar; está na garantia' })}
+    ${campoTexto('agora', opcional('Onde está agora'), '', { linhas: 2, exemplo: 'Ex.: Abri o chamado; espero o técnico', dica: `Aparece em Projetos. ${AVISO_REVISAO}` })}
+    ${rodape('Criar caso')}</form>`;
+}
+const STATUS_CASO = [['em andamento', '🟢 Em andamento'], ['esperando', '🟡 Esperando alguém'], ['parado', '⚪ Parado'], ['fechado', '✅ Concluído']];
+const TITULO_CASO = { acontecimento: '＋ Acontecimento', agora: '✏️ Onde está agora', numero: '＋ Número', contato: '＋ Contato', status: 'Situação' };
+function formCasoAcao(tipo, path) {
+  const f = S.files[path];
+  if (!f) return '<p class="area-empty">Esse caso não está mais aqui.</p>';
+  const abre = `<form class="f2 esc" data-form="esc-caso-${tipo}" data-path="${h(path)}" autocomplete="off">`;
+  if (tipo === 'acontecimento') return `${abre}${campoData('data', 'Dia')}${campoTexto('texto', 'O que aconteceu', '', { linhas: 3, obrigatorio: true, exemplo: 'Ex.: Liguei e falei com a Ana; protocolo 123', dica: AVISO_REVISAO })}${rodape('Guardar')}</form>`;
+  if (tipo === 'agora') return `${abre}${campoTexto('texto', 'Onde está agora', plain(partesDoCaso(f.body).onde?.agora?.texto || ''), { linhas: 4, obrigatorio: true, exemplo: 'O que já foi feito, com quem está a bola e o próximo passo', dica: `O “Agora” de antes vai pro histórico. ${AVISO_REVISAO}` })}${rodape('Guardar')}</form>`;
+  if (tipo === 'numero') return `${abre}${campoLinha('numero', 'Número', '', { obrigatorio: true, exemplo: 'Ex.: OS 4155232' })}${campoLinha('oque', 'O quê', '', { exemplo: 'Ex.: Ordem de serviço' })}${campoLinha('onde', opcional('Onde está'), '', { exemplo: 'Ex.: E-mail da Samsung' })}${campoData('data', 'Dia')}${rodape('Guardar')}</form>`;
+  if (tipo === 'contato') return `${abre}${campoLinha('texto', 'Contato', '', { obrigatorio: true, exemplo: 'Ex.: Ana (Samsung) · 0800 000 0000' })}${rodape('Guardar')}</form>`;
+  const atual = situacaoDoCaso(f.meta.status);
+  const st = { andamento: 'em andamento', esperando: 'esperando', parado: 'parado', concluido: 'fechado' }[atual];
+  return `${abre}${escolha('status', 'Como está', STATUS_CASO, st)}<p class="hint">Concluído vai pra “Concluídos” em Projetos. ${AVISO_REVISAO}</p>${rodape('Guardar')}</form>`;
+}
+function formMover(area, path, chave) {
+  const tem = Object.values(S.files).some(f => ehNotaDePasta(f, area) && f.path !== path);
+  return `<form class="f2 esc" data-form="esc-mover" data-path="${h(path)}" data-chave="${h(chave)}" autocomplete="off">
+    <div class="field"><label for="esc-area">Área</label><select id="esc-area" name="area" data-esc-area>${opcoesDeArea(area)}</select></div>
+    <div class="field"><label for="esc-pasta">Pasta</label><select id="esc-pasta" name="pasta" data-esc-pasta>${opcoesDePasta(area, path)}</select></div>
+    ${campoPastaNova(!tem)}${rodape('Mover')}</form>`;
+}
+const formMoverPasta = (area, path) => `<form class="f2 esc" data-form="esc-mover-pasta" data-area="${area}" data-path="${h(path)}">
+  <div class="field"><label for="esc-area">Pra qual área</label><select id="esc-area" name="area">${opcoesDeArea('', { sem: area })}</select></div>
+  <p class="hint">Vai a pasta inteira, com todos os registros. Os links pra ela continuam funcionando.</p>${rodape('Mover pasta')}</form>`;
+const formRenomear = (area, path) => `<form class="f2 esc" data-form="esc-renomear" data-area="${area}" data-path="${h(path)}" autocomplete="off">
+  ${campoLinha('nome', 'Nome da pasta', plain(S.files[path]?.title || ''), { obrigatorio: true })}${rodape('Guardar')}</form>`;
+
+/* ── gravar: o lugar certo + o aviso ✍️ pro assessor, num commit só ── */
+function gravarNaMemoria(form, { ops, area, sens = SENS.has(area), aviso, msg, ok, depois }) {
+  const btn = form?.querySelector('[type=submit]');
+  if (btn) { btn.disabled = true; btn.dataset.rotulo = btn.textContent; btn.textContent = 'Guardando…'; }
+  const n = now();
+  const item = E.itemDaCaixa(ymd(n), hm(n), aviso);
+  const commit = sens ? `${SENS.has(area) ? area : 'emocional'}: registro atualizado` : `painel: ${msg}`;
+  return writeMany([...ops, { path: sens ? RESERVADA : CAIXA, transform: base => E.naCaixa(base ?? caixaTemplate(sens), item) }], commit, {
+    onOk(r) { closeSheet(); if (ok) toast(ok); depois?.(r); const marca = S.realce; if (marca) setTimeout(() => { if (S.realce === marca) S.realce = null; }, 8000); },
+    onErr(e) { if (btn) { btn.disabled = false; btn.textContent = btn.dataset.rotulo || 'Guardar'; } toastErr(e, 'Não guardei'); },
+  });
+}
+const precisa = (campoEl, ok) => { if (ok) return true; campoEl?.focus(); return false; };
+const semNota = base => { if (base == null) throw erro('sumiu'); return base; };
+
+function salvarDia(f) {
+  const area = f.dataset.area, data = f.elements.data.value || ymd(now()), texto = f.elements.texto.value;
+  if (!precisa(f.elements.texto, E.limpo(texto))) return;
+  const mes = data.slice(0, 7), hoje = ymd(now()), diario = `diario/diario-${mes}.md`;
+  if (area === 'emocional') {
+    const titulo = f.elements.titulo?.value || '', path = `areas/emocional/journal-${mes}.md`;
+    return gravarNaMemoria(f, {
+      area, ops: [{ path, transform: base => E.acrescentarRegistro(base ?? E.novoJournal({ mes, hoje }), { data, titulo, texto }) },
+        { path: diario, transform: base => E.diaTem(base, data, 'Registro emocional') ? base : E.noDia(base ?? E.novoDiario({ mes, hoje }), data, ['- 📓 Registro emocional feito pelo painel (no journal)']) }],
+      aviso: `✍️ Registro do dia no painel (${dm(data)}) → ${path}`, ok: `Guardado no seu diário emocional. ${AVISO_REVISAO}`,
+      depois: r => { S.realce = { path, chave: E.chaveDoNovo(r.textos[path], data, titulo) }; ir(linkDeRegistro(path)); },
+    });
+  }
+  const itens = E.itensDoDia(texto, picked(f, 'tipo'));
+  const path = `areas/${area}/registros-${area}-${mes}.md`;
+  return gravarNaMemoria(f, {
+    area, ops: [{ path, transform: base => E.noDia(base ?? E.novoRegistroDoMes({ area, mes, hoje }), data, itens) },
+      { path: diario, transform: base => E.noDia(base ?? E.novoDiario({ mes, hoje }), data, itens) }],
+    aviso: `✍️ Registro do dia no painel (${dm(data)}, ${nomeDaArea(area)}) → ${path}`, msg: `${nomeDaArea(area).toLowerCase()} — registro do dia ${dm(data)}`,
+    ok: `Guardado no registro do dia. ${AVISO_REVISAO}`, depois: () => ir(`#area/${area}/dia/${data}`),
+  });
+}
+function salvarRegistro(f) {
+  const { area, path: fixo, topico, chave } = f.dataset;
+  const titulo = f.elements.titulo?.value || '', texto = f.elements.texto?.value || '';
+  const data = f.elements.data ? f.elements.data.value || ymd(now()) : null;
+  if (!precisa(topico ? f.elements.titulo : f.elements.texto, E.umaLinha(titulo) || (!topico && E.limpo(texto)))) return;
+  const hoje = ymd(now()), resumo = short(E.umaLinha(titulo) || E.umaLinha(texto), 60);
+  if (chave) {
+    const nf = S.files[fixo];
+    return gravarNaMemoria(f, {
+      area, sens: nf?.sens || SENS.has(area), ops: [{ path: fixo, transform: base => E.trocarRegistro(semNota(base), chave, { data, titulo, texto }) }],
+      aviso: `✍️ Editou no painel: "${resumo}" → ${fixo}`, msg: `${nomeDaArea(area).toLowerCase()} — registro editado em ${plain(nf?.title || '')}`, ok: 'Registro atualizado.',
+      depois: r => { S.realce = { path: fixo, chave: E.chaveDoNovo(r.textos[fixo], data, data ? titulo : titulo || registroDe(nf, chave)?.titulo) }; },
+    });
+  }
+  let path = fixo, criar = null;
+  if (!path && topico) {
+    const tp = pastaDoTopico(area, topico);
+    if (tp) path = tp.path;
+    else { path = `areas/${area}/${E.nomeLivre(`${topico}-${area}`, stemsDoCofre())}.md`; criar = { titulo: nomeTopico(topico), topico, resumo: `${nomeTopico(topico)} de ${nomeDaArea(area)}, com a data.` }; }
+  }
+  if (!path) {
+    const v = f.elements.pasta?.value;
+    if (v && v !== '__nova') path = v;
+    else {
+      const nome = f.elements.novaPasta?.value || '';
+      if (!precisa(f.elements.novaPasta, E.umaLinha(nome))) return;
+      path = `areas/${area}/${E.nomeLivre(E.slug(nome), stemsDoCofre(), area)}.md`; criar = { titulo: nome };
+    }
+  }
+  const nomePasta = criar ? E.umaLinha(criar.titulo) : plain(S.files[path]?.title || '');
+  return gravarNaMemoria(f, {
+    area, ops: [{ path, transform: base => E.acrescentarRegistro(base ?? E.novaPasta({ area, hoje, ...criar }), { data, titulo, texto }) }],
+    aviso: `✍️ ${criar ? 'Pasta nova e registro' : 'Registro'} no painel: "${resumo}" (${dm(data)}) → ${path}`,
+    msg: `${nomeDaArea(area).toLowerCase()} — registro em ${nomePasta}`, ok: `Guardado em ${nomePasta}. ${AVISO_REVISAO}`,
+    depois: r => { S.realce = { path, chave: E.chaveDoNovo(r.textos[path], data, titulo) }; ir(topico ? linkTopico(area, topico) : linkDeRegistro(path)); },
+  });
+}
+function salvarPasta(f) {
+  const area = f.dataset.area, nome = f.elements.nome.value, resumo = f.elements.resumo.value, ordem = picked(f, 'ordem') || 'data';
+  if (!precisa(f.elements.nome, E.umaLinha(nome))) return;
+  const path = `areas/${area}/${E.nomeLivre(E.slug(nome), stemsDoCofre(), area)}.md`;
+  return gravarNaMemoria(f, {
+    area, ops: [{ path, transform: base => base ?? E.novaPasta({ area, titulo: nome, ordem, resumo, hoje: ymd(now()) }) }],
+    aviso: `✍️ Pasta nova no painel: "${E.umaLinha(nome)}" → ${path}`, msg: `${nomeDaArea(area).toLowerCase()} — pasta nova ${E.umaLinha(nome)}`,
+    ok: 'Pasta criada. Toque em “＋ Novo registro” pra escrever.', depois: () => ir(linkDeRegistro(path)),
+  });
+}
+function salvarMeta(f) {
+  const { area, original } = f.dataset, path = f.dataset.path || notaPrincipal(area);
+  const v = { meta: f.elements.meta.value, atual: f.elements.atual.value, alvo: f.elements.alvo.value };
+  if (!precisa(f.elements.meta, E.umaLinha(v.meta))) return;
+  return gravarNaMemoria(f, {
+    area, ops: [{ path, transform: base => original ? E.trocarMeta(semNota(base), original, v) : E.acrescentarMeta(base ?? E.novaNotaPrincipal({ area, hoje: ymd(now()) }), v) }],
+    aviso: `✍️ ${original ? 'Meta atualizada' : 'Meta nova'} no painel: ${E.umaLinha(v.meta)} (${E.umaLinha(v.atual) || '—'} de ${E.umaLinha(v.alvo) || '—'}) → ${path}`,
+    msg: `${nomeDaArea(area).toLowerCase()} — ${original ? 'meta atualizada' : 'meta nova'}`, ok: original ? 'Meta atualizada.' : 'Meta guardada.',
+    depois: () => ir(linkTopico(area, 'metas')),
+  });
+}
+function tirarMetaDaArea(area, path, meta) {
+  return gravarNaMemoria(null, {
+    area, ops: [{ path, transform: base => E.tirarMeta(semNota(base), meta, ymd(now())) }],
+    aviso: `✍️ Tirou a meta no painel: ${meta} (foi pro Histórico) → ${path}`, msg: `${nomeDaArea(area).toLowerCase()} — meta tirada`,
+    ok: 'Meta tirada. Ficou no Histórico da área.', depois: () => ir(linkTopico(area, 'metas')),
+  });
+}
+function salvarAgora(f) {
+  const area = f.dataset.area, path = notaPrincipal(area), atual = S.files[path]?.text || '';
+  const agora = f.elements.agora.value, imp = f.elements.importante.value;
+  const mudouA = E.limpo(agora) !== E.textoDaSecao(atual, 'Agora'), mudouI = E.limpo(imp) !== E.textoDaSecao(atual, 'Importante');
+  if (!mudouA && !mudouI) { closeSheet(); toast('Nada mudou.'); return; }
+  return gravarNaMemoria(f, {
+    area, ops: [{ path, transform: base => {
+      let t = base ?? E.novaNotaPrincipal({ area, hoje: ymd(now()) });
+      if (mudouA) t = E.trocarSecao(t, 'Agora', agora);
+      if (mudouI) t = E.trocarSecao(t, 'Importante', imp);
+      return t;
+    } }],
+    aviso: `✍️ ${[mudouA && 'Agora', mudouI && 'Importante'].filter(Boolean).join(' e ')} da área no painel → ${path}`,
+    msg: `${nomeDaArea(area).toLowerCase()} — ${mudouA ? 'agora' : 'importante'} atualizado`, ok: 'Área atualizada.', depois: () => ir(`#area/${area}`),
+  });
+}
+function salvarCaso(f) {
+  const nome = f.elements.nome.value, area = f.elements.area.value, resumo = f.elements.resumo.value, agora = f.elements.agora.value;
+  if (!precisa(f.elements.nome, E.umaLinha(nome)) || !precisa(f.elements.resumo, E.umaLinha(resumo))) return;
+  const path = `casos/${E.nomeLivre(E.slug(nome), stemsDoCofre())}.md`;
+  return gravarNaMemoria(f, {
+    area, ops: [{ path, transform: base => base ?? E.novoCaso({ titulo: nome, area, resumo, agora, hoje: ymd(now()) }) }],
+    aviso: `✍️ Caso novo no painel: "${E.umaLinha(nome)}" → ${path}`, msg: `caso novo — ${E.umaLinha(nome)}`,
+    ok: 'Caso criado. Ele aparece em Projetos.', depois: () => ir(linkDaNota(path, area, null, AREA_ORDER)),
+  });
+}
+function salvarCasoAcao(f, tipo) {
+  const path = f.dataset.path, cf = S.files[path];
+  if (!cf) return;
+  const hoje = ymd(now()), el = f.elements, nome = plain(cf.title);
+  let transform, aviso, ok;
+  if (tipo === 'acontecimento') {
+    const data = el.data.value || hoje, texto = el.texto.value;
+    if (!precisa(el.texto, E.umaLinha(texto))) return;
+    transform = base => E.acrescentarAcontecimento(base, data, texto);
+    aviso = `✍️ Acontecimento no painel (${dm(data)}): ${short(E.umaLinha(texto), 60)} → ${path}`; ok = 'Guardado na linha do tempo.';
+  } else if (tipo === 'agora') {
+    const texto = el.texto.value;
+    if (!precisa(el.texto, E.umaLinha(texto))) return;
+    transform = base => E.trocarAgora(base, texto, hoje);
+    aviso = `✍️ "Agora" do caso no painel → ${path}`; ok = 'Atualizado. O “Agora” de antes foi pro histórico.';
+  } else if (tipo === 'numero') {
+    const v = { numero: el.numero.value, oque: el.oque.value, onde: el.onde.value, data: el.data.value };
+    if (!precisa(el.numero, E.umaLinha(v.numero))) return;
+    transform = base => E.acrescentarNumero(base, v);
+    aviso = `✍️ Número no painel: ${E.umaLinha(v.numero)} → ${path}`; ok = 'Número guardado.';
+  } else if (tipo === 'contato') {
+    const texto = el.texto.value;
+    if (!precisa(el.texto, E.umaLinha(texto))) return;
+    transform = base => E.acrescentarContato(base, texto);
+    aviso = `✍️ Contato no painel: ${short(E.umaLinha(texto), 60)} → ${path}`; ok = 'Contato guardado.';
+  } else {
+    const st = picked(f, 'status') || 'em andamento';
+    transform = base => { const t = E.definirStatus(base, st); return st === 'fechado' ? E.acrescentarAcontecimento(t, hoje, 'Caso concluído.') : t; };
+    aviso = st === 'fechado' ? `✍️ Concluiu o caso no painel (revisar as tarefas abertas) → ${path}` : `✍️ Situação do caso no painel: ${st} → ${path}`;
+    ok = st === 'fechado' ? 'Caso concluído.' : 'Situação atualizada.';
+  }
+  return gravarNaMemoria(f, { area: cf.area, sens: cf.sens, ops: [{ path, transform: base => transform(semNota(base)) }], aviso, msg: `caso ${nome} — ${TITULO_CASO[tipo].replace(/^\W+\s*/u, '').toLowerCase()}`, ok });
+}
+function moverRegistro(f) {
+  const origem = f.dataset.path, chave = f.dataset.chave, fo = S.files[origem];
+  const areaDestino = f.elements.area.value, areaOrigem = fo?.area || areaDestino;
+  let destino = f.elements.pasta.value, criar = '';
+  if (!destino || destino === '__nova') {
+    criar = f.elements.novaPasta?.value || '';
+    if (!precisa(f.elements.novaPasta, E.umaLinha(criar))) return;
+    destino = `areas/${areaDestino}/${E.nomeLivre(E.slug(criar), stemsDoCofre(), areaDestino)}.md`;
+  }
+  if (destino === origem) { closeSheet(); return; }
+  const rot = registroDe(fo, chave)?.rotulo || chave, nomeDestino = criar ? E.umaLinha(criar) : plain(S.files[destino]?.title || '');
+  let bloco = null;
+  return gravarNaMemoria(f, {
+    area: SENS.has(areaOrigem) ? areaOrigem : areaDestino, sens: SENS.has(areaOrigem) || SENS.has(areaDestino),
+    ops: [{ path: origem, transform: base => { const r = E.tirarRegistro(semNota(base), chave); bloco = r.bloco; return r.texto; } },
+      { path: destino, transform: base => E.porBloco(base ?? E.novaPasta({ area: areaDestino, titulo: criar || nomeDestino, hoje: ymd(now()) }), bloco) }],
+    aviso: `↪️ Moveu no painel: "${short(rot, 60)}" de ${origem} → ${destino}`, msg: `${nomeDaArea(areaOrigem).toLowerCase()} — registro movido pra ${nomeDestino}`,
+    ok: `Movido pra ${nomeDestino}.`,
+    depois: r => { S.realce = { path: destino, chave: E.chaveDoTitulo(r.textos[destino], bloco[0].replace(/^##\s+/, '')) }; ir(linkDeRegistro(destino)); },
+  });
+}
+function arquivarRegistro(area, origem, chave) {
+  const fo = S.files[origem], hoje = ymd(now()), arq = `areas/${area}/arquivo-${area}.md`;
+  const rot = registroDe(fo, chave)?.rotulo || chave;
+  let bloco = null;
+  return gravarNaMemoria(null, {
+    area, ops: [{ path: origem, transform: base => { const r = E.tirarRegistro(semNota(base), chave); bloco = r.bloco; return r.texto; } },
+      { path: arq, transform: base => E.porBloco(base ?? E.novoArquivo({ area, hoje }), E.blocoArquivado(bloco, hoje, fo?.stem || origem)) }],
+    aviso: `🗄️ Arquivou no painel: "${short(rot, 60)}" (de ${origem}) → ${arq}`, msg: `${nomeDaArea(area).toLowerCase()} — registro arquivado`,
+    ok: 'Arquivado. Saiu da pasta; a busca ainda acha.',
+  });
+}
+function arquivarPasta(area, path) {
+  const nome = plain(S.files[path]?.title || path);
+  return gravarNaMemoria(null, {
+    area, ops: [{ path, transform: base => E.definirCampo(semNota(base), 'arquivado', ymd(now())) }],
+    aviso: `🗄️ Arquivou a pasta no painel: "${nome}" → ${path}`, msg: `${nomeDaArea(area).toLowerCase()} — pasta ${nome} arquivada`,
+    ok: 'Pasta arquivada. Saiu da Memória; a busca ainda acha.', depois: () => ir(linkTopico(area, 'notas')),
+  });
+}
+function moverPasta(f) {
+  const { area, path } = f.dataset, destino = f.elements.area.value, fo = S.files[path];
+  if (!fo || !AREAS[destino] || destino === area) { closeSheet(); return; }
+  const novo = `areas/${destino}/${fo.stem}.md`;
+  let texto = null;
+  return gravarNaMemoria(f, {
+    area: SENS.has(area) ? area : destino, sens: SENS.has(area) || SENS.has(destino),
+    ops: [{ path, transform: base => { texto = semNota(base); return null; } },
+      { path: novo, transform: base => { if (base != null) throw erro('existe'); return E.definirCampo(texto, 'area', destino); } }],
+    aviso: `↪️ Moveu a pasta no painel: "${plain(fo.title)}" de ${path} → ${novo}`, msg: `pasta ${plain(fo.title)} movida pra ${nomeDaArea(destino)}`,
+    ok: `Pasta movida pra ${nomeDaArea(destino)}.`, depois: () => ir(linkDeRegistro(novo)),
+  });
+}
+function renomearPasta(f) {
+  const { area, path } = f.dataset, nome = f.elements.nome.value;
+  if (!precisa(f.elements.nome, E.umaLinha(nome))) return;
+  // O resumo padrão ("<nome>: registros com data.") acompanha o nome novo.
+  const padrao = /^(.*): registros com data\.$/;
+  return gravarNaMemoria(f, {
+    area, ops: [{ path, transform: base => { const t = E.renomear(semNota(base), nome); return padrao.test(E.campo(t, 'resumo')) ? E.definirCampo(t, 'resumo', `${E.umaLinha(nome)}: registros com data.`) : t; } }],
+    aviso: `✍️ Renomeou a pasta no painel: "${E.umaLinha(nome)}" → ${path}`, msg: `${nomeDaArea(area).toLowerCase()} — pasta renomeada`, ok: 'Pasta renomeada.',
+  });
+}
+function enviarEscrita(f, kind) {
+  if (f.querySelector('[type=submit]')?.disabled) return;
+  const acoes = { 'esc-dia': salvarDia, 'esc-registro': salvarRegistro, 'esc-pasta': salvarPasta, 'esc-meta': salvarMeta, 'esc-agora': salvarAgora,
+    'esc-caso': salvarCaso, 'esc-mover': moverRegistro, 'esc-mover-pasta': moverPasta, 'esc-renomear': renomearPasta };
+  if (acoes[kind]) return acoes[kind](f);
+  if (kind.startsWith('esc-caso-')) return salvarCasoAcao(f, kind.slice(9));
+}
+/* Um toque a mais pra arquivar ou tirar: o botão pede confirmação. */
+function confirmar(t) {
+  if (t.dataset.sure) return true;
+  t.dataset.sure = '1';
+  (t.querySelector('b') || t).textContent = 'Toque de novo pra confirmar';
+  t.classList.add('esc-confirma');
+  setTimeout(() => { if (t.isConnected && t.dataset.sure) { delete t.dataset.sure; t.classList.remove('esc-confirma'); } }, 6000);
+  return false;
+}
+function acaoDeEscrita(t, d) {
+  const a = d.escrever, area = d.area || S.areaRoute?.area || '', nomeA = nomeDaArea(area);
+  const abrir = (titulo, html, focus) => openSheet(titulo, html, focus ? { focus } : {});
+  if (a === 'menu') return abrir(`Registrar em ${nomeA}`, menuRegistrar(area));
+  if (a === 'dia') return abrir(area === 'emocional' ? 'Como estou hoje' : `Registro do dia · ${nomeA}`, formDia(area, d.data), 'textarea');
+  if (a === 'registro') { const f = d.path && S.files[d.path]; return abrir(f ? `Novo registro · ${plain(f.title)}` : `Registro em ${nomeA}`, formRegistro({ area, path: d.path || '' }), f ? 'input[name=titulo]' : null); }
+  if (a === 'editar') return abrir('Editar registro', formRegistro({ area, path: d.path, chave: d.chave }), 'textarea');
+  if (a === 'mover') return abrir('Mover registro', formMover(area, d.path, d.chave));
+  if (a === 'arquivar') return confirmar(t) && arquivarRegistro(area, d.path, d.chave);
+  if (a === 'meta') return abrir(`Meta do trimestre · ${nomeA}`, formMeta(area), 'input[name=meta]');
+  if (a === 'meta-editar') {
+    const f = S.files[d.path], m = f && secoesDoTopico([f], 'metas').flatMap(s => metasDaTabela(s.texto)).find(x => x.meta === d.meta);
+    return m ? abrir('Editar meta', formMeta(area, d.path, m)) : toast(MSGS.sumiu, { err: true });
+  }
+  if (a === 'meta-tirar') return confirmar(t) && tirarMetaDaArea(area, d.path, d.meta);
+  if (a === 'topicos') return abrir(`Tópico em ${nomeA}`, menuTopicos(area));
+  if (a === 'topico') return abrir(`${emojiTopico(d.topico)} ${nomeTopico(d.topico)} · ${nomeA}`, formRegistro({ area, topico: d.topico }), 'input[name=titulo]');
+  if (a === 'agora') return abrir(`Agora e Importante · ${nomeA}`, formAgora(area), 'textarea');
+  if (a === 'pasta') return abrir(`Pasta nova · ${nomeA}`, formPasta(area), 'input[name=nome]');
+  if (a === 'caso') return abrir('Caso ou projeto novo', formCaso(area), 'input[name=nome]');
+  if (a.startsWith('caso-')) { const tipo = a.slice(5); return abrir(`${TITULO_CASO[tipo]} · ${short(plain(S.files[d.path]?.title || ''), 28)}`, formCasoAcao(tipo, d.path), tipo === 'status' ? null : 'textarea, input[type=text]'); }
+  if (a === 'pasta-menu') return abrir(plain(S.files[d.path]?.title || 'Pasta'), menuPasta(area, d.path));
+  if (a === 'pasta-renomear') return abrir('Renomear pasta', formRenomear(area, d.path), 'input[name=nome]');
+  if (a === 'pasta-mover') return abrir('Mover pasta', formMoverPasta(area, d.path));
+  if (a === 'pasta-arquivar') return confirmar(t) && arquivarPasta(area, d.path);
+}
+
+/* ── desenho: a pasta e os registros ── */
+const resumoDoRegistro = texto => short(plain(String(texto || '').split('\n').map(l => l.trim())
+  .filter(l => l && !/^(\||#|```|_Arquivado)/.test(l)).slice(0, 2).join(' · ').replace(/(^|· )([-*+]|\d+\.)\s+(\[[ xX]\]\s*)?/g, '$1')), 130);
+function registroLi(f, area, r, fixado = false) {
+  const novo = S.realce && S.realce.path === f.path && S.realce.chave === r.chave;
+  const d = r.data ? pymd(r.data) : null;
+  const ano = d && d.getFullYear() !== now().getFullYear() ? `<small>${d.getFullYear()}</small>` : '';
+  const sub = resumoDoRegistro(r.temTitulo || !r.data || fixado ? r.texto : r.texto.split('\n').slice(1).join('\n'));
+  const a = acao => `data-escrever="${acao}" data-area="${area}" data-path="${h(f.path)}" data-chave="${h(r.chave)}"`;
+  return `<li${novo ? ' class="esc-novo"' : ''}><details class="reg${fixado ? ' fixado' : ''}" data-section="reg:${h(r.chave)}"${novo ? ' open' : ''}>
+    <summary><span class="reg-data">${d ? `<b>${d.getDate()}</b><small>${MON[d.getMonth()]}</small>${ano}` : fixado ? '📌' : '<i></i>'}</span>
+      <span class="reg-t"><b>${h(fixado ? r.rotulo.replace(/^📌\s*/u, '') : r.rotulo)}</b>${sub ? `<small>${h(sub)}</small>` : ''}${d && !fixado ? `<em>${h(DOWL[d.getDay()])}</em>` : ''}</span></summary>
+    <div class="reg-corpo">${r.texto ? `<div class="md">${md(r.texto, f.path, true)}</div>` : ''}
+      <div class="reg-acoes"><button type="button" ${a('editar')}>✏️ Editar</button><button type="button" ${a('mover')}>↪️ Mover</button><button type="button" ${a('arquivar')}><b>🗄️ Arquivar</b></button></div></div>
+  </details></li>`;
+}
+function listaDeRegistros(f, area, ordem) {
+  const R = E.registrosDaNota(f.text);
+  const lista = E.ordenarRegistros(R.registros, ordem);
+  return `${R.fixados.length ? `<ul class="pasta-regs pasta-fixados" aria-label="Fixados">${R.fixados.map(r => registroLi(f, area, r, true)).join('')}</ul>` : ''}
+    ${lista.length ? `<ol class="pasta-regs">${lista.map(r => registroLi(f, area, r)).join('')}</ol>` : ''}`;
+}
+const ordemDa = f => S.ordemPasta[f.path] || (f.meta.ordem === 'titulo' ? 'titulo' : 'data');
+function paginaDaPasta(f, area) {
+  const R = E.registrosDaNota(f.text), n = R.registros.length, ordem = ordemDa(f);
+  const ultimo = R.registros.map(r => r.data).filter(Boolean).sort().pop();
+  const ghUrl = `https://github.com/${cfg.repo}/blob/${encodeURIComponent(cfg.branch || 'main')}/${repoPath(f.path)}`;
+  const top = ehTopico(f);
+  const resumo = f.meta.resumo && !/: registros com data\.$|, com a data\.$/.test(f.meta.resumo) ? f.meta.resumo : '';
+  return `<article class="reading-note pasta-page">
+    <header><div class="rn-topo"><p class="rn-chips"><span>${top ? `${emojiTopico(f.meta.topico)} Tópico` : '📁 Pasta'}</span>${AREAS[area] ? `<span>${AREAS[area].emoji} ${h(AREAS[area].nome)}</span>` : ''}</p>
+        <button type="button" class="ib pasta-mais" data-escrever="pasta-menu" data-area="${area}" data-path="${h(f.path)}" aria-label="Mais opções da pasta">${MAIS_ICON}</button></div>
+      <h2 tabindex="-1">${h(plain(f.title))}</h2>
+      <p class="rn-meta"><span>${n} ${n === 1 ? 'registro' : 'registros'}${ultimo ? ` · último em ${dm(ultimo)}` : ''}</span><a href="${h(ghUrl)}" target="_blank" rel="noopener noreferrer">abrir no GitHub ↗</a></p>
+      ${resumo ? `<p class="pasta-resumo">${inline(resumo)}</p>` : ''}
+      <div class="pasta-acoes"><button type="button" class="btn" data-escrever="registro" data-area="${area}" data-path="${h(f.path)}">＋ Novo registro</button>
+        ${n > 1 ? `<div class="esc-seg" role="group" aria-label="Organizar por"><button type="button" data-ordem="data" data-path="${h(f.path)}" aria-pressed="${ordem === 'data'}">Data</button><button type="button" data-ordem="titulo" data-path="${h(f.path)}" aria-pressed="${ordem === 'titulo'}">Título</button></div>` : ''}</div>
+    </header>
+    ${R.intro ? `<div class="md rn-intro">${md(R.intro, f.path, true)}</div>` : ''}
+    ${listaDeRegistros(f, area, ordem)}
+    ${!n && !R.fixados.length ? `<div class="pasta-vazia"><p>Nenhum registro ainda.</p><button type="button" class="btn ghost" data-escrever="registro" data-area="${area}" data-path="${h(f.path)}">＋ Escrever o primeiro</button></div>` : ''}
+  </article>`;
+}
+/* Cartão "Notas da área": cada nota é uma pasta (a principal abre a leitura). */
+function cartaoDasPastas(C) {
+  const { area } = C;
+  const notas = [C.principal, ...C.apoio].filter(f => f && !ehTopico(f));
+  const tile = f => {
+    const principal = f === C.principal;
+    const R = principal ? null : E.registrosDaNota(f.text);
+    const n = R ? R.registros.length : 0, ultimo = R ? R.registros.map(r => r.data).filter(Boolean).sort().pop() : null;
+    const sub = principal ? 'Nota principal · Agora, Metas, Importante' : `${n} ${n === 1 ? 'registro' : 'registros'}${ultimo ? ` · último em ${dm(ultimo)}` : ''}`;
+    return `<li><a href="${h(principal ? linkDeNota(area) : linkDeRegistro(f.path))}"><span class="pasta-ic" aria-hidden="true">${principal ? '📌' : '📁'}</span><span class="pasta-nome"><b>${h(plain(f.title))}</b><small>${h(sub)}</small></span><span class="pasta-seta" aria-hidden="true">›</span></a></li>`;
+  };
+  return `<section class="area-card org-card"><div class="area-card-head"><h3>Notas da área</h3><button type="button" class="area-link esc-link" data-escrever="pasta" data-area="${area}">＋ Pasta nova</button></div>
+    ${notas.length ? `<ul class="pastas">${notas.map(tile).join('')}</ul>` : '<p class="area-empty">Nenhuma nota ainda. Crie uma pasta pra juntar registros do mesmo assunto, como “Como me sinto”.</p>'}</section>`;
+}
+const botaoRegistrar = area => `<button type="button" class="btn esc-registrar" data-escrever="menu" data-area="${area}"><span aria-hidden="true">＋</span> Registrar</button>`;
+
 function bind() {
   document.addEventListener('click', ev => {
-    const t = ev.target.closest('[data-projarea],[data-projetos-privacidade],[data-humor],[data-reveal-sentir],[data-tarefa-privacidade],[data-commit],[data-open],[data-task],[data-compra],[data-cxdel],[data-tab],[data-mdt],[data-reveal],[data-find],[data-reg],[data-mood],[data-emo],#copyAsk,[data-act],[data-st],[data-day],[data-wk],[data-pick],[data-ficha],[data-regficha],[data-fmes],[data-ftab],[data-fo],[data-fedit],[data-fnova],[data-faba],[data-fcart],[data-fvenc],[data-fdia],[data-fcat],[data-alitab],[data-pessoa],[data-dias],[data-pego],[data-trocagrupo],[data-ref],[data-trocap],[data-close],[data-reveal-area],[data-ocultar-area],[data-area-captura],[data-anotar-nota],[data-box-remove],[data-sumario],[data-voltar],[data-caso-aba],[data-cardapio-dia]');
+    const t = ev.target.closest('[data-projarea],[data-projetos-privacidade],[data-humor],[data-reveal-sentir],[data-tarefa-privacidade],[data-commit],[data-open],[data-task],[data-compra],[data-cxdel],[data-tab],[data-mdt],[data-reveal],[data-find],[data-reg],[data-mood],[data-emo],#copyAsk,[data-act],[data-st],[data-day],[data-wk],[data-pick],[data-ficha],[data-regficha],[data-fmes],[data-ftab],[data-fo],[data-fedit],[data-fnova],[data-faba],[data-fcart],[data-fvenc],[data-fdia],[data-fcat],[data-alitab],[data-pessoa],[data-dias],[data-pego],[data-trocagrupo],[data-ref],[data-trocap],[data-close],[data-reveal-area],[data-ocultar-area],[data-area-captura],[data-anotar-nota],[data-box-remove],[data-sumario],[data-voltar],[data-caso-aba],[data-cardapio-dia],[data-escrever],[data-ordem]');
     if (!t) return;
     const d = t.dataset;
     // Painel só de leitura (22/11/2026): nada que grave nas notas, na caixa ou nas listas responde ao toque.
     if (ESCRITA.some(k => d[k] !== undefined)) { ev.preventDefault(); return; }
+    // Escrita na Memória (23/11/2026): registrar, editar, mover e arquivar.
+    if (d.escrever) { ev.preventDefault(); acaoDeEscrita(t, d); return; }
+    if (d.ordem && d.path) { S.ordemPasta = { ...S.ordemPasta, [d.path]: d.ordem }; LS.set(K + 'ordem', S.ordemPasta); renderAreaPage(); $(`[data-ordem="${d.ordem}"]`)?.focus({ preventScroll: true }); return; }
     if (d.humor) {
       const fi = fichasAll()[0];
       openSheet(`${fi.emoji} ${fi.nome}`, formFicha(fi), { focus: 'textarea[name=livre]' });
@@ -3052,6 +3650,8 @@ function bind() {
   document.addEventListener('change', ev => {
     const t = ev.target;
     if (t.matches('[name=areaNota]') && t.closest('#regBody')) S.notaArea = t.value;
+    if (t.matches('[data-esc-area]')) { const f = t.closest('form'), sel = f.querySelector('[data-esc-pasta]'); if (sel) sel.innerHTML = opcoesDePasta(t.value, f.dataset.path); mostrarPastaNova(f); }
+    if (t.matches('[data-esc-pasta]')) { const f = t.closest('form'); mostrarPastaNova(f); if (t.value === '__nova') f.querySelector('[name=novaPasta]')?.focus(); }
     if (t.matches('select[data-outro]') && t.value === '__outro') {
       const campo = document.createElement('input');
       Object.assign(campo, { type: 'text', name: t.name, id: t.id, required: t.required, placeholder: 'Escreva o valor' });
@@ -3068,6 +3668,7 @@ function bind() {
   document.addEventListener('submit', ev => {
     const f = ev.target;
     const kind = f.dataset.form;
+    if (kind && kind.startsWith('esc-')) { ev.preventDefault(); enviarEscrita(f, kind); return; }
     if (kind) { ev.preventDefault(); return; }
     if (kind === 'captura') { enviarCaptura(f); return; }
     if (kind === 'nota') { concluirCaptura(f, () => saveNota(f.elements.txt.value, f.elements.areaNota.value)); return; }
