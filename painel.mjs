@@ -1429,6 +1429,13 @@ function cartaoCardapio(C) {
     ${K.obs ? `<p class="org-obs">${inline(K.obs)}</p>` : ''}</section>`;
 }
 
+function guiaFixadoEmocional(area, principal) {
+  if (area !== 'emocional' || !principal) return '';
+  const destaque = secoesDeLeitura(principal.body).find(s => /^importante\b/.test(norm(s.title)));
+  if (!destaque) return '';
+  return `<section class="area-card org-card"><h3>📌 Fixado no diário</h3><div class="md">${md(destaque.text, principal.path, true)}</div></section>`;
+}
+
 function visaoGeralDaArea(C, T) {
   const { area, principal, hoje } = C;
   const secs = principal ? secoesDeLeitura(principal.body) : [];
@@ -1452,10 +1459,10 @@ function visaoGeralDaArea(C, T) {
   const agendaCard = `<section class="area-card org-card"><div class="area-card-head"><h3>Próximos compromissos</h3><a class="area-link" href="${linkTopico(area, 'agenda')}">Ver agenda →</a></div>
     ${prox.length ? `<ul class="org-eventos">${prox.map(eventoLi).join('')}</ul>` : '<p class="area-empty">Nada marcado para esta área.</p>'}</section>`;
   const tarefas = cartaoTickTick({ titulo: 'Tarefas', tarefas: tarefasDaAreaTT(C), hoje, link: linkTopico(area, 'tarefas'), pend: pendentesDaArea(C), vazio: 'Nada aberto no TickTick nesta área.' });
-  return `${hero}<div class="org-geral">${kpis}${foco}${tambemHtml}
+  return `${guiaFixadoEmocional(area, principal)}${hero}<div class="org-geral">${kpis}${foco}${tambemHtml}
     <div class="org-par">${agendaCard}${tarefas}</div>
     ${cartaoCardapio(C)}
-    ${importante ? `<section class="area-card"><h3>Importante</h3><div class="md">${md(importante.text, principal.path, true)}</div></section>` : ''}
+    ${area !== 'emocional' && importante ? `<section class="area-card"><h3>Importante</h3><div class="md">${md(importante.text, principal.path, true)}</div></section>` : ''}
     ${area === 'financas' ? `<a class="area-card fin-atalho" href="#financas"><b>💰 Abrir Finanças</b><span>Saldo, extrato, orçamento e cartões →</span></a>` : ''}
   </div>${SENS.has(area) ? visaoBemEstar(area, Object.values(S.files), hoje) : ''}`;
 }
@@ -1487,8 +1494,8 @@ function notasDaAreaAba(C, T) {
   const { area } = C;
   const topicos = TOPICOS.filter(t => !['resumo', 'tarefas', 'agenda'].includes(t.id) && T.n[t.id] > 0);
   const dias = ultimosDias(C, 5);
-  const notas = [C.principal, ...C.apoio].filter(Boolean);
-  return `${topicos.length ? `<section class="area-card org-card"><div class="area-card-head"><h3>Tópicos</h3></div><ul class="org-topicos">${topicos.map(t => `<li><a href="${linkTopico(area, t.id)}"><span class="org-top-ic" aria-hidden="true">${t.emoji}</span><b>${t.nome}</b><small>${T.n[t.id]}</small></a></li>`).join('')}</ul></section>` : ''}
+  const notas = [C.principal, ...C.apoio].filter(f => f && !(area === 'emocional' && /^areas\/emocional\/journal-\d{4}-\d{2}\.md$/.test(f.path)));
+  return `${guiaFixadoEmocional(area, C.principal)}${topicos.length ? `<section class="area-card org-card"><div class="area-card-head"><h3>Tópicos</h3></div><ul class="org-topicos">${topicos.map(t => `<li><a href="${linkTopico(area, t.id)}"><span class="org-top-ic" aria-hidden="true">${t.emoji}</span><b>${t.nome}</b><small>${T.n[t.id]}</small></a></li>`).join('')}</ul></section>` : ''}
     ${dias.length ? `<section class="area-card org-card"><div class="area-card-head"><h3>Registros diários</h3><a class="area-link" href="#area/${area}/dias">Todos →</a></div>
       <ul class="ultimos">${dias.map(d => `<li><a href="#area/${area}/dia/${d.date}"><b>${dayLabel(d.date)}</b><span>${h(short(linhasDoDia(d).slice(0, 2).join(' · '), 110))}</span></a></li>`).join('')}</ul></section>` : ''}
     ${notas.length ? `<section class="area-card org-card"><div class="area-card-head"><h3>Notas da área</h3></div>${areaRecordList(notas, area)}</section>` : ''}
