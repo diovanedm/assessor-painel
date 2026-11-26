@@ -126,3 +126,20 @@
   .ali-plates li {grid-template-columns:1fr}
   .ali-plates dt {font-size:12px}
 }
+
+/* Trocas fixas (26/11/2026) */
+.ali .alts .alt{border:0;background:none;font:inherit;cursor:pointer;border-radius:10px;padding:8px 10px;margin:0 -10px;width:calc(100% + 20px);min-height:44px;align-items:center}
+.ali .alts .alt:hover,.ali .alts .alt:focus-visible{background:var(--panel)}
+.ali .alts .alt.on{background:var(--signal-soft);box-shadow:inset 3px 0 0 var(--signal)}
+.ali .alts .alt.on span:first-child::after{content:' ✓';color:var(--signal);font-weight:700}
+.ali .alts .alt-volta span:first-child{color:var(--signal);font-weight:600}
+.ali .alt-dica{margin:2px 0 6px;font-size:12.5px;color:var(--ink3)}
+.ali .troca-tag{display:inline-block;margin-left:6px;padding:0 7px;border-radius:99px;background:var(--signal);color:var(--on-ink, #fff);font-size:10.5px;font-weight:700;line-height:17px;vertical-align:2px;text-transform:uppercase;letter-spacing:.04em}
+.ali .troca-tag.busy{opacity:.55}
+.ali .ritems li.trocado .fn{color:var(--ink)}
+.ali .troca-alvo{position:sticky;top:calc(env(safe-area-inset-top) + 64px);z-index:5;box-shadow:0 6px 18px rgb(0 0 0 / .08);display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 0 14px;padding:12px 14px;border-radius:14px;background:var(--panel);border:1px solid var(--signal)}
+.ali .troca-alvo p{margin:0;display:flex;flex-direction:column;gap:2px;font-size:14.5px}
+.ali .troca-alvo small{color:var(--ink3);font-size:12.5px}
+.ali .tg-pick{display:flex;justify-content:space-between;gap:12px;width:100%;min-height:44px;align-items:center;padding:6px 8px;margin:0 -8px;width:calc(100% + 16px);border:0;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer;border-radius:10px}
+.ali .tg-pick:hover,.ali .tg-pick:focus-visible{background:var(--panel)}
+.ali .tg-pick span:last-child{text-align:right;color:var(--ink2);flex:none;max-width:50%}

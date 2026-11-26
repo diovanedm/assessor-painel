@@ -1,4 +1,4 @@
-import { norm, pymd } from './datas.mjs?v=0fa1b6c8623c';
+import { norm, pymd } from './datas.mjs?v=d6613cd2a56f';
 
 /* ─────────────── Escrita na Memória (23/11/2026) ───────────────
    O painel volta a gravar nas notas, direto no lugar certo. Tudo aqui é texto → texto,

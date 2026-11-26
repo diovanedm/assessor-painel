@@ -1,19 +1,19 @@
 /* ─────────────── utilidades ─────────────── */
-import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDaNota, linkDeRegistro, metasDaTabela, notaSolta, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=0fa1b6c8623c';
-import { refeicaoDoHorario, refeicoesOrdenadas } from './alimentacao.mjs?v=0fa1b6c8623c';
-import { visaoBemEstar } from './bem-estar.mjs?v=0fa1b6c8623c';
-import { blocosDaSemanaModelo, casosEmAndamento, pontoDeParada, textoDaBusca } from './memoria.mjs?v=0fa1b6c8623c';
-import { APPS, agendaPorDia, comAoVivo, idadeDoEspelho, momento, resumoFinanceiro, tarefasEmGrupos } from './espelho.mjs?v=0fa1b6c8623c';
-import { humorRecente, marcosDaArea, nivelDeIngles, semanaDaArea, trilha } from './visual.mjs?v=0fa1b6c8623c';
-import { projetos as listaDeProjetos, situacao as situacaoDoCaso } from './projetos.mjs?v=0fa1b6c8623c';
-import { TICKTICK, tickTick, situacaoDaTarefa, tarefasDoAssunto, foraDoTickTick, partesDoTitulo, compromissosDaArea, semanaDosBlocos, progressoDasMetas, cardapio, diaDoCardapio, partesDoCaso } from './organizar.mjs?v=0fa1b6c8623c';
-import { linhasCaptura, lerCaptura, tipoAnexo, extAudio, lerOrganizados, destinoLegivel } from './captura.mjs?v=0fa1b6c8623c';
-import * as E from './escrita.mjs?v=0fa1b6c8623c';
+import { CUSTOS_DA_AREA, TOPICOS, areasDoTexto, casosDaArea, custosDaArea, linksDasNotas, destinoDaArea, diasDaArea, ehRegistroDoMes, entradasDatadas, linkDaNota, linkDeRegistro, metasDaTabela, notaSolta, notasDaArea, padroesDosHabitos, primeiraMeta, secoesDeLeitura, secoesDoTopico } from './areas.mjs?v=d6613cd2a56f';
+import { refeicaoDoHorario, refeicoesOrdenadas, lerTrocas, gravarTroca, aplicarTroca, chaveTroca } from './alimentacao.mjs?v=d6613cd2a56f';
+import { visaoBemEstar } from './bem-estar.mjs?v=d6613cd2a56f';
+import { blocosDaSemanaModelo, casosEmAndamento, pontoDeParada, textoDaBusca } from './memoria.mjs?v=d6613cd2a56f';
+import { APPS, agendaPorDia, comAoVivo, idadeDoEspelho, momento, resumoFinanceiro, tarefasEmGrupos } from './espelho.mjs?v=d6613cd2a56f';
+import { humorRecente, marcosDaArea, nivelDeIngles, semanaDaArea, trilha } from './visual.mjs?v=d6613cd2a56f';
+import { projetos as listaDeProjetos, situacao as situacaoDoCaso } from './projetos.mjs?v=d6613cd2a56f';
+import { TICKTICK, tickTick, situacaoDaTarefa, tarefasDoAssunto, foraDoTickTick, partesDoTitulo, compromissosDaArea, semanaDosBlocos, progressoDasMetas, cardapio, diaDoCardapio, partesDoCaso } from './organizar.mjs?v=d6613cd2a56f';
+import { linhasCaptura, lerCaptura, tipoAnexo, extAudio, lerOrganizados, destinoLegivel } from './captura.mjs?v=d6613cd2a56f';
+import * as E from './escrita.mjs?v=d6613cd2a56f';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const h = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=0fa1b6c8623c';
+import { norm, pad, ymd, pymd, addDays, hm, toMin, now } from './datas.mjs?v=d6613cd2a56f';
 const DOW = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 const DOWL = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
 const MON = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
@@ -126,7 +126,7 @@ const SEMANA_MODELO = 'eu/plano.md';
 const COMPRAS = 'areas/casa-familia/compras.md';
 const CAIXA = 'painel/caixa.md', RESERVADA = 'painel/caixa-reservada.md';
 const FIN = 'painel/espelho.json', FICHAS = 'painel/fichas.md';
-const PLANO_D = 'areas/saude/plano-alimentar.md', PLANO_M = 'areas/casa-familia/plano-alimentar-michele.md', SUBS_M = 'areas/casa-familia/substituicoes-michele.md', CASAL = 'areas/casa-familia/alimentacao-casal.md';
+const PLANO_D = 'areas/saude/plano-alimentar.md', PLANO_M = 'areas/casa-familia/plano-alimentar-michele.md', SUBS_M = 'areas/casa-familia/substituicoes-michele.md', CASAL = 'areas/casa-familia/alimentacao-casal.md', TROCAS = 'painel/trocas.md';
 const STATUS = { bem: 'bem', atencao: 'atenção', alerta: 'alerta', parado: 'parado' };
 const STATUS_PRIORITARIOS = ['parado', 'alerta', 'atencao'];
 const ROTULOS = {
@@ -162,7 +162,7 @@ const S = {
   notaArea: 'geral', regFicha: 'estou', fichas: [], plano: null, comprados: [], sel: null, wk: 0, _idx: {},
   extratoTipo: '', extratoBusca: '', planAba: 'Lançamentos', planBusca: '',
   fin: null, finBase: null, vivo: LS.get(K + 'vivo', null), vivoTry: 0, vivoBusy: false, vivoErro: null, finSha: null, _fm: null, finMes: null, finTab: 'resumo', finOpen: {}, finDia: null, finCat: null, fcart: null,
-  projArea: LS.get(K + 'projarea', 'todos'), aliTab: 'plano', pessoa: LS.get(K + 'pessoa2', 'ambos'), aliRef: null, trocaP: LS.get(K + 'trocap', 'diovane'), trocaOpen: null, dias: LS.get(K + 'dias', 7), trocaQ: '',
+  projArea: LS.get(K + 'projarea', 'todos'), aliTab: 'plano', pessoa: LS.get(K + 'pessoa2', 'ambos'), aliRef: null, trocaP: LS.get(K + 'trocap', 'diovane'), trocaOpen: null, trocaAlvo: null, trocaOpts: [], trocaPend: new Map(), dias: LS.get(K + 'dias', 7), trocaQ: '',
 };
 let queue = Promise.resolve();
 
@@ -428,6 +428,7 @@ function reindex() {
   S.name = S.files['eu/perfil.md']?.title || '';
   S.fichas = parseFichas(S.files[FICHAS]);
   S.plano = { dv: parsePlano(S.files[PLANO_D]), mi: parsePlano(S.files[PLANO_M]), subsMi: parseGruposM(S.files[SUBS_M]), casal: parseCasal(S.files[CASAL]) };
+  S.trocas = lerTrocas(S.files[TROCAS]?.text);
   S.comprados = parseComprados(S.files[COMPRAS]);
   buildCaixa();
 }
@@ -916,6 +917,7 @@ function route() {
     $('#ali').replaceChildren();
   }
   if (p === 'alimentacao') S.aliTab = ['compras', 'trocas'].includes(sub) ? sub : 'plano';
+  if (p === 'alimentacao' && S.aliTab !== 'trocas') S.trocaAlvo = null;
   if (p === 'registrar') S.reg = 'captura';
   if (changed && p === 'alimentacao') S.aliRef = null;
   S.page = p;
@@ -966,7 +968,7 @@ function seloTickTick(sit, id) {
 }
 const isChecked = g => { const o = taskOv(g); if (o) return o.kind === 'feita'; const s = situacaoDoGrupo(g); return s === 'feita' || s === 'fechada'; };
 const byDue = (a, b) => (a.due || '9').localeCompare(b.due || '9') || (b.prio === 'alta') - (a.prio === 'alta');
-import { organizarTarefas, primeiroPasso, prioridadesDoDia } from './tarefas.mjs?v=0fa1b6c8623c';
+import { organizarTarefas, primeiroPasso, prioridadesDoDia } from './tarefas.mjs?v=d6613cd2a56f';
 function estadoTarefa(g) {
   if (g.nova) return { feita:false, data:'' };
   const item = taskOv(g);
@@ -2705,7 +2707,7 @@ function enviarCaptura(f) {
 }
 
 /* ─────────────── Finanças: o resumo do Minhas Economias (espelho gravado pelo assessor) ─────────────── */
-import { brl, pnum } from './financas.mjs?v=0fa1b6c8623c';
+import { brl, pnum } from './financas.mjs?v=d6613cd2a56f';
 const V = (v, cls = '') => `<span class="veil${cls ? ' ' + cls : ''}">${brl(v)}</span>`;
 const corSegura = c => /^#[0-9a-f]{3,8}$/i.test(String(c || '')) ? c : /^[0-9a-f]{6}$/i.test(String(c || '')) ? '#' + c : 'var(--ink3)';
 function renderFinancas() {
@@ -2883,6 +2885,7 @@ function renderAlimentacao() {
   const keep = same ? $$('[data-keep]',el).map(input => [input.dataset.keep,input.value,document.activeElement === input,input.selectionStart]) : [];
   const opened = same ? new Map($$('details[data-stay]',el).map(item=>[item.dataset.stay,item.open])) : new Map();
   const P = S.plano || {};
+  S.trocaOpts = [];
   if (!visible && S.aliTab !== 'compras') {
     el.innerHTML = `<section class="area-gate">${ICON.lock}<h2>Planos alimentares reservados</h2><p>O modo discreto está ativo.</p><button type="button" class="btn" data-act="ali-privacidade">Mostrar planos</button></section>`;
   } else {
@@ -2915,17 +2918,46 @@ function trocasDaRefeicao(P, m, quem) {
   }
   return out;
 }
-function altBtn(a, it, pl, quem) {
-  const g = a.n.match(/^([\d,.½]+)\s+porç(?:ão|ões)\s+do grupo\s+(\d+)\s*\(([^)]+)\)/i);
-  if (g) return `<button type="button" class="alt-lista" data-trocagrupo="${h(g[3])}" data-tp="michele"><span>Ver a lista toda: <b>${h(g[3])}</b></span><span>${h(g[1])}\u00a0${+g[1].replace(',', '.') > 1 ? 'porções' : 'porção'} ›</span></button>`;
-  return `<div class="alt"><span>${h(a.n)}</span><span>${h(nb(a.q))}</span></div>`;
+/* Trocas fixas (26/11/2026): toque numa opção e ela fica no lugar do item até ele desfazer.
+   As opções clicáveis ficam em S.trocaOpts (refeito a cada render) e o botão leva só o índice. */
+function trocasAtuais() {
+  const m = new Map(S.trocas || []);
+  for (const [k, tr] of S.trocaPend) tr ? m.set(k, tr) : m.delete(k);
+  return m;
 }
-function itemLinha(it, pl, quem) {
-  const alts = it.alts || [];
-  const fim = quem === 'diovane' && pl.grupoDe[it.n] ? `<button type="button" class="alt-lista" data-trocagrupo="${h(pl.grupoDe[it.n])}" data-tp="diovane"><span>Ver a lista toda: <b>${h(pl.grupoDe[it.n])}</b></span><span>›</span></button>` : '';
-  const linha = `<span class="fn">${h(it.n)}</span><span class="fq">${h(nb(it.q))}</span>`;
+const opcaoTroca = o => S.trocaOpts.push(o) - 1;
+const porcoesTxt = (n, q) => n === 1 ? q : `${fmtN(n)} porções${q ? ` (${q} cada)` : ''}`;
+function altBtn(a, it, pl, quem, alvo) {
+  const g = a.n.match(/^([\d,.½]+)\s+porç(?:ão|ões)\s+do grupo\s+(\d+)\s*\(([^)]+)\)/i);
+  if (g) { const porcoes = +g[1].replace('½', '0.5').replace(',', '.') || 1; return `<button type="button" class="alt-lista" data-trocagrupo="${h(g[3])}" data-tp="michele" data-alvo="${opcaoTroca({ ...alvo, porcoes })}"><span>Escolher na lista: <b>${h(g[3])}</b></span><span>${h(g[1])} ${porcoes > 1 ? 'porções' : 'porção'} ›</span></button>`; }
+  const ativa = it.troca && norm(it.troca.n) === norm(a.n);
+  return `<button type="button" class="alt${ativa ? ' on' : ''}" data-trocar="${opcaoTroca({ ...alvo, n: a.n, q: a.q })}" aria-pressed="${ativa}"><span>${h(a.n)}</span><span>${h(nb(a.q))}</span></button>`;
+}
+function itemLinha(it0, pl, quem, meal) {
+  const it = aplicarTroca(it0, quem, meal.t, trocasAtuais());
+  const tr = it.troca;
+  const alvo = { quem, t: meal.t, refeicao: meal.nome, orig: it0.n };
+  const alts = it0.alts || [];
+  const grupo = quem === 'diovane' && pl.grupoDe[it0.n];
+  const fim = grupo ? `<button type="button" class="alt-lista" data-trocagrupo="${h(grupo)}" data-tp="diovane" data-alvo="${opcaoTroca(alvo)}"><span>Escolher na lista: <b>${h(grupo)}</b></span><span>›</span></button>` : '';
+  const pend = tr && S.trocaPend.has(chaveTroca(quem, meal.t, it0.n));
+  const linha = tr
+    ? `<span class="fn">${h(tr.n)} <small class="troca-tag${pend ? ' busy' : ''}">troca</small></span><span class="fq">${h(nb(tr.q || 'quantidade da lista'))} · no lugar de ${h(it0.n)}</span>`
+    : `<span class="fn">${h(it0.n)}</span><span class="fq">${h(nb(it0.q))}</span>`;
   if (!alts.length && !fim) return `<li><div class="fl">${linha}<span class="fx"></span></div></li>`;
-  return `<li><details><summary class="fl">${linha}<span class="fx" aria-label="Ver substituições">Trocas <i aria-hidden="true">⌄</i></span></summary><div class="alts">${alts.map(a => altBtn(a, it, pl, quem)).join('')}${fim}</div></details></li>`;
+  const volta = tr ? `<button type="button" class="alt alt-volta" data-destrocar="${opcaoTroca(alvo)}"><span>↩ Voltar ao plano: ${h(it0.n)}</span><span>${h(nb(it0.q))}</span></button>` : '';
+  const dica = `<p class="alt-dica">${tr ? 'Toque em outra opção para trocar de novo.' : 'Toque numa opção: ela fica no prato até você voltar ao plano.'}</p>`;
+  return `<li${tr ? ' class="trocado"' : ''}><details data-stay="troca-${h(quem + meal.t + it0.n)}"><summary class="fl">${linha}<span class="fx" aria-label="Ver substituições">Trocas <i aria-hidden="true">⌄</i></span></summary><div class="alts">${dica}${volta}${alts.map(a => altBtn(a, it, pl, quem, alvo)).join('')}${fim}</div></details></li>`;
+}
+function salvarTroca(tr) {
+  if (norm(tr.n) === norm(tr.orig)) tr = { ...tr, n: '', q: '' };
+  const k = chaveTroca(tr.quem, tr.t, tr.orig);
+  S.trocaPend.set(k, tr.n ? { ...tr, desde: ymd(now()) } : null);
+  renderAlimentacao();
+  const fim = () => { S.trocaPend.delete(k); renderAlimentacao(); };
+  return writeMany([{ path: TROCAS, transform: base => gravarTroca(base, tr, ymd(now())) }],
+    `painel: alimentação — ${tr.n ? `${tr.n} no lugar de ${tr.orig}` : `${tr.orig} de volta`} (${tr.t})`,
+    { onOk() { fim(); toast(tr.n ? `Trocado: ${tr.n} no lugar de ${tr.orig}.` : `${tr.orig} voltou ao prato.`); }, onErr(e) { fim(); toastErr(e, 'Não troquei'); } });
 }
 function refeicoesDaPessoa(P, quem) {
   if (quem === 'diovane') return P.dv?.meals;
@@ -2963,7 +2995,7 @@ function aliPlano(P) {
     const amount = (person, item) => `<div class="ali-quantity"><dt>${person}</dt><dd>${item.t ? h(nb(item.t)) : '—'}${item.troca ? ' <small>troca</small>':''}</dd></div>`;
     portion = `<ul class="ali-plates">${lines.map(it => `<li><strong>${h(it.n)}</strong><dl>${amount('Diovane',it.d)}${amount('Michele',it.m)}</dl>${it.obs ? `<p>${h(it.obs)}</p>`:''}</li>`).join('')}</ul>`;
   } else {
-    portion = `<ul class="ritems">${meal.itens.map(it=>itemLinha(it,pl,quem)).join('')}</ul>`;
+    portion = `<ul class="ritems">${meal.itens.map(it=>itemLinha(it,pl,quem,meal)).join('')}</ul>`;
   }
   const swaps = trocasDaRefeicao(P,meal,quem);
   const alternatives = swaps.length ? `<details class="ali-card ali-disclosure" data-stay="opcoes-${si}"><summary>Outras opções para esta refeição <small>${swaps.length}</small></summary>
@@ -2980,12 +3012,13 @@ function aliTrocas(P) {
   const q = norm(S.trocaQ).trim();
   const result = groups.map(g => ({...g,itens: q && !norm(g.nome).includes(q) ? g.itens.filter(i=>norm(i.n).includes(q)) : g.itens})).filter(g=>g.itens.length);
   const path = mi ? SUBS_M : PLANO_D;
-  const controls = `<div class="ali-person"><span>Lista de substituições</span>${quemSeg(quem,['diovane','michele'],'data-trocap')}</div>`;
+  const alvo = S.trocaAlvo && S.trocaAlvo.quem === quem ? S.trocaAlvo : null;
+  const controls = `<div class="ali-person"><span>Lista de substituições</span>${quemSeg(quem,['diovane','michele'],'data-trocap')}</div>${alvo ? `<div class="troca-alvo" role="status"><p>Escolha o que vai <b>no lugar de ${h(alvo.orig)}</b><small>${h(alvo.t)} · ${h(alvo.refeicao)}</small></p><button type="button" class="btn ghost" data-alvo-cancelar>Cancelar</button></div>` : ''}`;
   if (!groups.length) return controls + '<p class="ali-nodata">A lista de substituições ainda não está nas notas.</p>';
   return `${controls}<div class="ali-search"><label for="aliBusca">Buscar nas substituições</label><input id="aliBusca" type="search" data-keep="trocaq" data-trocaq placeholder="Alimento ou grupo" value="${h(S.trocaQ)}"></div>
     <div class="ali-subhead"><h2>Grupos de alimentos</h2><p>${mi ? 'Cada opção equivale a uma porção do grupo.' : 'Cada opção já traz a quantidade prevista no plano.'}</p></div>
     <div class="ali-groups">${result.map(g=>`<details class="tg" data-grp="${h(g.nome)}"${q || S.trocaOpen === g.nome ? ' open':''}><summary><span class="tgn">${h(g.nome)}</span><span class="tgc">${g.itens.length} ${g.itens.length === 1 ? 'opção':'opções'}</span></summary>
-      ${!mi && g.ref ? `<p class="tgr">No lugar de ${h(g.ref)}</p>`:''}<ul>${g.itens.map(i=>`<li><span>${h(i.n)}</span><span>${h(nb(i.q))}</span></li>`).join('')}</ul></details>`).join('') || '<p class="ali-nodata">Nenhum alimento ou grupo encontrado.</p>'}</div>
+      ${!mi && g.ref ? `<p class="tgr">No lugar de ${h(g.ref)}</p>`:''}<ul>${g.itens.map(i=>{ const q = mi && alvo ? porcoesTxt(alvo.porcoes || 1, i.q) : i.q; return alvo ? `<li><button type="button" class="tg-pick" data-trocar="${opcaoTroca({ ...alvo, n: i.n, q })}"><span>${h(i.n)}</span><span>${h(nb(q))}</span></button></li>` : `<li><span>${h(i.n)}</span><span>${h(nb(i.q))}</span></li>`; }).join('')}</ul></details>`).join('') || '<p class="ali-nodata">Nenhum alimento ou grupo encontrado.</p>'}</div>
     <button type="button" class="ali-link" data-open="${path}">Abrir lista original ↗</button>`;
 }
 function comprasDoPlano(L) {
@@ -3539,7 +3572,7 @@ const botaoRegistrar = area => `<button type="button" class="btn esc-registrar" 
 
 function bind() {
   document.addEventListener('click', ev => {
-    const t = ev.target.closest('[data-projarea],[data-projetos-privacidade],[data-humor],[data-reveal-sentir],[data-tarefa-privacidade],[data-commit],[data-open],[data-task],[data-compra],[data-cxdel],[data-tab],[data-mdt],[data-reveal],[data-find],[data-reg],[data-mood],[data-emo],#copyAsk,[data-act],[data-st],[data-day],[data-wk],[data-pick],[data-ficha],[data-regficha],[data-fmes],[data-ftab],[data-fo],[data-fedit],[data-fnova],[data-faba],[data-fcart],[data-fvenc],[data-fdia],[data-fcat],[data-alitab],[data-pessoa],[data-dias],[data-pego],[data-trocagrupo],[data-ref],[data-trocap],[data-close],[data-reveal-area],[data-ocultar-area],[data-area-captura],[data-anotar-nota],[data-box-remove],[data-sumario],[data-voltar],[data-caso-aba],[data-cardapio-dia],[data-escrever],[data-ordem]');
+    const t = ev.target.closest('[data-projarea],[data-projetos-privacidade],[data-humor],[data-reveal-sentir],[data-tarefa-privacidade],[data-commit],[data-open],[data-task],[data-compra],[data-cxdel],[data-tab],[data-mdt],[data-reveal],[data-find],[data-reg],[data-mood],[data-emo],#copyAsk,[data-act],[data-st],[data-day],[data-wk],[data-pick],[data-ficha],[data-regficha],[data-fmes],[data-ftab],[data-fo],[data-fedit],[data-fnova],[data-faba],[data-fcart],[data-fvenc],[data-fdia],[data-fcat],[data-alitab],[data-pessoa],[data-dias],[data-pego],[data-trocagrupo],[data-trocar],[data-destrocar],[data-alvo-cancelar],[data-ref],[data-trocap],[data-close],[data-reveal-area],[data-ocultar-area],[data-area-captura],[data-anotar-nota],[data-box-remove],[data-sumario],[data-voltar],[data-caso-aba],[data-cardapio-dia],[data-escrever],[data-ordem]');
     if (!t) return;
     const d = t.dataset;
     // Painel só de leitura (22/11/2026): nada que grave nas notas, na caixa ou nas listas responde ao toque.
@@ -3639,7 +3672,10 @@ function bind() {
     if (d.trocap) { S.trocaP = d.trocap; S.trocaOpen = null; LS.set(K + 'trocap', d.trocap); renderAlimentacao(); return; }
     if (d.dias) { S.dias = +d.dias; LS.set(K + 'dias', S.dias); renderAlimentacao(); renderInicio(); return; }
     if (d.pego) { clickPego(d.pego); return; }
-    if (d.trocagrupo) { S.aliTab = 'trocas'; S.trocaP = d.tp || (S.pessoa === 'michele' ? 'michele' : 'diovane'); S.trocaQ = ''; S.trocaOpen = d.trocagrupo; history.replaceState(null, '', '#alimentacao/trocas'); renderAlimentacao(); const g = $$('[data-grp]').find(x => x.dataset.grp === d.trocagrupo); if (g) { g.scrollIntoView({ behavior: 'smooth', block: 'start' }); g.classList.add('flash'); } return; }
+    if (d.trocar != null) { const o = S.trocaOpts[+d.trocar]; if (!o) return; const { porcoes, ...tr } = o; const vinhaDaLista = S.aliTab === 'trocas'; S.trocaAlvo = null; if (vinhaDaLista) { S.aliTab = 'plano'; S.aliRef = tr.t + '|-1'; history.replaceState(null, '', '#alimentacao'); } salvarTroca(tr); return; }
+    if (d.destrocar != null) { const o = S.trocaOpts[+d.destrocar]; if (o) salvarTroca({ ...o, n: '', q: '' }); return; }
+    if (t.matches('[data-alvo-cancelar]')) { S.trocaAlvo = null; S.aliTab = 'plano'; history.replaceState(null, '', '#alimentacao'); renderAlimentacao(); return; }
+    if (d.trocagrupo) { S.trocaAlvo = d.alvo != null ? S.trocaOpts[+d.alvo] || null : null; S.aliTab = 'trocas'; S.trocaP = d.tp || (S.pessoa === 'michele' ? 'michele' : 'diovane'); S.trocaQ = ''; S.trocaOpen = d.trocagrupo; history.replaceState(null, '', '#alimentacao/trocas'); renderAlimentacao(); const g = $$('[data-grp]').find(x => x.dataset.grp === d.trocagrupo); if (g) { g.scrollIntoView({ behavior: 'smooth', block: 'start' }); g.classList.add('flash'); } return; }
   });
   document.addEventListener('contextmenu', ev => { if (!ev.target.closest('input,textarea,select,[contenteditable]')) ev.preventDefault(); });
   document.addEventListener('input', ev => {
